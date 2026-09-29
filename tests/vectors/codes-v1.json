@@ -1,0 +1,205 @@
+{
+  "description": "Vecteurs figés du format de code RCN1 (CDC §7.2). Ne jamais modifier ni régénérer : voir README.md.",
+  "format": "RCN1",
+  "generated_on": "2026-09-29",
+  "generator": "src/crypto/codes.js — WebCrypto (Node 20) et fflate 0.8.2 (vendor/fflate.mjs)",
+  "test_key": {
+    "notice": "TEST KEY — NOT A SECRET. Clé générée pour ces vecteurs uniquement ; ne jamais la réutiliser ailleurs.",
+    "campaign_id": "TeStVeCtOr01",
+    "public_key": "BCI_UmxvJJpIwoPLXqo_U688ChQQyeef7wtW2KXxf45I1hFvaUl8kUFeYXUtkWc3eSiXl6YMiisEIBm3sOVSi1k",
+    "fingerprint": "56F59B5A",
+    "fingerprint_formatted": "56F5-9B5A",
+    "private_key_jwk": {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "Ij9SbG8kmkjCg8teqj9TrzwKFBDJ55_vC1bYpfF_jkg",
+      "y": "1hFvaUl8kUFeYXUtkWc3eSiXl6YMiisEIBm3sOVSi1k",
+      "d": "FkgXmYAvN5o0TMYaebWyzz1T4aMKKWbl4ndV71DcC68"
+    }
+  },
+  "decrypt_vectors": [
+    {
+      "name": "anonyme, sans horodatage ni répondant",
+      "code": "RCN1.AQQljLDMlRIAzgW5rFSu_ruGh4DZYTkmSq0fJbIYOaK8_QYtG20lERuB5M39mFuUTR402URlPCBsnPYiowChTfHDDVxOSOZMBzlILT-tt1PtXYpSWdqDdCtsPYQZx_84SGuG4ydrKrJVBQPVfH_6Lnqoygo8pbmEmx992_fsvfjOKUaofTA6Q002GdtTBLcOaonRqn_63m5Dl6kmJYcwBSkWpJlSr1dIp7vegBBTlTQZJjXfueT0Q-FsubOWBzI-rQ1KpV0ip0LSfEQwdDB1-BWkgHeogTNeGk672TW2gfIc9s70YTJmFdBBDts9Bx0JalSreL-1bCyZdHzA8-DA7HpUzvozkTjm5PHYRe_qgNg1JkY16vBNsr_ZUT0gFkCNAyQeQTDu4safOFGU9Rpj-Wo_gOWeWQs-EBjYzJBc6NdACP7MeGacvfGKBnYmYSaGO26DaduhMJqHH9bSUpTmC_EsozBLUfLR7c7wx5E86g4XYt7xK8h3POjLEoZTh393pJcT5m1LOQaj0l5qX9pbCHBvy-aKWapGf5ImBSbSlzxOOLtOfmIka1ieWi-yICbCGj2nGSM2emI4uWDC41zk6Bp4eDx4VTtTv2hf4tJaXZ9jKA",
+      "code_hash": "fce150fa8dce8a5aee2d51f7e61b40f19614161a83d865be2f8ff0e5846c5642",
+      "expected": {
+        "v": 1,
+        "sv": 1,
+        "campaign_id": "TeStVeCtOr01",
+        "entry_id": "aZ09_-bY18xW27vU",
+        "rev": 1,
+        "submitted_day": "2026-09-29",
+        "submitted_at": null,
+        "respondent": null,
+        "usage": {
+          "usage_name": "Reformulation de mails",
+          "department": "Commercial et devis",
+          "tool": "chatgpt",
+          "tool_other": null,
+          "model": null,
+          "account_type": "personal_free",
+          "task_types": [
+            "redaction"
+          ],
+          "business_domain": "commercial_devis",
+          "data_types": [
+            "docs_internes"
+          ],
+          "frequency": "daily",
+          "users_count": "2-5",
+          "output_audience": "external_clients",
+          "output_review": "systematic",
+          "affects_people": "no",
+          "direct_interaction": "no",
+          "biometric_emotion": "no",
+          "built_or_customized": "use_as_is",
+          "status": "in_use",
+          "comment": null
+        }
+      }
+    },
+    {
+      "name": "ouvert, répondant et horodatage, texte Unicode",
+      "code": "RCN1.AQTJozTLC3NwNcMZM3hRmoaUsobvH97kPzqOmbhhLmAuECSheBu2OKEDj1TrfghCYMNEwnNwSn7yRpBdBvGRtXZTXsc_pvLIdx6mvQvUhsiJsVedbM6iBMJQngeznY4Nfc2MZfy9DqNSabZVkNO8rkawBY8krX2jKbey6mFXolJAoV5foxZilMhXQzu0d5lBxaOyVCAaoSnr_aCFMIxxmaEQ84EvDHFsF45QhJDa1I6G9wkI7Mk_S9mKuxCq1dnZn4tnCLzLlI7IiqToq3vAwOfWZ7JUOQPpgMzBTbTZFNm0Ys_1eNit03HsXKiJZ5SITv1qZFbDiIOcZQjZFNo44fRAJjN8xnkyG00l6wN_3IVzLMpueL3mBeM7_9IUnL0DT7ynh_odDIRnSowkIwE5X-zIgd_VuLKAA5azpoXsfyJ-EHyrVoESPNXk3DmiPgyIwt3WuXayM8y8qDpQGRMZRu6F6nRfoCaV8QU0aiN7VAQzL0F_UrFENVlgpJ5mwAsyfc0W-j7SM2kRUdJt2Bx7mcR4A8zJKYU1Ui5Tztz6S7C_3LqNAPn8amYRduEuvknJUNcjEJv5xRg9vrarX-9tZDfB_rl_hIaHuSOoq51LvvXI2JGK9ayF7-tWP-1n_O2FAr4euTe7v71BytWBqOJwTP14mvwvw5eGpLrQjRnJLb4sFxDDgd8mVeemdbXyenudhhfMRmgJDDGj9tKR4FkKehmd7vMaMbZ0g-HDFoFHjCR2LgVbAVxtCnbR-3TvuYQEuxCytZhss6LJ3gutPsU-y_4TfU5Ql4xxcqsUscL36C_noqpZ7FxPnDRZygwmayO-aNgROkYeHEH3Ho-gb8B6aWW7RxjyhnUdvQ6ATdjUbSaWwX-ucTE-HrY8tPUSCVwDK4_eN334THi5PVROjgXm",
+      "code_hash": "4fd276a7866d65e5a4c74ea4c08b74dbb6d24c9e1d07550afb92cd667524fb1f",
+      "expected": {
+        "v": 1,
+        "sv": 1,
+        "campaign_id": "TeStVeCtOr01",
+        "entry_id": "Q1w2E3r4T5y6U7i8",
+        "rev": 3,
+        "submitted_day": "2026-09-30",
+        "submitted_at": "2026-09-30T08:15:42.123Z",
+        "respondent": {
+          "first_name": "Élodie",
+          "last_name": "Müller-Østergaard",
+          "email": "elodie.muller@exemple.fr"
+        },
+        "usage": {
+          "usage_name": "Tri automatique de CV",
+          "department": "RH / administratif",
+          "tool": "embedded_software_ai",
+          "tool_other": null,
+          "model": null,
+          "account_type": "enterprise_provided",
+          "task_types": [
+            "evaluation_tri_personnes",
+            "aide_decision"
+          ],
+          "business_domain": "rh",
+          "data_types": [
+            "donnees_candidats"
+          ],
+          "frequency": "weekly",
+          "users_count": "1",
+          "output_audience": "internal_only",
+          "output_review": "partial",
+          "affects_people": "yes_decision",
+          "direct_interaction": "no",
+          "biometric_emotion": "no",
+          "built_or_customized": "configured_prompt",
+          "status": "in_use",
+          "comment": "Paramétré par l’éditeur ; « scores » revus à la main — €, œ, 日本語, 🙂"
+        }
+      }
+    }
+  ],
+  "deterministic_vectors": [
+    {
+      "name": "clé éphémère et IV imposés",
+      "notice": "TEST KEY — NOT A SECRET (clé éphémère de test)",
+      "ephemeral_private_key_jwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "HcJCjYteaP0qfRTDMgtvFPsfWL0j8abPcdThHG20Bpk",
+        "y": "YCtSTZyeZpUSCu_rvNzc289zXwubTl7KuMmCWCa-57I",
+        "d": "d9NjcDR-ySMx2wEagAPhqHHCtzrRxUxAS5C0cf0yQm8"
+      },
+      "ephemeral_public_key": "BB3CQo2LXmj9Kn0UwzILbxT7H1i9I_Gmz3HU4RxttAaZYCtSTZyeZpUSCu_rvNzc289zXwubTl7KuMmCWCa-57I",
+      "iv": "IfxAXI0JKYq-XsLf",
+      "plain": {
+        "v": 1,
+        "sv": 1,
+        "campaign_id": "TeStVeCtOr01",
+        "entry_id": "DeTeRmInIsTe0001",
+        "rev": 1,
+        "submitted_day": "2026-09-29",
+        "usage": {
+          "usage_name": "Reformulation de mails",
+          "department": "Commercial et devis",
+          "tool": "chatgpt",
+          "tool_other": null,
+          "model": null,
+          "account_type": "personal_free",
+          "task_types": [
+            "redaction"
+          ],
+          "business_domain": "commercial_devis",
+          "data_types": [
+            "docs_internes"
+          ],
+          "frequency": "daily",
+          "users_count": "2-5",
+          "output_audience": "external_clients",
+          "output_review": "systematic",
+          "affects_people": "no",
+          "direct_interaction": "no",
+          "biometric_emotion": "no",
+          "built_or_customized": "use_as_is",
+          "status": "in_use",
+          "comment": null
+        }
+      },
+      "code": "RCN1.AQQdwkKNi15o_Sp9FMMyC28U-x9YvSPxps9x1OEcbbQGmWArUk2cnmaVEgrv67zc3NvPc18Lm05eyrjJglgmvueyIfxAXI0JKYq-XsLfBj_vMKqwMM4bWQvIWdtemBL0eJ7HBt7-0qFsBv4uIU8IRyJh1me4w0Lloi4Poam00c8sktbbIv6mH96sA2_orMuhipDtGzQf-0vu4AUWw_IRaCbp9d3yJkCFR8JdUCHCPiDbzG3pRXSAF7SIhobv4Z0xOt2BPpT9ME5V8aJjeSlG3WjNN-CZCp8UppzioqmYanokpBsDiEidDQxmphRTLUTVPEQafAiqQYtI3eLipzirPHonpWNMjon_yX-nyEoC19_gOlcxNQ7pI4Au-r1ZbaFEFdBEQXSkYVztRRRkiTrkFAiLvhZOzJwNnhNSmqSL8qEEp550Qa4R01XcgGTGesDAkV5ywo21EyfgrrpGjhJpk10xSvjyjwZdyT9rLvZYj29Z3G2W6EH1HT6DLvtD4ggsykJYaDBwloJdWNuKnFwKyEjxvds-GFdHIkM-9vL8XdaoBmjaqWzn68PVJFwtmVchJexPyLENEYa1IbSapqdYPa6B9yC9257dHWZWBIfq7dI",
+      "expected": {
+        "v": 1,
+        "sv": 1,
+        "campaign_id": "TeStVeCtOr01",
+        "entry_id": "DeTeRmInIsTe0001",
+        "rev": 1,
+        "submitted_day": "2026-09-29",
+        "submitted_at": null,
+        "respondent": null,
+        "usage": {
+          "usage_name": "Reformulation de mails",
+          "department": "Commercial et devis",
+          "tool": "chatgpt",
+          "tool_other": null,
+          "model": null,
+          "account_type": "personal_free",
+          "task_types": [
+            "redaction"
+          ],
+          "business_domain": "commercial_devis",
+          "data_types": [
+            "docs_internes"
+          ],
+          "frequency": "daily",
+          "users_count": "2-5",
+          "output_audience": "external_clients",
+          "output_review": "systematic",
+          "affects_people": "no",
+          "direct_interaction": "no",
+          "biometric_emotion": "no",
+          "built_or_customized": "use_as_is",
+          "status": "in_use",
+          "comment": null
+        }
+      }
+    }
+  ],
+  "reject_vectors": [
+    {
+      "name": "code d’une autre campagne (même clé de test, AAD différente)",
+      "campaign_id": "TeStVeCtOr01",
+      "code": "RCN1.AQRrjb8TTOdKoMFAUuJnhkQUw77qRmlnhUXfwfpCw0jVbiOhM6ib1QWXRxy6R1tNwqOLBJ6JBYEr7sD6CdO041vhDkpFkB05EXRf9BCr6P1OfML-R97eZ6JedRM83JRY1jqYllc6Akwtd_Cj6g6O6hEcs48eofRAai_eyVcLjiLWQEiNRYVujBlHpEmBKE6Kgh40pF1Xj62wnUqcRVcpIb-sTphuu_FOg52grCsAjLNMO_KkvVDVnDthdWCG-PtI_2yNGy455lzJkzuUvfGfEMWJXZPvh6UiZbu4xO-VW-U7KM4uut9W6vJevbu6n5pDAuOSXIEssfRCjMJ93d5SK_RrIhybVbCaOfbCadvpHHUsR33bsucwPKih4IEJLgMa42OlRZDenThePuBKOZ_XXiF3kx1Gza9vp6qi3G2iGEm-hyx1vo7y578Tju8vZsrSToaMNvPA2tR5ngiddXTi5ES-TdVv1dw4ovAJBQffFH6D9FD4MxvFLDuXCjqFYUmIDEJNEz4HcfhlDHkkFaoLD3PbtPuQkDP0CSpLT4C7AYW_fEhFb-hjumpEU6cI9-F5h6DuUrYmBZreA50z4xOHoqSjCCLydyYlIdZWMXdfpBum",
+      "reason": "decrypt"
+    },
+    {
+      "name": "préfixe de version inconnu",
+      "campaign_id": "TeStVeCtOr01",
+      "code": "RCN2.AQQljLDMlRIAzgW5rFSu_ruGh4DZYTkmSq0fJbIYOaK8_QYtG20lERuB5M39mFuUTR402URlPCBsnPYiowChTfHDDVxOSOZMBzlILT-tt1PtXYpSWdqDdCtsPYQZx_84SGuG4ydrKrJVBQPVfH_6Lnqoygo8pbmEmx992_fsvfjOKUaofTA6Q002GdtTBLcOaonRqn_63m5Dl6kmJYcwBSkWpJlSr1dIp7vegBBTlTQZJjXfueT0Q-FsubOWBzI-rQ1KpV0ip0LSfEQwdDB1-BWkgHeogTNeGk672TW2gfIc9s70YTJmFdBBDts9Bx0JalSreL-1bCyZdHzA8-DA7HpUzvozkTjm5PHYRe_qgNg1JkY16vBNsr_ZUT0gFkCNAyQeQTDu4safOFGU9Rpj-Wo_gOWeWQs-EBjYzJBc6NdACP7MeGacvfGKBnYmYSaGO26DaduhMJqHH9bSUpTmC_EsozBLUfLR7c7wx5E86g4XYt7xK8h3POjLEoZTh393pJcT5m1LOQaj0l5qX9pbCHBvy-aKWapGf5ImBSbSlzxOOLtOfmIka1ieWi-yICbCGj2nGSM2emI4uWDC41zk6Bp4eDx4VTtTv2hf4tJaXZ9jKA",
+      "reason": "version"
+    }
+  ]
+}

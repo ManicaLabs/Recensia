@@ -1,7 +1,7 @@
 // Fichier généré par tools/precache.mjs : ne pas modifier à la main.
 // Régénérer avec « node tools/precache.mjs » ou « node tools/check.mjs --fix ».
 self.__RECENSIA_PRECACHE = {
-  version: '0.1.0-299aae22',
+  version: '0.1.0-6b2c71c4',
   files: [
     './apple-touch-icon.png',
     './config.js',
@@ -19,6 +19,13 @@ self.__RECENSIA_PRECACHE = {
     './manifest.webmanifest',
     './src/analytics.js',
     './src/app.js',
+    './src/crypto/b64url.js',
+    './src/crypto/backup.js',
+    './src/crypto/codes.js',
+    './src/crypto/compress.js',
+    './src/crypto/keys.js',
+    './src/crypto/link.js',
+    './src/crypto/random.js',
     './src/data.js',
     './src/engine/actions.js',
     './src/engine/classify.js',
