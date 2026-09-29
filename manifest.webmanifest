@@ -1,0 +1,19 @@
+{
+  "name": "Recensia — registre des usages IA",
+  "short_name": "Recensia",
+  "description": "Recensez les usages de l'IA dans votre entreprise, classez-les (AI Act, exposition des données) et pilotez un plan d'actions, sans compte ni serveur.",
+  "lang": "fr",
+  "dir": "ltr",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f6f8",
+  "theme_color": "#17324d",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

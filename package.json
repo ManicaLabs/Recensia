@@ -1,0 +1,15 @@
+{
+  "name": "recensia",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Registre des usages IA en entreprise — PWA sans serveur",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test",
+    "check": "node tools/check.mjs",
+    "precache": "node tools/precache.mjs",
+    "validate": "node tools/check.mjs && node --test"
+  }
+}

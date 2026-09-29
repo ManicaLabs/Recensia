@@ -1,0 +1,65 @@
+{
+  "meta": {
+    "title": "Confidentialité"
+  },
+  "title": "Confidentialité et données",
+  "lead": "Recensia est conçu pour ne rien conserver : ni compte, ni base de données, ni serveur de stockage. Cette page décrit ce qui circule, et où.",
+  "draft": {
+    "title": "Texte à faire valider",
+    "text": "Ce texte est un projet. Il doit être relu et validé (exemption de consentement de la mesure d'audience, mentions RGPD, éditeur du site) avant toute diffusion officielle."
+  },
+  "toc_label": "Sur cette page",
+  "summary": {
+    "title": "En bref",
+    "no_server": "Recensia n'a aucun serveur de stockage : les réponses sont chiffrées dans le navigateur du répondant, transmises par le canal choisi par le responsable (e-mail, messagerie, fichier) et lisibles seulement dans le navigateur du responsable.",
+    "audience": "La mesure d'audience (GoatCounter) ne dépose aucun cookie : elle reçoit des chemins fixes et des informations techniques (navigateur, taille d'écran), jamais le contenu d'une campagne.",
+    "hosting": "Le site est hébergé par GitHub Pages, qui peut tenir des journaux techniques de connexion."
+  },
+  "audience": {
+    "title": "Mesure d'audience (GoatCounter)",
+    "intro": "Recensia peut utiliser GoatCounter, un outil de mesure d'audience sans cookie, pour compter les pages consultées et quelques actions. Aucun identifiant n'est enregistré dans votre navigateur.",
+    "paths": "Seuls les chemins fixes suivants peuvent être transmis :",
+    "events": "ainsi que les événements suivants, sans aucune donnée associée :",
+    "never": "Ne sont jamais transmis : le contenu du lien de campagne, les codes de réponse, les clés, les noms, les services ni aucun texte saisi. Ni l'adresse réelle de la page ni la page de provenance (référent) ne sont envoyées.",
+    "technical": "Comme tout serveur web, GoatCounter reçoit techniquement, à chaque comptage, l'adresse IP, le type de navigateur et la taille de l'écran ; selon sa documentation, il n'enregistre pas l'adresse IP (il peut en déduire le pays) et ne suit pas les visiteurs d'un site à l'autre.",
+    "local": "La mesure est désactivée quand l'application fonctionne en local (localhost) et quand aucun code GoatCounter n'est configuré.",
+    "blocker": "Vous pouvez aussi la bloquer avec un bloqueur de contenu : l'application continue de fonctionner normalement.",
+    "status_active": "Sur cette page : mesure d'audience active.",
+    "status_inactive": "Sur cette page : mesure d'audience inactive, aucun script GoatCounter n'est chargé."
+  },
+  "campaign": {
+    "title": "Données des campagnes",
+    "link": "Le lien de collecte contient la configuration de la campagne et sa clé publique, dans la partie de l'adresse située après « # » : les navigateurs ne l'envoient jamais au serveur. Cette configuration (titre, entreprise, liste des services) n'est pas chiffrée : toute personne qui dispose du lien peut la lire.",
+    "encryption": "Chaque usage déclaré est chiffré dans le navigateur du répondant. Le code obtenu est transmis au responsable par le canal que celui-ci a choisi : e-mail, messagerie, copier-coller vers un canal partagé ou fichier, par exemple.",
+    "storage": "Une fois reçus, les codes sont déchiffrés et stockés uniquement dans le navigateur du responsable (IndexedDB). L'application ne conserve rien : aucune réponse n'est stockée sur un serveur de Recensia, et il n'en existe pas.",
+    "private_key": "La clé privée de la campagne ne quitte le navigateur du responsable que s'il exporte lui-même un fichier de récupération (protégé par un mot de passe s'il en choisit un) ou une sauvegarde chiffrée.",
+    "share": "Les boutons de partage vers un service tiers (WhatsApp, Teams, messagerie web) ouvrent ce service à votre demande : le message, lien ou code compris, lui est alors transmis comme tout message que vous y écririez."
+  },
+  "anonymity": {
+    "title": "Limites de l'anonymat",
+    "guarantees": "En mode anonyme, le code ne contient aucune identité (ni nom ni adresse e-mail), la date est arrondie au jour et les petits regroupements (moins de cinq réponses par défaut) sont masqués dans le tableau de bord et les exports.",
+    "channel_intro": "L'anonymat réel dépend toutefois du canal de retour, que Recensia ne contrôle pas :",
+    "channel_email": "par e-mail, l'adresse de l'expéditeur est connue du destinataire ;",
+    "channel_messaging": "par une messagerie (Teams, WhatsApp…), le nom de l'expéditeur est visible ;",
+    "channel_shared": "par un canal partagé ou un dépôt de fichier, tout dépend de la configuration de ce canal.",
+    "free_text": "Un commentaire libre peut aussi permettre d'identifier une personne : n'y mettez aucune donnée personnelle.",
+    "open_mode": "En mode nominatif, le prénom et le nom du répondant figurent dans le code chiffré."
+  },
+  "retention": {
+    "title": "Conservation",
+    "company": "Les codes reçus (dans une boîte mail, un dossier partagé…) et le registre constitué sont des données de l'entreprise qui organise la campagne. Leur durée de conservation relève de sa politique de conservation ; en mode nominatif, ce sont des données personnelles.",
+    "browser": "Dans le navigateur du responsable, les données restent jusqu'à ce qu'il supprime la campagne ou efface les données du site. Recensia n'en garde aucune copie.",
+    "rights": "Pour exercer vos droits sur les données d'une campagne (accès, rectification, effacement), adressez-vous à l'entreprise qui l'organise : elle seule détient les réponses."
+  },
+  "hosting": {
+    "title": "Hébergement",
+    "provider": "Le site est hébergé par GitHub Pages, un service de GitHub, Inc. (États-Unis).",
+    "logs": "Comme tout hébergeur, GitHub peut enregistrer des journaux techniques (adresse IP, date, fichier demandé) pour la sécurité et le bon fonctionnement du service, conformément à sa propre déclaration de confidentialité. Ces journaux ne contiennent pas la partie de l'adresse située après « # », donc ni la configuration des campagnes ni les codes.",
+    "no_third_party": "L'application ne charge aucune autre ressource externe : bibliothèques, textes et données sont servis par le site lui-même."
+  },
+  "publisher": {
+    "title": "Éditeur et contact",
+    "text": "À compléter : éditeur du site et moyen de contact."
+  },
+  "updated": "Texte mis à jour le 29 septembre 2026."
+}

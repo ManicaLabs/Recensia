@@ -1,0 +1,139 @@
+/* Recensia — impression (chargée avec media="print") : A4, contenu seul, lisible en noir et blanc.
+ * Le rapport imprimé sert aussi à produire un PDF via l'impression du navigateur. */
+
+@page {
+  size: A4;
+  margin: 16mm 14mm 18mm;
+}
+
+/* Le thème sombre d'app.css est réservé à l'écran : l'impression garde la palette claire. */
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #ffffff;
+  --surface-3: #f1f3f5;
+  --border: #9aa3ad;
+  --border-strong: #6b7580;
+  --text: #000000;
+  --text-muted: #3b434c;
+  --heading: #000000;
+  --link: #000000;
+  --shadow-sm: none;
+  --shadow: none;
+  --shadow-lg: none;
+}
+
+html, body {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+body {
+  display: block;
+  min-height: 0;
+  font-size: 10.5pt;
+  line-height: 1.45;
+}
+
+/* Éléments d'interface masqués */
+.skip-link,
+.site-header,
+.site-nav,
+.site-footer,
+.app-banners,
+.banner,
+.banner-update,
+.toasts,
+.toast,
+#live-region,
+.btn,
+button,
+.tabs,
+.toc,
+.modal,
+.dropzone,
+.no-print,
+input[type="file"],
+noscript {
+  display: none !important;
+}
+
+.print-only { display: block !important; }
+
+.page {
+  max-width: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Typographie */
+h1 { font-size: 20pt; margin: 0 0 6pt; }
+h2 { font-size: 14pt; margin: 14pt 0 6pt; }
+h3 { font-size: 11.5pt; margin: 10pt 0 4pt; }
+h1, h2, h3, h4 { color: #000000; break-after: avoid; page-break-after: avoid; }
+p, li { orphans: 3; widows: 3; }
+.lead { font-size: 11.5pt; color: #222222; }
+.muted { color: #3b434c; }
+a { color: #000000; text-decoration: underline; }
+code, .code-block { font-size: 8.5pt; }
+
+/* Blocs : pas de coupure au milieu, pas d'ombres ni de fonds lourds */
+.card,
+.callout,
+.kpi,
+.flow-step,
+.stepper-item,
+figure,
+.meta-list,
+.code-block {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  box-shadow: none !important;
+  background: #ffffff !important;
+}
+.card { border: 0.5pt solid #9aa3ad; border-radius: 4pt; padding: 8pt 10pt; }
+.callout { border: 0.5pt solid #6b7580; border-left: 3pt solid #000000; padding: 6pt 8pt; }
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6pt; }
+.kpi { border: 0.5pt solid #9aa3ad; padding: 6pt; }
+.kpi-value { font-size: 16pt; }
+
+/* Tableaux lisibles sur plusieurs pages */
+.table-wrap { overflow: visible !important; border: 0 !important; }
+table.table { display: table !important; width: 100%; border-collapse: collapse; font-size: 8.5pt; }
+.table thead { display: table-header-group; }
+.table tfoot { display: table-footer-group; }
+.table tr, .table td, .table th { break-inside: avoid; page-break-inside: avoid; }
+.table th, .table td { border: 0.5pt solid #9aa3ad !important; padding: 3pt 4pt; background: #ffffff !important; }
+.table thead th { background: #eef0f2 !important; color: #000000; text-transform: none; letter-spacing: 0; }
+.table tbody tr:hover > * { background: #ffffff !important; }
+
+/* Badges : couleurs conservées, texte toujours lisible */
+.badge {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  border-width: 0.75pt;
+  font-size: 8pt;
+  padding: 0 4pt;
+}
+
+/* Graphiques SVG et QR : couleurs exactes */
+svg, img, .qr, .chart {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Sauts de page explicites */
+.page-break, .print-break-before { break-before: page; page-break-before: always; }
+.print-break-after { break-after: page; page-break-after: always; }
+.print-avoid-break { break-inside: avoid; page-break-inside: avoid; }
+
+/* Fiche A4 d'une seule page (diffusion) */
+.print-sheet {
+  width: 100%;
+  min-height: 0;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}

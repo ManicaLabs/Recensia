@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://gc.zgo.at; connect-src 'self' https://*.goatcounter.com; img-src 'self' data: blob: https://*.goatcounter.com; style-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; manifest-src 'self'; worker-src 'self'">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="strict-origin">
+  <title>Recensia — registre des usages IA</title>
+  <meta name="description" content="Recensez les usages de l'IA dans votre entreprise, classez-les (AI Act, exposition des données) et pilotez un plan d'actions. Gratuit, sans compte ni serveur : les réponses sont chiffrées dans le navigateur.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#17324d" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0b1622" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-title" content="Recensia">
+  <meta property="og:title" content="Recensia — registre des usages IA">
+  <meta property="og:description" content="Recensez les usages de l'IA dans votre entreprise, sans compte ni serveur.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="src/styles/app.css">
+  <link rel="stylesheet" href="src/export/print.css" media="print">
+  <script type="module" src="src/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#app" data-i18n="common.nav.skip">Aller au contenu</a>
+
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="#/">
+        <img class="brand-mark" src="icon.svg" alt="" width="28" height="28">
+        <span class="brand-name">Recensia</span>
+      </a>
+      <nav class="site-nav" aria-label="Navigation principale" data-i18n-aria-label="common.nav.label">
+        <ul>
+          <li><a href="#/" data-nav="home" data-i18n="common.nav.home">Accueil</a></li>
+          <li><a href="#/admin" data-nav="admin" data-i18n="common.nav.admin">Mes campagnes</a></li>
+          <li><a href="#/demo" data-nav="demo" data-i18n="common.nav.demo">Démo</a></li>
+          <li><a href="#/privacy" data-nav="privacy" data-i18n="common.nav.privacy">Confidentialité</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <div id="app-banners" class="app-banners"></div>
+
+  <main id="app" class="site-main" tabindex="-1">
+    <div class="page">
+      <p class="app-loading" data-i18n="common.app.loading">Chargement de Recensia…</p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p class="footer-brand"><strong>Recensia</strong> <span id="app-version" class="app-version"></span></p>
+      <p class="footer-disclaimer" data-i18n="common.app.footer_disclaimer">Outil d'organisation, pas un avis juridique.</p>
+      <p><a href="#/privacy" data-i18n="common.nav.privacy">Confidentialité</a></p>
+    </div>
+  </footer>
+
+  <div id="update-banner" class="banner banner-update" role="status" hidden>
+    <p id="update-banner-text" class="banner-text" data-i18n="common.update.available">Nouvelle version disponible.</p>
+    <button type="button" id="update-reload" class="btn btn-primary btn-sm" data-i18n="common.update.reload">Recharger</button>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <div id="live-region" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+
+  <noscript>
+    <div class="noscript">
+      <p><strong>Recensia a besoin de JavaScript.</strong></p>
+      <p>Activez JavaScript pour utiliser l'application. Aucune donnée de campagne n'est envoyée à un serveur : tout le traitement a lieu dans votre navigateur.</p>
+    </div>
+  </noscript>
+</body>
+</html>

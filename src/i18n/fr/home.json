@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "title": "Registre des usages IA"
+  },
+  "hero": {
+    "eyebrow": "Registre des usages IA · AI Act · RGPD",
+    "title": "Faites l'inventaire des usages de l'IA dans votre entreprise",
+    "lead": "Recensia recueille les usages auprès de vos équipes, les classe selon l'AI Act et l'exposition des données, puis vous propose un plan d'actions. Gratuit, sans compte et sans serveur : les réponses sont chiffrées et vous seul pouvez les lire.",
+    "cta_new": "Créer une campagne",
+    "cta_demo": "Voir la démo",
+    "cta_admin": "Mes campagnes",
+    "note": "Aucune inscription. Fonctionne hors ligne une fois chargé."
+  },
+  "preview": {
+    "caption": "Exemple de registre",
+    "note": "Données fictives, classification indicative.",
+    "col_usage": "Cas d'usage",
+    "col_ai_act": "AI Act",
+    "col_data": "Données",
+    "rows": {
+      "cv": {
+        "name": "Tri automatique de CV",
+        "meta": "RH · outil de recrutement"
+      },
+      "chatbot": {
+        "name": "Chatbot du site web",
+        "meta": "Service client · outil tiers"
+      },
+      "visuals": {
+        "name": "Visuels marketing",
+        "meta": "Marketing · Midjourney"
+      },
+      "minutes": {
+        "name": "Transcription de réunions",
+        "meta": "Direction · compte pro"
+      }
+    }
+  },
+  "steps": {
+    "title": "Trois étapes",
+    "lead": "Une campagne de recensement se mène en quelques jours, sans installer quoi que ce soit.",
+    "create": {
+      "title": "Créer une campagne",
+      "text": "Titre, services, mode anonyme ou nominatif et canal de retour. Votre navigateur génère la paire de clés de la campagne et un fichier de récupération."
+    },
+    "share": {
+      "title": "Diffuser le lien",
+      "text": "Lien de collecte, QR code, messages prêts à envoyer et fiche imprimable. Chaque collaborateur décrit ses usages en quelques minutes et vous renvoie un code chiffré par usage."
+    },
+    "consolidate": {
+      "title": "Consolider le registre",
+      "text": "Importez les codes : les usages sont déchiffrés, regroupés et classés. Validez les niveaux, pilotez le plan d'actions et exportez le registre."
+    }
+  },
+  "serverless": {
+    "title": "Comment ça marche sans serveur ?",
+    "intro": "Recensia n'a ni base de données ni compte utilisateur : le site ne fait que livrer l'application à votre navigateur. Les réponses ne transitent jamais par un serveur de Recensia.",
+    "flow_label": "Circuit d'une réponse",
+    "flow": {
+      "link": {
+        "title": "Le lien de collecte",
+        "text": "contient la configuration et la clé publique de la campagne : elle permet de chiffrer, pas de déchiffrer."
+      },
+      "respondent": {
+        "title": "Le navigateur du répondant",
+        "text": "chiffre chaque usage déclaré (ECDH P-256, AES-256-GCM) et produit un code à vous transmettre."
+      },
+      "owner": {
+        "title": "Votre navigateur",
+        "text": "conserve la clé privée : lui seul peut déchiffrer les codes reçus et construire le registre."
+      }
+    },
+    "key_warning": "Clé privée perdue, réponses illisibles : enregistrez le fichier de récupération proposé à la création de la campagne.",
+    "anonymity": "En mode anonyme, le code ne contient aucune identité. Le canal de retour, en revanche, peut révéler l'expéditeur (un e-mail, par exemple) : Recensia l'indique au répondant avant l'envoi.",
+    "privacy_link": "En savoir plus sur la confidentialité"
+  },
+  "features": {
+    "title": "Ce que vous obtenez",
+    "registry": {
+      "title": "Un registre prêt à l'emploi",
+      "text": "Une ligne par usage consolidé : outil, données envoyées, niveaux de risque, règles déclenchées, échéances et responsable."
+    },
+    "axes": {
+      "title": "Deux axes de risque distincts",
+      "text": "Le niveau AI Act et l'exposition des données sont évalués séparément, avec les règles déclenchées et leurs références."
+    },
+    "actions": {
+      "title": "Un plan d'actions",
+      "text": "Des actions standard suggérées pour chaque risque, à accepter, modifier ou rejeter, avec responsable, échéance et statut."
+    },
+    "exports": {
+      "title": "Des exports",
+      "text": "XLSX, CSV et rapport imprimable, pour votre direction, votre DPO ou votre CSE."
+    }
+  },
+  "disclaimer_extra": "Recensia est un outil d'organisation : il ne remplace pas l'analyse d'un juriste ou de votre DPO."
+}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Recensia</title>
+  <rect width="512" height="512" rx="112" fill="#1d4470"/>
+  <g transform="translate(89 61)">
+    <rect width="240" height="312" rx="30" fill="#ffffff"/>
+    <rect x="44" y="60" width="152" height="28" rx="14" fill="#1d4470"/>
+    <rect x="44" y="116" width="152" height="28" rx="14" fill="#1d4470"/>
+    <rect x="44" y="172" width="96" height="28" rx="14" fill="#1d4470"/>
+    <circle cx="232" cy="288" r="92" fill="#2b9a6c" stroke="#1d4470" stroke-width="20"/>
+    <path d="M188 290l32 32 58-64" fill="none" stroke="#ffffff" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

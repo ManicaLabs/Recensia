@@ -1,0 +1,119 @@
+{
+  "app": {
+    "name": "Recensia",
+    "title": "Recensia — registre des usages IA",
+    "tagline": "Registre des usages IA",
+    "version": "version {version}",
+    "footer_disclaimer": "Outil d'organisation, pas un avis juridique.",
+    "loading": "Chargement de Recensia…"
+  },
+  "nav": {
+    "label": "Navigation principale",
+    "skip": "Aller au contenu",
+    "home": "Accueil",
+    "admin": "Mes campagnes",
+    "demo": "Démo",
+    "privacy": "Confidentialité"
+  },
+  "actions": {
+    "add": "Ajouter",
+    "back": "Retour",
+    "back_home": "Revenir à l'accueil",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "close_notification": "Fermer la notification",
+    "confirm": "Confirmer",
+    "continue": "Continuer",
+    "copy": "Copier",
+    "delete": "Supprimer",
+    "download": "Télécharger",
+    "edit": "Modifier",
+    "export": "Exporter",
+    "import": "Importer",
+    "next": "Suivant",
+    "no": "Non",
+    "open": "Ouvrir",
+    "previous": "Précédent",
+    "print": "Imprimer",
+    "reload": "Recharger la page",
+    "retry": "Réessayer",
+    "save": "Enregistrer",
+    "share": "Partager",
+    "yes": "Oui"
+  },
+  "copy": {
+    "done": "Copié",
+    "announce": "Copié dans le presse-papiers.",
+    "failed": "Copie impossible. Sélectionnez le texte et copiez-le manuellement."
+  },
+  "field": {
+    "required": "obligatoire",
+    "optional": "facultatif",
+    "required_legend": "Les champs marqués d'un astérisque (*) sont obligatoires."
+  },
+  "loading": "Chargement…",
+  "errors": {
+    "generic": "Une erreur est survenue.",
+    "view_title": "Impossible d'afficher cette page",
+    "view_text": "Une erreur inattendue s'est produite. Rechargez la page ; si le problème persiste, revenez à l'accueil.",
+    "offline": "Vous êtes hors ligne : cette action nécessite une connexion.",
+    "data_unavailable": "Les données de l'application n'ont pas pu être chargées. Vérifiez votre connexion puis rechargez la page."
+  },
+  "coming_soon": {
+    "title": "Cette section arrive bientôt",
+    "text": "Cette partie de Recensia est en cours de réalisation et sera disponible dans une prochaine version."
+  },
+  "storage": {
+    "unavailable": "Le stockage local est indisponible dans ce navigateur : vos campagnes ne pourront pas y être enregistrées.",
+    "memory": "Stockage temporaire : vos données seront perdues à la fermeture de l'onglet ou au rechargement de la page."
+  },
+  "update": {
+    "available": "Nouvelle version disponible.",
+    "reload": "Recharger",
+    "reloading": "Rechargement…",
+    "announce": "Une nouvelle version de Recensia est disponible. Utilisez le bouton Recharger pour l'installer."
+  },
+  "mode": {
+    "anonymous": "Anonyme",
+    "open": "Nominatif"
+  },
+  "levels": {
+    "ai_act": {
+      "prohibited_suspected": "Interdit suspecté",
+      "high": "Haut risque",
+      "to_qualify": "À qualifier",
+      "limited": "Risque limité",
+      "minimal": "Risque minimal"
+    },
+    "ai_act_short": {
+      "prohibited_suspected": "Interdit ?",
+      "high": "Haut",
+      "to_qualify": "À qualifier",
+      "limited": "Limité",
+      "minimal": "Minimal"
+    },
+    "data": {
+      "0": "Faible",
+      "1": "Modéré",
+      "2": "Élevé",
+      "3": "Critique"
+    }
+  },
+  "validation": {
+    "to_review": "À valider",
+    "validated": "Validé",
+    "to_revise": "À revoir"
+  },
+  "action_status": {
+    "todo": "À faire",
+    "in_progress": "En cours",
+    "done": "Fait",
+    "rejected": "Rejeté"
+  },
+  "priority": {
+    "high": "Haute",
+    "medium": "Moyenne",
+    "low": "Basse"
+  },
+  "disclaimer": "Classification indicative, à confirmer — ceci n'est pas un avis juridique."
+}

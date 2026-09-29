@@ -1,0 +1,12 @@
+# Secrets et données de campagne : ne jamais committer
+*.recensia-key
+*.rcn
+recensia-sauvegarde-*.json
+.env
+.env.*
+
+# Divers
+node_modules/
+.DS_Store
+*.log
+/tmp/
