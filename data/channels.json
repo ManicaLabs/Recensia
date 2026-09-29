@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "max_channels": 3,
+  "guaranteed": ["copy", "mailto", "share"],
+  "sender_labels": {
+    "yes": "Identifie l'expéditeur",
+    "depends": "Anonymat selon le canal de dépôt",
+    "no": "N'identifie pas l'expéditeur"
+  },
+  "types": {
+    "mailto": {
+      "label": "E-mail",
+      "button_label": "Envoyer par e-mail",
+      "identifies_sender": "yes",
+      "via": "par e-mail",
+      "target": "email",
+      "target_required": true,
+      "target_max": 254,
+      "target_label": "Adresse de réception des codes",
+      "target_placeholder": "ia@exemple.fr",
+      "help": "Le répondant ouvre un e-mail prérempli (un message par code si nécessaire). C'est le plus simple, mais l'adresse de l'expéditeur est visible : en mode anonyme, l'envoi n'est pas anonyme."
+    },
+    "copy": {
+      "label": "Copier-coller",
+      "button_label": "Copier le code",
+      "identifies_sender": "depends",
+      "via": "par copier-coller",
+      "target": "instruction",
+      "target_required": false,
+      "target_max": 200,
+      "target_label": "Où coller le code (facultatif)",
+      "target_placeholder": "Collez votre code dans le formulaire anonyme « Boîte à idées IA »",
+      "help": "Le répondant copie son code et le colle à l'endroit que vous indiquez : boîte partagée, formulaire anonyme, fil de discussion. L'anonymat dépend de ce canal."
+    },
+    "file": {
+      "label": "Fichier .rcn",
+      "button_label": "Télécharger le fichier .rcn",
+      "identifies_sender": "depends",
+      "via": "par fichier",
+      "target": "instruction",
+      "target_required": false,
+      "target_max": 200,
+      "target_label": "Où déposer le fichier (facultatif)",
+      "target_placeholder": "Déposez le fichier dans le dossier partagé « Recensement IA »",
+      "help": "Pratique pour transmettre plusieurs usages d'un coup. L'anonymat dépend du canal de dépôt (dossier partagé, messagerie, clé USB…)."
+    },
+    "share": {
+      "label": "Partage de l'appareil",
+      "button_label": "Partager",
+      "identifies_sender": "depends",
+      "via": "par le bouton Partager",
+      "target": null,
+      "target_required": false,
+      "runtime_detection": "web_share",
+      "help": "Ouvre le menu de partage de l'appareil, s'il est disponible (détecté à l'exécution). L'anonymat dépend de l'application choisie par le répondant."
+    },
+    "teams": {
+      "label": "Microsoft Teams",
+      "button_label": "Envoyer par Teams",
+      "identifies_sender": "yes",
+      "via": "par Teams",
+      "target": null,
+      "target_required": false,
+      "service": "teams",
+      "help": "Ouvre la fenêtre de partage de Teams avec le lien d'import prérempli. Le compte de l'expéditeur est visible."
+    },
+    "whatsapp": {
+      "label": "WhatsApp",
+      "button_label": "Envoyer par WhatsApp",
+      "identifies_sender": "yes",
+      "via": "par WhatsApp",
+      "target": "phone",
+      "target_required": false,
+      "target_max": 20,
+      "target_label": "Numéro WhatsApp de réception (facultatif, format international)",
+      "target_placeholder": "+33 6 12 34 56 78",
+      "service": "whatsapp",
+      "help": "Ouvre WhatsApp avec le message prérempli. Le numéro de l'expéditeur est visible."
+    }
+  },
+  "warnings": {
+    "anonymous": {
+      "yes": "Votre réponse est anonyme, mais l'envoi {via} ne l'est pas : le destinataire verra qui l'envoie.",
+      "depends": "Votre réponse est anonyme ; l'anonymat de l'envoi, lui, dépend du canal de dépôt : dans un fil de discussion ou une boîte de réception nominative, on voit qui dépose le code.",
+      "no": null
+    },
+    "open": {
+      "yes": "Réponse nominative : vos prénom et nom (et votre e-mail, si vous l'indiquez) figurent dans le code, chiffré et lisible uniquement par le responsable de la campagne.",
+      "depends": "Réponse nominative : vos prénom et nom (et votre e-mail, si vous l'indiquez) figurent dans le code, chiffré et lisible uniquement par le responsable de la campagne.",
+      "no": "Réponse nominative : vos prénom et nom (et votre e-mail, si vous l'indiquez) figurent dans le code, chiffré et lisible uniquement par le responsable de la campagne."
+    }
+  },
+  "services": {
+    "whatsapp": {
+      "label": "WhatsApp",
+      "url_template": "https://wa.me/?text={text}",
+      "url_template_with_phone": "https://wa.me/{phone}?text={text}",
+      "last_checked": "2026-09-29",
+      "to_verify_each_release": true
+    },
+    "teams": {
+      "label": "Microsoft Teams (partage)",
+      "url_template": "https://teams.microsoft.com/share?href={href}&msgText={text}",
+      "last_checked": "2026-09-29",
+      "to_verify_each_release": true
+    },
+    "gmail": {
+      "label": "Gmail (composition web)",
+      "url_template": "https://mail.google.com/mail/?view=cm&fs=1&to={to}&su={subject}&body={body}",
+      "last_checked": "2026-09-29",
+      "to_verify_each_release": true
+    },
+    "outlook_web": {
+      "label": "Outlook sur le web (composition)",
+      "url_template": "https://outlook.office.com/mail/deeplink/compose?to={to}&subject={subject}&body={body}",
+      "last_checked": "2026-09-29",
+      "to_verify_each_release": true
+    }
+  },
+  "notes": [
+    "Slack n'a pas d'URL de partage : utiliser « Copier ».",
+    "Le socle garanti est « Copier », mailto et « Partager » (Web Share, détecté à l'exécution) ; Teams, WhatsApp et les webmails ne sont que des raccourcis.",
+    "Les URL de partage des services tiers changent sans préavis : les vérifier à chaque version (champ last_checked).",
+    "Les boutons de service ouvrent une URL par navigation déclenchée par l'utilisateur : l'application n'émet aucune requête.",
+    "Ne jamais utiliser de raccourcisseur de liens : il exigerait un serveur et exposerait le lien."
+  ]
+}

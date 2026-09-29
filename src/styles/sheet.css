@@ -1,0 +1,309 @@
+/* Fiche d'invitation imprimable (src/share/sheet.js).
+   Écran : aperçu fidèle d'une page A4 (unités relatives à la largeur de la fiche).
+   Impression : une seule page A4 (page nommée « rc-sheet »).
+   Diapositive : variante 16:9 (.rc-sheet--slide), projetable en plein écran. */
+
+.rc-sheet {
+  --rc-sheet-ink: #111827;
+  --rc-sheet-muted: #4b5563;
+  --rc-sheet-rule: #d1d5db;
+  --rc-sheet-accent: #1f4e79;
+  --rc-sheet-note-bg: #f3f4f6;
+  container-type: inline-size;
+  width: 100%;
+  max-width: 210mm;
+  margin-inline: auto;
+}
+
+.rc-sheet__page {
+  --u: 3.2px; /* repli : 1 mm d'une fiche d'environ 670 px */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: calc(4 * var(--u));
+  width: 100%;
+  aspect-ratio: 210 / 297;
+  padding: calc(12 * var(--u));
+  overflow: hidden;
+  background: #ffffff;
+  color: var(--rc-sheet-ink);
+  font-family: inherit;
+  font-size: calc(3.9 * var(--u)); /* ≈ 11 pt */
+  line-height: 1.35;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.08);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+@supports (container-type: inline-size) {
+  .rc-sheet__page { --u: calc(100cqw / 210); }
+}
+
+.rc-sheet__page p,
+.rc-sheet__page h2,
+.rc-sheet__page h3,
+.rc-sheet__page ol,
+.rc-sheet__page ul {
+  margin: 0;
+}
+
+.rc-sheet__header {
+  text-align: center;
+}
+
+.rc-sheet__org {
+  color: var(--rc-sheet-muted);
+  font-size: calc(3.9 * var(--u));
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rc-sheet__title {
+  margin-top: calc(1.5 * var(--u));
+  color: var(--rc-sheet-accent);
+  font-size: calc(7.8 * var(--u)); /* ≈ 22 pt */
+  font-weight: 700;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.rc-sheet__lead {
+  margin-top: calc(2 * var(--u));
+  font-size: calc(4.2 * var(--u));
+}
+
+.rc-sheet__qr {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(70 * var(--u));
+}
+
+.rc-sheet__qr-svg {
+  display: block;
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  max-height: calc(118 * var(--u));
+  aspect-ratio: 1 / 1;
+}
+
+.rc-sheet__body {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: calc(4 * var(--u)) calc(7 * var(--u));
+}
+
+.rc-sheet__heading {
+  margin-bottom: calc(1.5 * var(--u));
+  color: var(--rc-sheet-accent);
+  font-size: calc(4.4 * var(--u));
+  font-weight: 700;
+}
+
+.rc-sheet__list,
+.rc-sheet__channels {
+  padding-left: calc(5.5 * var(--u));
+}
+
+.rc-sheet__list li + li,
+.rc-sheet__channels li + li {
+  margin-top: calc(1.2 * var(--u));
+}
+
+.rc-sheet__channels li {
+  overflow-wrap: anywhere;
+}
+
+.rc-sheet__closes {
+  margin-top: calc(2 * var(--u));
+  font-weight: 600;
+}
+
+.rc-sheet__anonymity {
+  grid-column: 1 / -1;
+  padding: calc(2.5 * var(--u)) calc(3.5 * var(--u));
+  border-left: calc(1.2 * var(--u)) solid var(--rc-sheet-accent);
+  background: var(--rc-sheet-note-bg);
+  font-weight: 600;
+}
+
+.rc-sheet__footer {
+  padding-top: calc(3 * var(--u));
+  border-top: calc(0.3 * var(--u)) solid var(--rc-sheet-rule);
+  color: var(--rc-sheet-muted);
+}
+
+.rc-sheet__fingerprint {
+  color: var(--rc-sheet-ink);
+  font-size: calc(4.2 * var(--u));
+}
+
+.rc-sheet__fp {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: calc(4.8 * var(--u));
+  letter-spacing: 0.08em;
+}
+
+.rc-sheet__fp-help {
+  font-size: calc(3.2 * var(--u));
+}
+
+.rc-sheet__link {
+  margin-top: calc(2 * var(--u));
+  font-size: calc(2.1 * var(--u)); /* ≈ 6 pt */
+  line-height: 1.25;
+}
+
+.rc-sheet__link-title {
+  font-weight: 600;
+}
+
+.rc-sheet__url {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  word-break: break-all;
+}
+
+/* Diapositive 16:9 : QR à gauche, consignes à droite. */
+.rc-sheet--slide {
+  max-width: none;
+}
+
+.rc-sheet--slide .rc-sheet__page {
+  display: grid;
+  grid-template-areas:
+    "qr header"
+    "qr body"
+    "qr footer";
+  grid-template-columns: calc(132 * var(--u)) minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  align-content: center;
+  align-content: safe center; /* en cas de débordement, ne jamais rogner le haut */
+  gap: calc(3.5 * var(--u)) calc(10 * var(--u));
+  aspect-ratio: 16 / 9;
+  padding: calc(10 * var(--u));
+  font-size: calc(4 * var(--u));
+}
+
+@supports (container-type: inline-size) {
+  .rc-sheet--slide .rc-sheet__page { --u: calc(100cqw / 297); }
+}
+
+.rc-sheet--slide .rc-sheet__header { grid-area: header; text-align: left; }
+.rc-sheet--slide .rc-sheet__title { font-size: calc(7 * var(--u)); }
+.rc-sheet--slide .rc-sheet__body { grid-area: body; grid-template-columns: 1fr; align-content: start; }
+.rc-sheet--slide .rc-sheet__footer { grid-area: footer; }
+.rc-sheet--slide .rc-sheet__link { display: none; }
+
+.rc-sheet--slide .rc-sheet__qr {
+  grid-area: qr;
+  align-self: center;
+  min-height: 0;
+}
+
+.rc-sheet--slide .rc-sheet__qr-svg {
+  width: 100%;
+  height: auto;
+  max-height: none;
+}
+
+/* Textes longs (titre, organisation, consignes de canal) : sheet.js pose rc-sheet--dense,
+   puis rc-sheet--compact, pour que tout tienne sans rogner l'empreinte ni le lien. */
+.rc-sheet--dense .rc-sheet__page {
+  gap: calc(3 * var(--u));
+  font-size: calc(3.5 * var(--u));
+}
+
+.rc-sheet--dense .rc-sheet__title { font-size: calc(6.8 * var(--u)); }
+.rc-sheet--dense .rc-sheet__heading { font-size: calc(4 * var(--u)); }
+.rc-sheet--dense .rc-sheet__lead,
+.rc-sheet--dense .rc-sheet__fingerprint { font-size: calc(3.8 * var(--u)); }
+.rc-sheet--dense.rc-sheet--slide .rc-sheet__page { grid-template-columns: calc(118 * var(--u)) minmax(0, 1fr); }
+
+.rc-sheet--compact .rc-sheet__page {
+  font-size: calc(3.1 * var(--u));
+  line-height: 1.3;
+}
+
+.rc-sheet--compact .rc-sheet__org { font-size: calc(3.3 * var(--u)); }
+.rc-sheet--compact .rc-sheet__title { font-size: calc(6 * var(--u)); }
+.rc-sheet--compact .rc-sheet__lead { font-size: calc(3.5 * var(--u)); }
+.rc-sheet--compact.rc-sheet--slide .rc-sheet__page { grid-template-columns: calc(106 * var(--u)) minmax(0, 1fr); }
+
+/* Plein écran (projection) : la diapositive occupe la plus grande surface possible. */
+.rc-sheet:fullscreen {
+  container-type: size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: none;
+  background: #ffffff;
+}
+
+.rc-sheet--slide:fullscreen .rc-sheet__page {
+  --u: min(calc(100cqw / 297), calc(100cqh / 167));
+  width: calc(297 * var(--u));
+  border-radius: 0;
+  box-shadow: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .rc-sheet__page { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18), 0 8px 24px rgba(0, 0, 0, 0.4); }
+}
+
+/* Conteneur d'impression créé par printSheet() : invisible à l'écran. */
+.rc-print-root { display: none; }
+
+@page rc-sheet {
+  size: A4 portrait;
+  margin: 12mm;
+}
+
+@page rc-sheet-slide {
+  size: A4 landscape;
+  margin: 10mm;
+}
+
+@media print {
+  html.rc-print-sheet,
+  html.rc-print-sheet body {
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+  html.rc-print-sheet body > :not(.rc-print-root) { display: none !important; }
+  html.rc-print-sheet .rc-print-root { display: block; }
+
+  .rc-sheet {
+    container-type: normal;
+    max-width: none;
+    margin: 0;
+    page: rc-sheet;
+    break-before: auto;
+    break-inside: avoid;
+  }
+
+  .rc-sheet__page {
+    --u: 1mm;
+    width: 100%;
+    height: 262mm; /* une page, y compris avec les marges par défaut du navigateur */
+    aspect-ratio: auto;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+
+  .rc-sheet--slide { page: rc-sheet-slide; }
+
+  .rc-sheet--slide .rc-sheet__page {
+    --u: 0.93mm;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+}

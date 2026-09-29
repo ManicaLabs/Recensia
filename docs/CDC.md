@@ -459,9 +459,20 @@ Décisions prises pendant l'implémentation, là où le CDC était ambigu. Toute
 
 ## 5bis. État d'avancement (à tenir à jour)
 
-- ✅ Rien de livré (CDC initial).
-- 🚧 Phase 0 : à démarrer.
-- ⚠️ Points d'attention : dates réglementaires à confirmer sur EUR-Lex ; contenu exact des nouvelles interdictions du 2 décembre 2026 à vérifier ; nom du projet à valider (disponibilité GitHub / domaine / INPI non vérifiée) ; architecture sans serveur (v1.1) : à valider par un test réel de bout en bout du canal de retour.
+- ✅ **v0.1 — socle (phase 0)** : shell PWA, service worker et précache versionné, manifest et icônes, page de confidentialité, GoatCounter à liste blanche, CSP, `tools/check.mjs`, CI (Node 20 et 22).
+- ✅ **v0.2 — moteur de règles** : `data/rules.json`, questionnaire, actions, calendrier vérifié le 29/09/2026, démo ; 57 fixtures (dont l'annexe A).
+- ✅ **v0.3 — chiffrement** : codes RCN1, lien de collecte, fichier de récupération, sauvegarde chiffrée ; vecteurs figés.
+- ✅ **v0.4 — stockage et exports** : IndexedDB avec repli mémoire, registre (§8.2), CSV, XLSX, JSON.
+- ✅ **v0.5 — partage** : canaux, messages générés, liens `mailto` et services tiers, QR, fiche imprimable.
+- 🚧 **Phases 1 et 2, vues** : création de campagne, page Diffuser, formulaire répondant, console (tableau de bord, registre, actions, import, saisie, rapport, paramètres), liens d'import, démo.
+- ⚠️ **Points d'attention**
+  - Le code GoatCounter est vide : aucune mesure en production tant qu'il n'est pas fourni.
+  - Page de confidentialité à faire valider : éditeur, contact, exemption de consentement.
+  - Règles et actions à faire relire par un juriste (`reviewed: false`).
+  - Calendrier vérifié automatiquement sur le JO : à confirmer par un juriste.
+  - Test manuel des liens dans Outlook, Gmail, Teams, WhatsApp et Slack : à faire.
+  - Empreinte de 32 bits (voir §17).
+  - Nom du projet à valider.
 
 ---
 
