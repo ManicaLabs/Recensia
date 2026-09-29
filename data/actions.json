@@ -1,0 +1,183 @@
+{
+  "version": "2026-09-29.1",
+  "reviewed": false,
+  "note": "Point de départ à relire par un juriste. Les actions sont suggérées : aucun responsable n'est affecté automatiquement.",
+  "templates": [
+    {
+      "id": "ACT-POL-01",
+      "title": "Rédiger une charte d'usage de l'IA (outils autorisés, données interdites)",
+      "description": "Formaliser en une ou deux pages les outils autorisés, les types de comptes à utiliser, les données à ne jamais envoyer (identifiants, données sensibles, secrets d'affaires) et la relecture attendue avant tout envoi externe. La diffuser et la présenter aux équipes.",
+      "rule_ids": ["R-GOV-01"],
+      "default_priority": "high",
+      "effort": "M",
+      "suggested_role": "Direction",
+      "horizon": "3 mois",
+      "scope": "campaign"
+    },
+    {
+      "id": "ACT-LIT-01",
+      "title": "Former / sensibiliser les équipes (littératie IA, art. 4)",
+      "description": "Organiser une sensibilisation adaptée aux usages recensés : fonctionnement et limites de l'IA, bonnes pratiques de confidentialité, relecture des résultats. Garder une trace des sessions (dates, participants, contenu).",
+      "rule_ids": ["R-AIA-LIT"],
+      "default_priority": "high",
+      "effort": "M",
+      "suggested_role": "Direction",
+      "horizon": "3 mois",
+      "scope": "campaign"
+    },
+    {
+      "id": "ACT-SHADOW-01",
+      "title": "Basculer les comptes personnels vers un compte pro ou un outil validé",
+      "description": "Proposer aux personnes qui utilisent un compte personnel une solution validée par l'entreprise (compte professionnel avec engagement contractuel, outil interne), puis les accompagner dans la bascule, sans reproche.",
+      "rule_ids": ["R-DAT-SHADOW"],
+      "default_priority": "high",
+      "effort": "M",
+      "suggested_role": "DSI",
+      "horizon": "1 mois",
+      "scope": "usage"
+    },
+    {
+      "id": "ACT-DPA-01",
+      "title": "Vérifier contrat / DPA, localisation des données, désactivation de l'entraînement",
+      "description": "Contrôler les conditions de l'outil : accord de sous-traitance (DPA), pays d'hébergement et transferts hors de l'Union européenne, durée de conservation, désactivation de l'utilisation des données pour l'entraînement des modèles.",
+      "rule_ids": ["R-DAT-PERSONAL", "R-DAT-CONFIDENTIAL"],
+      "default_priority": "medium",
+      "effort": "M",
+      "suggested_role": "DPO/juriste",
+      "horizon": "3 mois",
+      "scope": "usage"
+    },
+    {
+      "id": "ACT-DPIA-01",
+      "title": "Évaluer la nécessité d'une analyse d'impact (AIPD)",
+      "description": "Vérifier avec le DPO ou un conseil si le traitement nécessite une analyse d'impact relative à la protection des données (données sensibles, évaluation de personnes, décision automatisée) et la réaliser le cas échéant.",
+      "rule_ids": ["R-DAT-SENSITIVE", "R-AIA-HI-CRE", "R-AIA-HI-EDU", "R-AIA-HI-BIO"],
+      "default_priority": "high",
+      "effort": "L",
+      "suggested_role": "DPO/juriste",
+      "horizon": "3 mois",
+      "scope": "usage"
+    },
+    {
+      "id": "ACT-SEC-01",
+      "title": "Retirer identifiants et secrets des prompts ; les renouveler si exposés",
+      "description": "Renouveler sans attendre les mots de passe, clés d'accès ou jetons envoyés à l'outil, supprimer les conversations concernées lorsque c'est possible, et rappeler la règle : aucun identifiant dans un prompt.",
+      "rule_ids": ["R-DAT-CREDENTIALS"],
+      "default_priority": "high",
+      "effort": "S",
+      "suggested_role": "DSI",
+      "horizon": "Immédiat",
+      "scope": "usage"
+    },
+    {
+      "id": "ACT-REV-01",
+      "title": "Imposer une relecture humaine avant tout envoi externe",
+      "description": "Prévoir qu'une personne relise et valide tout contenu produit par l'IA avant son envoi à un client ou sa publication.",
+      "rule_ids": ["R-DAT-NO-REVIEW"],
+      "default_priority": "medium",
+      "effort": "S",
+      "suggested_role": "Métier",
+      "horizon": "1 mois",
+      "scope": "usage"
+    },
+    {
+      "id": "ACT-TRANS-01",
+      "title": "Informer l'utilisateur qu'il interagit avec une IA",
+      "description": "Indiquer clairement, dès le début de l'échange, que la personne dialogue avec un système d'IA : mention dans la fenêtre du chatbot, message d'accueil de l'agent vocal.",
+      "rule_ids": ["R-AIA-LIM-01"],
+      "default_priority": "high",
+      "effort": "S",
+      "suggested_role": "Métier",
+      "horizon": "1 mois",
+      "scope": "usage"
+    },
+    {
+      "id": "ACT-TRANS-02",
+      "title": "Mentionner / marquer les contenus générés publiés",
+      "description": "Signaler les images, sons, vidéos ou textes générés par l'IA et diffusés à l'extérieur : mention visible, métadonnées ou filigrane proposés par l'outil.",
+      "rule_ids": ["R-AIA-LIM-02"],
+      "default_priority": "medium",
+      "effort": "S",
+      "suggested_role": "Métier",
+      "horizon": "3 mois",
+      "scope": "usage"
+    },
+    {
+      "id": "ACT-HR-01",
+      "title": "Supervision humaine documentée + information des candidats/salariés + consultation du CSE",
+      "description": "Désigner les personnes chargées de la supervision humaine et documenter leur rôle, informer les candidats ou salariés concernés de l'usage de l'IA, et consulter le CSE avant la mise en place ou la poursuite de l'usage.",
+      "rule_ids": ["R-AIA-HI-EMP"],
+      "default_priority": "high",
+      "effort": "L",
+      "suggested_role": "RH",
+      "horizon": "6 mois",
+      "scope": "usage"
+    },
+    {
+      "id": "ACT-HR-02",
+      "title": "Tester les biais et la qualité des données sur les outils RH",
+      "description": "Vérifier sur un échantillon que l'outil ne défavorise pas certains profils et que les données d'entrée sont pertinentes et à jour ; consigner la méthode et les résultats.",
+      "rule_ids": ["R-AIA-HI-EMP"],
+      "default_priority": "medium",
+      "effort": "M",
+      "suggested_role": "RH",
+      "horizon": "6 mois",
+      "scope": "usage"
+    },
+    {
+      "id": "ACT-HR-03",
+      "title": "Contrôler les obligations contractuelles du fournisseur (notice, journalisation)",
+      "description": "Obtenir du fournisseur la notice d'utilisation, les informations sur la conformité du système et les modalités de journalisation ; vérifier que le contrat les prévoit. S'applique aux outils RH comme aux autres systèmes à haut risque.",
+      "rule_ids": ["R-AIA-HI-EMP", "R-AIA-HI-CRE", "R-AIA-HI-EDU", "R-AIA-HI-BIO"],
+      "default_priority": "medium",
+      "effort": "M",
+      "suggested_role": "DPO/juriste",
+      "horizon": "6 mois",
+      "scope": "usage"
+    },
+    {
+      "id": "ACT-LOG-01",
+      "title": "Conserver les journaux d'usage sur les systèmes à haut risque",
+      "description": "Conserver les journaux produits par le système pendant une durée adaptée (au moins six mois, sauf disposition contraire) et définir qui peut y accéder.",
+      "rule_ids": ["R-AIA-HI-EMP", "R-AIA-HI-CRE", "R-AIA-HI-EDU", "R-AIA-HI-BIO"],
+      "default_priority": "medium",
+      "effort": "M",
+      "suggested_role": "DSI",
+      "horizon": "6 mois",
+      "scope": "usage"
+    },
+    {
+      "id": "ACT-PRO-01",
+      "title": "Suspendre l'usage et le faire qualifier juridiquement (suspicion d'interdit)",
+      "description": "Suspendre l'usage, y compris en test, le temps d'une analyse juridique ; ne le reprendre qu'après un avis écrit confirmant qu'il ne relève pas d'une pratique interdite.",
+      "rule_ids": ["R-AIA-PRO-01", "R-AIA-PRO-02"],
+      "default_priority": "high",
+      "effort": "S",
+      "suggested_role": "Direction",
+      "horizon": "Immédiat",
+      "scope": "usage"
+    },
+    {
+      "id": "ACT-QUAL-01",
+      "title": "Lever les points « à qualifier » (questions listées)",
+      "description": "Revenir vers les personnes concernées ou vers le fournisseur pour répondre aux questions listées, puis mettre à jour la déclaration ou valider la classification.",
+      "rule_ids": ["R-AIA-HI-OTH", "R-AIA-Q-AFF", "R-AIA-Q-BIO", "R-AIA-PRV-01", "R-DAT-Q-ACCOUNT"],
+      "default_priority": "medium",
+      "effort": "S",
+      "suggested_role": "Métier",
+      "horizon": "1 mois",
+      "scope": "usage"
+    },
+    {
+      "id": "ACT-INV-01",
+      "title": "Réviser le registre chaque trimestre",
+      "description": "Mettre à jour le registre chaque trimestre, ou relancer un recensement : nouveaux usages, usages abandonnés, actions réalisées, classifications à revoir.",
+      "rule_ids": ["R-GOV-01"],
+      "default_priority": "low",
+      "effort": "S",
+      "suggested_role": "Direction",
+      "horizon": "Chaque trimestre",
+      "scope": "campaign"
+    }
+  ]
+}

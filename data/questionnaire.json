@@ -1,0 +1,302 @@
+{
+  "schema_version": 1,
+  "estimated_minutes": 3,
+  "sections": [
+    {
+      "id": "usage",
+      "title": "L'usage",
+      "intro": "Décrivez un usage de l'IA à la fois : un outil, pour une façon de travailler. Il n'y a pas de mauvaise réponse : l'objectif est d'avoir une vue d'ensemble pour mieux accompagner chacun.",
+      "fields": ["usage_name", "department", "tool", "tool_other", "model", "account_type", "status"]
+    },
+    {
+      "id": "tasks",
+      "title": "Ce que vous faites",
+      "intro": "À quoi vous sert l'outil, et à quel rythme.",
+      "fields": ["task_types", "business_domain", "frequency", "users_count"]
+    },
+    {
+      "id": "data",
+      "title": "Les données",
+      "intro": "Ce que vous transmettez à l'outil : textes collés, fichiers déposés, captures d'écran. Une réponse précise aide à savoir où se protéger ; personne n'est mis en cause.",
+      "fields": ["data_types"]
+    },
+    {
+      "id": "impact",
+      "title": "Le résultat et l'impact",
+      "intro": "Ce que devient le résultat produit par l'IA. Quand la réponse « Je ne sais pas » est proposée, n'hésitez pas à la choisir : le point sera vérifié plus tard.",
+      "fields": ["output_audience", "output_review", "affects_people", "direct_interaction", "biometric_emotion", "built_or_customized"]
+    },
+    {
+      "id": "comment",
+      "title": "Commentaire",
+      "intro": "Facultatif : une remarque, une difficulté, une idée.",
+      "fields": ["comment"]
+    }
+  ],
+  "fields": {
+    "usage_name": {
+      "type": "text",
+      "label": "Nom court de l'usage",
+      "help": "En quelques mots, ce que vous faites avec l'IA.",
+      "placeholder": "Ex. : reformuler mes e-mails aux clients",
+      "max": 80,
+      "required": true,
+      "suggestions": [
+        "Reformuler des e-mails",
+        "Résumer des documents",
+        "Traduire des textes",
+        "Préparer des devis",
+        "Rédiger des publications",
+        "Transcrire des réunions",
+        "Aide à l'écriture de code",
+        "Créer des visuels"
+      ]
+    },
+    "department": {
+      "type": "department",
+      "label": "Votre service",
+      "help": "Choisissez votre service dans la liste.",
+      "placeholder": "Choisissez un service",
+      "required": "campaign"
+    },
+    "tool": {
+      "type": "select",
+      "label": "Outil ou service d'IA",
+      "help": "L'outil que vous utilisez pour cet usage. S'il n'est pas dans la liste, choisissez « Autre ».",
+      "placeholder": "Choisissez un outil",
+      "required": true,
+      "options": [
+        { "value": "chatgpt", "label": "ChatGPT" },
+        { "value": "claude", "label": "Claude" },
+        { "value": "gemini", "label": "Gemini" },
+        { "value": "microsoft_copilot", "label": "Microsoft Copilot" },
+        { "value": "github_copilot", "label": "GitHub Copilot" },
+        { "value": "mistral_le_chat", "label": "Mistral Le Chat" },
+        { "value": "perplexity", "label": "Perplexity" },
+        { "value": "deepl", "label": "DeepL" },
+        { "value": "midjourney", "label": "Midjourney" },
+        { "value": "notion_ai", "label": "Notion AI" },
+        { "value": "embedded_software_ai", "label": "IA intégrée à un logiciel", "help": "Fonction d'IA incluse dans un logiciel métier : recrutement, CRM, comptabilité, messagerie…" },
+        { "value": "internal_system", "label": "Système interne de l'entreprise", "help": "Outil développé ou hébergé par l'entreprise." },
+        { "value": "other", "label": "Autre" }
+      ]
+    },
+    "tool_other": {
+      "type": "text",
+      "label": "Précisez l'outil",
+      "help": "Le nom de l'outil ou, à défaut, ce qu'il fait.",
+      "placeholder": "Ex. : outil de transcription de réunions",
+      "max": 80,
+      "required": false,
+      "show_if": { "field": "tool", "eq": "other" },
+      "required_if": { "field": "tool", "eq": "other" }
+    },
+    "model": {
+      "type": "text",
+      "label": "Modèle utilisé, si vous le connaissez",
+      "help": "Facultatif. Laissez vide si vous ne savez pas : ce n'est pas grave.",
+      "placeholder": "Ex. : modèle par défaut de l'outil",
+      "max": 80,
+      "required": false,
+      "suggestions": ["Modèle par défaut de l'outil"],
+      "suggestions_by": {
+        "field": "tool",
+        "values": {
+          "chatgpt": ["GPT (modèle par défaut)", "GPT (modèle de raisonnement)"],
+          "claude": ["Claude Sonnet", "Claude Opus", "Claude Haiku"],
+          "gemini": ["Gemini Flash", "Gemini Pro"],
+          "microsoft_copilot": ["Copilot (modèle par défaut)"],
+          "github_copilot": ["Copilot (modèle par défaut)"],
+          "mistral_le_chat": ["Mistral (modèle par défaut)"],
+          "perplexity": ["Perplexity (modèle par défaut)"],
+          "deepl": ["DeepL (traduction)"],
+          "midjourney": ["Midjourney (version par défaut)"],
+          "notion_ai": ["Notion AI (modèle par défaut)"]
+        }
+      }
+    },
+    "account_type": {
+      "type": "radio",
+      "label": "Avec quel type de compte ?",
+      "help": "Un compte personnel est un compte que vous avez créé vous-même, gratuit ou payé de votre poche.",
+      "required": true,
+      "options": [
+        { "value": "enterprise_provided", "label": "Compte fourni par l'entreprise" },
+        { "value": "personal_paid", "label": "Compte personnel payant" },
+        { "value": "personal_free", "label": "Compte personnel gratuit" },
+        { "value": "api_integration", "label": "Accès technique par API", "help": "L'outil est branché à un logiciel de l'entreprise, sans compte individuel." },
+        { "value": "internal_system", "label": "Système interne de l'entreprise" },
+        { "value": "unknown", "label": "Je ne sais pas" }
+      ]
+    },
+    "status": {
+      "type": "radio",
+      "label": "Où en est cet usage ?",
+      "required": true,
+      "options": [
+        { "value": "in_use", "label": "En usage" },
+        { "value": "pilot", "label": "En test" },
+        { "value": "planned", "label": "Envisagé" }
+      ]
+    },
+    "task_types": {
+      "type": "multi",
+      "label": "Pour quoi faire ?",
+      "help": "Cochez tout ce qui s'applique.",
+      "min": 1,
+      "required": true,
+      "options": [
+        { "value": "redaction", "label": "Rédaction ou reformulation" },
+        { "value": "resume", "label": "Résumé" },
+        { "value": "traduction", "label": "Traduction" },
+        { "value": "code", "label": "Code informatique" },
+        { "value": "analyse_donnees", "label": "Analyse de données" },
+        { "value": "recherche_information", "label": "Recherche d'information" },
+        { "value": "generation_media", "label": "Création d'images, d'audio ou de vidéo" },
+        { "value": "transcription", "label": "Transcription (audio vers texte)" },
+        { "value": "chatbot_externe", "label": "Chatbot ou assistant pour des personnes extérieures", "help": "Par exemple un chatbot sur le site de l'entreprise." },
+        { "value": "evaluation_tri_personnes", "label": "Évaluation ou tri de personnes", "help": "Tri de CV, évaluation de salariés, notation de clients particuliers…" },
+        { "value": "aide_decision", "label": "Aide à la décision" },
+        { "value": "agent_automatisation", "label": "Agent ou automatisation", "help": "L'IA enchaîne des actions : envoi de messages, mise à jour de fichiers…" },
+        { "value": "autre", "label": "Autre" }
+      ]
+    },
+    "business_domain": {
+      "type": "select",
+      "label": "Dans quel domaine ?",
+      "help": "Le domaine concerné par l'usage, qui n'est pas forcément votre service.",
+      "placeholder": "Choisissez un domaine",
+      "required": true,
+      "options": [
+        { "value": "rh", "label": "Ressources humaines, recrutement" },
+        { "value": "finance_credit", "label": "Finance, crédit, assurance" },
+        { "value": "service_client", "label": "Service client" },
+        { "value": "marketing_com", "label": "Marketing, communication" },
+        { "value": "juridique", "label": "Juridique" },
+        { "value": "it_dev", "label": "Informatique, développement" },
+        { "value": "production", "label": "Production, logistique" },
+        { "value": "formation", "label": "Formation, enseignement" },
+        { "value": "sante", "label": "Santé" },
+        { "value": "direction", "label": "Direction, pilotage" },
+        { "value": "commercial_devis", "label": "Commercial, devis" },
+        { "value": "autre", "label": "Autre" }
+      ]
+    },
+    "frequency": {
+      "type": "radio",
+      "label": "À quelle fréquence ?",
+      "required": true,
+      "options": [
+        { "value": "daily", "label": "Tous les jours" },
+        { "value": "weekly", "label": "Chaque semaine" },
+        { "value": "monthly", "label": "Chaque mois" },
+        { "value": "occasional", "label": "De temps en temps" }
+      ]
+    },
+    "users_count": {
+      "type": "radio",
+      "label": "Combien de personnes font la même chose, vous compris ?",
+      "help": "Facultatif. Une estimation suffit.",
+      "required": false,
+      "options": [
+        { "value": "1", "label": "Moi seulement" },
+        { "value": "2-5", "label": "2 à 5 personnes" },
+        { "value": "6-15", "label": "6 à 15 personnes" },
+        { "value": ">15", "label": "Plus de 15 personnes" }
+      ]
+    },
+    "data_types": {
+      "type": "multi",
+      "label": "Quelles données envoyez-vous à l'outil ?",
+      "help": "Cochez tout ce qui s'applique, même occasionnellement.",
+      "min": 1,
+      "required": true,
+      "exclusive": ["aucune"],
+      "options": [
+        { "value": "aucune", "label": "Aucune donnée de l'entreprise", "help": "Textes généraux, idées, questions sans information sur l'entreprise ni sur des personnes." },
+        { "value": "docs_internes", "label": "Documents internes non confidentiels", "help": "Notes, procédures, comptes rendus sans information sensible." },
+        { "value": "donnees_clients", "label": "Données de clients", "help": "Noms, coordonnées, échanges, commandes." },
+        { "value": "donnees_collaborateurs", "label": "Données de collègues ou de salariés" },
+        { "value": "donnees_candidats", "label": "Données de candidats", "help": "CV, lettres, comptes rendus d'entretien." },
+        { "value": "donnees_sensibles", "label": "Données sensibles", "help": "Santé, opinions politiques ou religieuses, origine, vie syndicale, orientation sexuelle…" },
+        { "value": "secrets_affaires", "label": "Informations confidentielles", "help": "Contrats, prix, marges, stratégie, projets non publics." },
+        { "value": "code_source", "label": "Code source" },
+        { "value": "donnees_financieres", "label": "Données financières", "help": "Comptes, factures, paie, situation bancaire." },
+        { "value": "identifiants", "label": "Mots de passe, clés d'accès ou identifiants", "help": "Si c'est arrivé, pensez à les faire changer : c'est rapide et cela limite le risque." }
+      ]
+    },
+    "output_audience": {
+      "type": "radio",
+      "label": "À qui est destiné le résultat ?",
+      "required": true,
+      "options": [
+        { "value": "internal_only", "label": "Il reste en interne" },
+        { "value": "external_clients", "label": "Il est envoyé à des clients ou partenaires" },
+        { "value": "public", "label": "Il est publié", "help": "Site web, réseaux sociaux, presse, affichage." },
+        { "value": "not_applicable", "label": "Sans objet", "help": "Par exemple une aide pour votre propre travail, sans document diffusé." }
+      ]
+    },
+    "output_review": {
+      "type": "radio",
+      "label": "Le résultat est-il relu par une personne avant d'être utilisé ?",
+      "required": true,
+      "options": [
+        { "value": "systematic", "label": "Toujours" },
+        { "value": "partial", "label": "Parfois" },
+        { "value": "none", "label": "Jamais" }
+      ]
+    },
+    "affects_people": {
+      "type": "radio",
+      "label": "L'usage sert-il à décider, évaluer ou trier des personnes ?",
+      "help": "Il s'agit de personnes physiques (salariés, candidats, clients particuliers), pas des entreprises. Exemples : tri de CV, évaluation d'un salarié, accord d'un crédit à un particulier. Noter la solvabilité d'une entreprise cliente, c'est « Non ».",
+      "required": true,
+      "options": [
+        { "value": "yes_decision", "label": "Oui, l'outil décide, note ou classe les personnes" },
+        { "value": "yes_input", "label": "Oui, il aide une personne à décider" },
+        { "value": "no", "label": "Non" },
+        { "value": "unknown", "label": "Je ne sais pas" }
+      ]
+    },
+    "direct_interaction": {
+      "type": "radio",
+      "label": "L'outil échange-t-il directement avec d'autres personnes ?",
+      "help": "Par exemple un chatbot sur le site, un assistant qui répond aux candidats ou un agent vocal. Votre propre utilisation d'un assistant ne compte pas.",
+      "required": true,
+      "options": [
+        { "value": "yes", "label": "Oui" },
+        { "value": "no", "label": "Non" }
+      ]
+    },
+    "biometric_emotion": {
+      "type": "radio",
+      "label": "L'outil analyse-t-il des visages, des voix ou des émotions ?",
+      "help": "Reconnaissance faciale ou vocale, détection d'émotions, d'attention ou de stress, classement de personnes d'après leur apparence. Une simple transcription de réunion ne compte pas.",
+      "required": true,
+      "options": [
+        { "value": "yes", "label": "Oui" },
+        { "value": "no", "label": "Non" },
+        { "value": "unknown", "label": "Je ne sais pas" }
+      ]
+    },
+    "built_or_customized": {
+      "type": "radio",
+      "label": "L'outil a-t-il été configuré ou développé par l'entreprise ?",
+      "required": true,
+      "options": [
+        { "value": "use_as_is", "label": "Non, utilisé tel quel" },
+        { "value": "configured_prompt", "label": "Configuré", "help": "Instructions permanentes, documents de référence, assistant personnalisé." },
+        { "value": "built_own", "label": "Développé par l'entreprise, sous son nom", "help": "L'entreprise a construit l'outil, même à partir d'un modèle existant, et le propose sous son propre nom, en interne ou à ses clients." }
+      ]
+    },
+    "comment": {
+      "type": "textarea",
+      "label": "Un commentaire ?",
+      "help": "Facultatif : ce qui fonctionne bien, une difficulté, une question.",
+      "placeholder": "Ex. : très utile, mais je ne sais pas si c'est autorisé",
+      "max": 500,
+      "required": false,
+      "warning": "N'y mettez aucune donnée personnelle (nom, e-mail, situation d'une personne…)."
+    }
+  }
+}

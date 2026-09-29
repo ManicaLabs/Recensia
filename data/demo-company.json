@@ -1,0 +1,1042 @@
+{
+  "note": "Jeu de démonstration entièrement fictif (CDC, annexe A) : aucune personne ni entreprise réelle.",
+  "company": {
+    "name": "Menuiserie Alpine Concept",
+    "sector": "Négoce et fabrication de menuiseries",
+    "headcount": 40,
+    "departments_headcount": {
+      "Direction": 2,
+      "Commercial et devis": 8,
+      "Production": 18,
+      "RH et administratif": 4,
+      "Comptabilité": 3,
+      "Service client": 3,
+      "Marketing": 2
+    }
+  },
+  "campaign": {
+    "id": "demo",
+    "title": "Recensement des usages de l'IA 2026",
+    "org_name": "Menuiserie Alpine Concept",
+    "mode": "anonymous",
+    "departments": [
+      "Direction",
+      "Commercial et devis",
+      "Production",
+      "RH et administratif",
+      "Comptabilité",
+      "Service client",
+      "Marketing"
+    ],
+    "settings": {
+      "min_group_size": 5,
+      "department_required": true,
+      "comments_exportable": false,
+      "closes_on": "2026-10-31",
+      "group_by_department": false,
+      "channels": [
+        {
+          "type": "mailto",
+          "target": "registre-ia@menuiserie-alpine.example"
+        },
+        {
+          "type": "copy",
+          "target": "Déposez votre code dans le fil « Registre IA » de la messagerie interne."
+        }
+      ]
+    },
+    "public_key": null,
+    "private_key_jwk": null,
+    "fingerprint": null,
+    "created_at": "2026-09-15T08:00:00.000Z",
+    "demo": true,
+    "last_backup_at": null,
+    "recovery_saved_at": null
+  },
+  "entries": [
+    {
+      "entry_id": "demoEntry0000001",
+      "rev": 1,
+      "submitted_day": "2026-09-16",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Reformulation de mails",
+        "department": "Commercial et devis",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "personal_free",
+        "task_types": [
+          "redaction"
+        ],
+        "business_domain": "commercial_devis",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "daily",
+        "users_count": "6-15",
+        "output_audience": "external_clients",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": "Très pratique pour gagner du temps, mais je ne sais pas si c'est autorisé."
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-16T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000002",
+      "rev": 1,
+      "submitted_day": "2026-09-16",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Reformulation de mails",
+        "department": "Commercial et devis",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": "GPT (modèle par défaut)",
+        "account_type": "personal_free",
+        "task_types": [
+          "redaction"
+        ],
+        "business_domain": "commercial_devis",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "daily",
+        "users_count": "6-15",
+        "output_audience": "external_clients",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-16T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000003",
+      "rev": 1,
+      "submitted_day": "2026-09-17",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Reformulation de mails",
+        "department": "Commercial et devis",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "personal_paid",
+        "task_types": [
+          "redaction"
+        ],
+        "business_domain": "commercial_devis",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "weekly",
+        "users_count": "2-5",
+        "output_audience": "external_clients",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-17T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000004",
+      "rev": 1,
+      "submitted_day": "2026-09-17",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Reformuler des e-mails clients",
+        "department": "Commercial et devis",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "personal_free",
+        "task_types": [
+          "redaction"
+        ],
+        "business_domain": "commercial_devis",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "external_clients",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-17T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000005",
+      "rev": 1,
+      "submitted_day": "2026-09-18",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Reformulation de mails",
+        "department": "Commercial et devis",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "personal_free",
+        "task_types": [
+          "redaction"
+        ],
+        "business_domain": "commercial_devis",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "daily",
+        "users_count": "6-15",
+        "output_audience": "external_clients",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-18T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000006",
+      "rev": 1,
+      "submitted_day": "2026-09-18",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Rédaction de devis",
+        "department": "Commercial et devis",
+        "tool": "microsoft_copilot",
+        "tool_other": null,
+        "model": "Copilot (modèle par défaut)",
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "redaction"
+        ],
+        "business_domain": "commercial_devis",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "daily",
+        "users_count": "2-5",
+        "output_audience": "external_clients",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-18T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000007",
+      "rev": 1,
+      "submitted_day": "2026-09-19",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Rédaction de devis",
+        "department": "Commercial et devis",
+        "tool": "microsoft_copilot",
+        "tool_other": null,
+        "model": "Copilot (modèle par défaut)",
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "redaction"
+        ],
+        "business_domain": "commercial_devis",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "daily",
+        "users_count": null,
+        "output_audience": "external_clients",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-19T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000008",
+      "rev": 1,
+      "submitted_day": "2026-09-21",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Préparation des devis",
+        "department": "Commercial et devis",
+        "tool": "microsoft_copilot",
+        "tool_other": null,
+        "model": "Copilot (modèle par défaut)",
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "redaction"
+        ],
+        "business_domain": "commercial_devis",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "external_clients",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-21T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000009",
+      "rev": 1,
+      "submitted_day": "2026-09-21",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Chatbot du site web",
+        "department": "Service client",
+        "tool": "other",
+        "tool_other": "Chatbot tiers",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "chatbot_externe"
+        ],
+        "business_domain": "service_client",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "daily",
+        "users_count": null,
+        "output_audience": "external_clients",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "yes",
+        "biometric_emotion": "no",
+        "built_or_customized": "configured_prompt",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-21T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000010",
+      "rev": 1,
+      "submitted_day": "2026-09-22",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Chatbot du site web",
+        "department": "Service client",
+        "tool": "other",
+        "tool_other": "chatbot tiers",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "chatbot_externe"
+        ],
+        "business_domain": "service_client",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "daily",
+        "users_count": "2-5",
+        "output_audience": "external_clients",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "yes",
+        "biometric_emotion": "no",
+        "built_or_customized": "configured_prompt",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-22T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000011",
+      "rev": 1,
+      "submitted_day": "2026-09-22",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Tri automatique de CV",
+        "department": "RH et administratif",
+        "tool": "embedded_software_ai",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "evaluation_tri_personnes"
+        ],
+        "business_domain": "rh",
+        "data_types": [
+          "donnees_candidats"
+        ],
+        "frequency": "weekly",
+        "users_count": "2-5",
+        "output_audience": "internal_only",
+        "output_review": "partial",
+        "affects_people": "yes_decision",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-22T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000012",
+      "rev": 1,
+      "submitted_day": "2026-09-22",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Tri automatique de CV",
+        "department": "RH et administratif",
+        "tool": "embedded_software_ai",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "evaluation_tri_personnes"
+        ],
+        "business_domain": "rh",
+        "data_types": [
+          "donnees_candidats"
+        ],
+        "frequency": "monthly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "partial",
+        "affects_people": "yes_decision",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-22T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000013",
+      "rev": 1,
+      "submitted_day": "2026-09-23",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Aide à l'évaluation annuelle",
+        "department": "RH et administratif",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "personal_paid",
+        "task_types": [
+          "redaction",
+          "evaluation_tri_personnes"
+        ],
+        "business_domain": "rh",
+        "data_types": [
+          "donnees_collaborateurs"
+        ],
+        "frequency": "occasional",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "yes_input",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-23T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000014",
+      "rev": 1,
+      "submitted_day": "2026-09-23",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Aide à l'évaluation annuelle",
+        "department": "RH et administratif",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "personal_free",
+        "task_types": [
+          "redaction",
+          "evaluation_tri_personnes"
+        ],
+        "business_domain": "rh",
+        "data_types": [
+          "donnees_collaborateurs"
+        ],
+        "frequency": "occasional",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "yes_input",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-23T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000015",
+      "rev": 1,
+      "submitted_day": "2026-09-23",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Visuels marketing",
+        "department": "Marketing",
+        "tool": "midjourney",
+        "tool_other": null,
+        "model": null,
+        "account_type": "personal_paid",
+        "task_types": [
+          "generation_media"
+        ],
+        "business_domain": "marketing_com",
+        "data_types": [
+          "aucune"
+        ],
+        "frequency": "weekly",
+        "users_count": "2-5",
+        "output_audience": "public",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-23T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000016",
+      "rev": 1,
+      "submitted_day": "2026-09-24",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Visuels marketing",
+        "department": "Marketing",
+        "tool": "midjourney",
+        "tool_other": null,
+        "model": null,
+        "account_type": "personal_paid",
+        "task_types": [
+          "generation_media"
+        ],
+        "business_domain": "marketing_com",
+        "data_types": [
+          "aucune"
+        ],
+        "frequency": "monthly",
+        "users_count": null,
+        "output_audience": "public",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-24T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000017",
+      "rev": 1,
+      "submitted_day": "2026-09-24",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Résumé de contrats fournisseurs",
+        "department": "Direction",
+        "tool": "claude",
+        "tool_other": null,
+        "model": "Claude Sonnet",
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "resume"
+        ],
+        "business_domain": "direction",
+        "data_types": [
+          "secrets_affaires"
+        ],
+        "frequency": "monthly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-24T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000018",
+      "rev": 1,
+      "submitted_day": "2026-09-24",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Synthèse de contrats fournisseurs",
+        "department": "Direction",
+        "tool": "claude",
+        "tool_other": null,
+        "model": "Claude Sonnet",
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "resume"
+        ],
+        "business_domain": "direction",
+        "data_types": [
+          "secrets_affaires"
+        ],
+        "frequency": "monthly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-24T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000019",
+      "rev": 1,
+      "submitted_day": "2026-09-25",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Transcription de réunions",
+        "department": "Direction",
+        "tool": "other",
+        "tool_other": "Outil de transcription",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "resume",
+          "transcription"
+        ],
+        "business_domain": "direction",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-25T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000020",
+      "rev": 1,
+      "submitted_day": "2026-09-25",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Transcription de réunions",
+        "department": "Direction",
+        "tool": "other",
+        "tool_other": "Outil de transcription",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "resume",
+          "transcription"
+        ],
+        "business_domain": "direction",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "monthly",
+        "users_count": "2-5",
+        "output_audience": "internal_only",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-25T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000021",
+      "rev": 1,
+      "submitted_day": "2026-09-25",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Transcription des réunions d'atelier",
+        "department": "Production",
+        "tool": "other",
+        "tool_other": "outil de transcription",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "transcription"
+        ],
+        "business_domain": "production",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-25T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": "other:outil de transcription|resume,transcription|direction"
+    },
+    {
+      "entry_id": "demoEntry0000022",
+      "rev": 1,
+      "submitted_day": "2026-09-25",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Analyse d'émotions en visio (test)",
+        "department": "RH et administratif",
+        "tool": "other",
+        "tool_other": "Outil d'analyse vidéo",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees"
+        ],
+        "business_domain": "rh",
+        "data_types": [
+          "donnees_collaborateurs"
+        ],
+        "frequency": "occasional",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "yes",
+        "built_or_customized": "use_as_is",
+        "status": "pilot",
+        "comment": "Test proposé par l'éditeur de l'outil de visioconférence."
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-25T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    },
+    {
+      "entry_id": "demoEntry0000023",
+      "rev": 1,
+      "submitted_day": "2026-09-25",
+      "submitted_at": null,
+      "respondent": null,
+      "usage": {
+        "usage_name": "Aide au code du site",
+        "department": "Marketing",
+        "tool": "github_copilot",
+        "tool_other": null,
+        "model": "Copilot (modèle par défaut)",
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "code"
+        ],
+        "business_domain": "it_dev",
+        "data_types": [
+          "code_source"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "not_applicable",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "schema_version": 1,
+      "code_hash": null,
+      "source": "demo",
+      "imported_at": "2026-09-25T17:00:00.000Z",
+      "after_close": false,
+      "excluded": false,
+      "group_override": null
+    }
+  ],
+  "actions": [
+    {
+      "id": "demo-act-01",
+      "campaign_id": "demo",
+      "usage_key": null,
+      "template_id": "ACT-POL-01",
+      "title": "Rédiger une charte d'usage de l'IA (outils autorisés, données interdites)",
+      "description": "Formaliser en une ou deux pages les outils autorisés, les types de comptes à utiliser, les données à ne jamais envoyer (identifiants, données sensibles, secrets d'affaires) et la relecture attendue avant tout envoi externe. La diffuser et la présenter aux équipes.",
+      "owner": "Direction",
+      "due_date": "2026-09-30",
+      "priority": "high",
+      "status": "done",
+      "suggested": true,
+      "suggested_role": "Direction",
+      "created_at": "2026-09-26T09:00:00.000Z",
+      "updated_at": "2026-09-28T16:30:00.000Z"
+    },
+    {
+      "id": "demo-act-02",
+      "campaign_id": "demo",
+      "usage_key": "other:outil d'analyse vidéo|analyse_donnees|rh",
+      "template_id": "ACT-PRO-01",
+      "title": "Suspendre l'usage et le faire qualifier juridiquement (suspicion d'interdit)",
+      "description": "Suspendre l'usage, y compris en test, le temps d'une analyse juridique ; ne le reprendre qu'après un avis écrit confirmant qu'il ne relève pas d'une pratique interdite.",
+      "owner": "Direction",
+      "due_date": "2026-10-09",
+      "priority": "high",
+      "status": "in_progress",
+      "suggested": true,
+      "suggested_role": "Direction",
+      "created_at": "2026-09-26T09:05:00.000Z",
+      "updated_at": "2026-09-26T09:05:00.000Z"
+    },
+    {
+      "id": "demo-act-03",
+      "campaign_id": "demo",
+      "usage_key": "chatgpt|redaction|commercial_devis",
+      "template_id": "ACT-SHADOW-01",
+      "title": "Basculer les comptes personnels vers un compte pro ou un outil validé",
+      "description": "Proposer aux personnes qui utilisent un compte personnel une solution validée par l'entreprise (compte professionnel avec engagement contractuel, outil interne), puis les accompagner dans la bascule, sans reproche.",
+      "owner": "DSI",
+      "due_date": "2026-10-30",
+      "priority": "high",
+      "status": "in_progress",
+      "suggested": true,
+      "suggested_role": "DSI",
+      "created_at": "2026-09-26T09:10:00.000Z",
+      "updated_at": "2026-09-27T11:00:00.000Z"
+    },
+    {
+      "id": "demo-act-04",
+      "campaign_id": "demo",
+      "usage_key": null,
+      "template_id": "ACT-LIT-01",
+      "title": "Former / sensibiliser les équipes (littératie IA, art. 4)",
+      "description": "Organiser une sensibilisation adaptée aux usages recensés : fonctionnement et limites de l'IA, bonnes pratiques de confidentialité, relecture des résultats. Garder une trace des sessions (dates, participants, contenu).",
+      "owner": "",
+      "due_date": "2026-12-15",
+      "priority": "high",
+      "status": "todo",
+      "suggested": true,
+      "suggested_role": "Direction",
+      "created_at": "2026-09-26T09:15:00.000Z",
+      "updated_at": "2026-09-26T09:15:00.000Z"
+    },
+    {
+      "id": "demo-act-05",
+      "campaign_id": "demo",
+      "usage_key": "embedded_software_ai|evaluation_tri_personnes|rh",
+      "template_id": "ACT-HR-01",
+      "title": "Supervision humaine documentée + information des candidats/salariés + consultation du CSE",
+      "description": "Désigner les personnes chargées de la supervision humaine et documenter leur rôle, informer les candidats ou salariés concernés de l'usage de l'IA, et consulter le CSE avant la mise en place ou la poursuite de l'usage.",
+      "owner": "RH",
+      "due_date": "2026-12-15",
+      "priority": "high",
+      "status": "todo",
+      "suggested": true,
+      "suggested_role": "RH",
+      "created_at": "2026-09-26T09:20:00.000Z",
+      "updated_at": "2026-09-26T09:20:00.000Z"
+    }
+  ],
+  "assessments": []
+}

@@ -1,0 +1,479 @@
+{
+  "version": "2026-09-29.1",
+  "reviewed": false,
+  "note": "Point de départ à relire par un juriste",
+  "disclaimer": "Classification indicative, à confirmer : elle aide à s'organiser et ne constitue pas un avis juridique.",
+  "ai_act_order": ["prohibited_suspected", "high", "to_qualify", "limited", "minimal"],
+  "default_role": "deployer",
+  "data_base": {
+    "aucune": 0,
+    "docs_internes": 1,
+    "donnees_clients": 2,
+    "donnees_collaborateurs": 2,
+    "donnees_candidats": 2,
+    "donnees_sensibles": 3,
+    "secrets_affaires": 2,
+    "code_source": 2,
+    "donnees_financieres": 2,
+    "identifiants": 3
+  },
+  "signals": {
+    "shadow_ai": "IA fantôme (compte personnel ou non maîtrisé)",
+    "credentials": "Identifiants exposés",
+    "sensitive_data": "Données sensibles",
+    "no_review_external": "Envoi externe sans relecture",
+    "personal_data": "Données personnelles",
+    "confidential_data": "Informations confidentielles"
+  },
+  "rules": [
+    {
+      "id": "R-AIA-PRO-01",
+      "axis": "ai_act",
+      "kind": "level",
+      "level": "prohibited_suspected",
+      "label": "Reconnaissance d'émotions au travail ou en formation",
+      "legal_ref": "Règlement (UE) 2024/1689, art. 5, § 1, f)",
+      "explanation": "L'outil analyse des émotions ou des données biométriques dans un contexte de travail ou de formation : domaine RH, formation, direction ou production, ou données de collaborateurs ou de candidats. L'article 5 interdit la reconnaissance des émotions sur le lieu de travail et dans les établissements d'enseignement, sauf pour des raisons médicales ou de sécurité. Interdiction suspectée : l'usage est à faire qualifier juridiquement avant d'être poursuivi.",
+      "action_ids": ["ACT-PRO-01"],
+      "deadline_ids": ["prohibitions_art5"],
+      "condition": {
+        "all": [
+          { "field": "biometric_emotion", "eq": "yes" },
+          {
+            "any": [
+              { "field": "business_domain", "in": ["rh", "formation", "direction", "production"] },
+              { "field": "data_types", "includes_any": ["donnees_collaborateurs", "donnees_candidats"] }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "R-AIA-PRO-02",
+      "axis": "ai_act",
+      "kind": "level",
+      "level": "prohibited_suspected",
+      "label": "Biométrie associée à des données sensibles",
+      "legal_ref": "Règlement (UE) 2024/1689, art. 5, § 1, g)",
+      "explanation": "L'outil analyse des visages, des voix ou des émotions et traite des données sensibles (santé, opinions, origine…). Le moteur y voit, par approximation, une catégorisation biométrique visant à déduire des attributs sensibles, pratique interdite par l'article 5. Interdiction suspectée : l'usage est à faire qualifier juridiquement.",
+      "action_ids": ["ACT-PRO-01"],
+      "deadline_ids": ["prohibitions_art5"],
+      "condition": {
+        "all": [
+          { "field": "biometric_emotion", "eq": "yes" },
+          { "field": "data_types", "includes_any": ["donnees_sensibles"] }
+        ]
+      }
+    },
+    {
+      "id": "R-AIA-HI-EMP",
+      "axis": "ai_act",
+      "kind": "level",
+      "level": "high",
+      "label": "Emploi et gestion des travailleurs",
+      "legal_ref": "Règlement (UE) 2024/1689, art. 6, § 2 et annexe III, point 4",
+      "explanation": "L'usage sert à évaluer, trier ou décider au sujet de candidats ou de salariés : domaine RH avec évaluation de personnes ou influence sur une décision, ou tri de personnes à partir de données de candidats ou de collaborateurs. L'annexe III (point 4) classe ces systèmes à haut risque, sauf exceptions prévues à l'article 6, § 3 ; le déployeur devra notamment organiser une supervision humaine, informer les personnes concernées et conserver les journaux.",
+      "action_ids": ["ACT-HR-01", "ACT-HR-02", "ACT-HR-03", "ACT-LOG-01"],
+      "deadline_ids": ["high_risk_annex_iii"],
+      "condition": {
+        "any": [
+          {
+            "all": [
+              { "field": "business_domain", "eq": "rh" },
+              {
+                "any": [
+                  { "field": "task_types", "includes_any": ["evaluation_tri_personnes"] },
+                  { "field": "affects_people", "in": ["yes_decision", "yes_input"] }
+                ]
+              }
+            ]
+          },
+          {
+            "all": [
+              { "field": "task_types", "includes_any": ["evaluation_tri_personnes"] },
+              { "field": "data_types", "includes_any": ["donnees_candidats", "donnees_collaborateurs"] }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "R-AIA-HI-CRE",
+      "axis": "ai_act",
+      "kind": "level",
+      "level": "high",
+      "label": "Crédit et solvabilité de personnes physiques",
+      "legal_ref": "Règlement (UE) 2024/1689, art. 6, § 2 et annexe III, point 5, b) et c)",
+      "explanation": "L'usage sert à décider ou à préparer une décision de crédit, de solvabilité ou de tarification d'une assurance vie ou santé concernant des personnes physiques. L'annexe III (point 5) classe ces systèmes à haut risque, sauf exceptions prévues à l'article 6, § 3. L'évaluation d'entreprises (B2B) n'est pas visée : dans ce cas, la réponse attendue à la question sur les personnes est « Non ».",
+      "action_ids": ["ACT-HR-03", "ACT-LOG-01", "ACT-DPIA-01"],
+      "deadline_ids": ["high_risk_annex_iii"],
+      "condition": {
+        "all": [
+          { "field": "affects_people", "in": ["yes_decision", "yes_input"] },
+          { "field": "business_domain", "eq": "finance_credit" }
+        ]
+      }
+    },
+    {
+      "id": "R-AIA-HI-EDU",
+      "axis": "ai_act",
+      "kind": "level",
+      "level": "high",
+      "label": "Éducation et formation professionnelle",
+      "legal_ref": "Règlement (UE) 2024/1689, art. 6, § 2 et annexe III, point 3",
+      "explanation": "L'usage sert à décider de l'admission, de l'évaluation ou de l'orientation de personnes en formation. L'annexe III (point 3) classe ces systèmes à haut risque, sauf exceptions prévues à l'article 6, § 3.",
+      "action_ids": ["ACT-HR-03", "ACT-LOG-01", "ACT-DPIA-01"],
+      "deadline_ids": ["high_risk_annex_iii"],
+      "condition": {
+        "all": [
+          { "field": "affects_people", "in": ["yes_decision", "yes_input"] },
+          { "field": "business_domain", "eq": "formation" }
+        ]
+      }
+    },
+    {
+      "id": "R-AIA-HI-BIO",
+      "axis": "ai_act",
+      "kind": "level",
+      "level": "high",
+      "label": "Biométrie ou reconnaissance d'émotions",
+      "legal_ref": "Règlement (UE) 2024/1689, art. 6, § 2 et annexe III, point 1",
+      "explanation": "L'outil analyse des visages, des voix ou des émotions en dehors d'un contexte de travail ou de formation, par exemple sur des clients ou des visiteurs. L'annexe III (point 1) classe à haut risque les systèmes biométriques et de reconnaissance des émotions ; le classement exact dépend de l'usage et reste à confirmer.",
+      "action_ids": ["ACT-HR-03", "ACT-LOG-01", "ACT-DPIA-01"],
+      "deadline_ids": ["high_risk_annex_iii"],
+      "condition": {
+        "all": [
+          { "field": "biometric_emotion", "eq": "yes" },
+          {
+            "not": {
+              "any": [
+                { "field": "business_domain", "in": ["rh", "formation", "direction", "production"] },
+                { "field": "data_types", "includes_any": ["donnees_collaborateurs", "donnees_candidats"] }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "R-AIA-HI-OTH",
+      "axis": "ai_act",
+      "kind": "level",
+      "level": "to_qualify",
+      "label": "Décision sur des personnes dans un autre domaine",
+      "legal_ref": "Règlement (UE) 2024/1689, art. 6, § 2 et annexe III",
+      "explanation": "L'usage influence une décision sur des personnes physiques en dehors des domaines RH, crédit et formation, ou comporte un tri de personnes sans lien établi avec l'emploi. Il peut relever d'un autre domaine de l'annexe III (accès à des services essentiels, assurance, santé, services publics…) : le niveau reste « à qualifier ».",
+      "action_ids": ["ACT-QUAL-01"],
+      "deadline_ids": ["high_risk_annex_iii"],
+      "question": "Cet usage relève-t-il d'un domaine listé à l'annexe III (accès à des services essentiels, assurance, santé, services publics, etc.) ?",
+      "condition": {
+        "any": [
+          {
+            "all": [
+              { "field": "affects_people", "in": ["yes_decision", "yes_input"] },
+              { "not": { "field": "business_domain", "in": ["rh", "finance_credit", "formation"] } },
+              {
+                "not": {
+                  "all": [
+                    { "field": "task_types", "includes_any": ["evaluation_tri_personnes"] },
+                    { "field": "data_types", "includes_any": ["donnees_candidats", "donnees_collaborateurs"] }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "all": [
+              { "field": "task_types", "includes_any": ["evaluation_tri_personnes"] },
+              { "not": { "field": "affects_people", "in": ["yes_decision", "yes_input"] } },
+              { "not": { "field": "business_domain", "eq": "rh" } },
+              { "not": { "field": "data_types", "includes_any": ["donnees_candidats", "donnees_collaborateurs"] } }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "R-AIA-Q-AFF",
+      "axis": "ai_act",
+      "kind": "question",
+      "level": "to_qualify",
+      "label": "Impact sur des personnes à confirmer",
+      "legal_ref": "Règlement (UE) 2024/1689, annexe III",
+      "explanation": "La personne qui a déclaré l'usage ne sait pas s'il sert à décider, évaluer ou trier des personnes. Selon la réponse, l'usage pourrait être à haut risque : le niveau reste « à qualifier », jamais plus bas, tant que ce point n'est pas confirmé.",
+      "action_ids": ["ACT-QUAL-01"],
+      "deadline_ids": ["high_risk_annex_iii"],
+      "question": "L'usage sert-il à décider, évaluer ou trier des personnes physiques (salariés, candidats, clients particuliers) ?",
+      "condition": { "field": "affects_people", "eq": "unknown" }
+    },
+    {
+      "id": "R-AIA-Q-BIO",
+      "axis": "ai_act",
+      "kind": "question",
+      "level": "to_qualify",
+      "label": "Biométrie ou émotions à confirmer",
+      "legal_ref": "Règlement (UE) 2024/1689, art. 5 et annexe III, point 1",
+      "explanation": "La personne qui a déclaré l'usage ne sait pas si l'outil analyse des visages, des voix ou des émotions. Selon la réponse, l'usage pourrait être interdit ou à haut risque : le niveau reste « à qualifier », jamais plus bas, tant que ce point n'est pas confirmé.",
+      "action_ids": ["ACT-QUAL-01"],
+      "deadline_ids": ["prohibitions_art5", "high_risk_annex_iii"],
+      "question": "L'outil analyse-t-il des visages, des voix ou des émotions (biométrie, détection d'émotions) ?",
+      "condition": { "field": "biometric_emotion", "eq": "unknown" }
+    },
+    {
+      "id": "R-AIA-PRV-01",
+      "axis": "ai_act",
+      "kind": "level",
+      "level": "to_qualify",
+      "role": "potential_provider",
+      "label": "Rôle de fournisseur possible",
+      "legal_ref": "Règlement (UE) 2024/1689, art. 3, points 3 et 4, et art. 25",
+      "explanation": "L'entreprise a développé ou assemblé ce système et le met en service sous son nom. Elle pourrait alors être considérée comme fournisseur, avec des obligations plus lourdes que celles d'un déployeur. Le moteur ne déclare jamais ce rôle automatiquement : il signale un fournisseur possible et laisse le point « à qualifier ».",
+      "action_ids": ["ACT-QUAL-01"],
+      "deadline_ids": ["transparency_art50", "high_risk_annex_iii"],
+      "question": "L'entreprise met-elle ce système en service ou sur le marché sous son propre nom (en interne ou pour des clients), et pour quel usage exact ?",
+      "condition": { "field": "built_or_customized", "eq": "built_own" }
+    },
+    {
+      "id": "R-AIA-LIM-01",
+      "axis": "ai_act",
+      "kind": "level",
+      "level": "limited",
+      "label": "Interaction directe avec des personnes",
+      "legal_ref": "Règlement (UE) 2024/1689, art. 50, § 1",
+      "explanation": "L'outil échange directement avec des personnes (chatbot, assistant, agent vocal). L'article 50 impose que ces personnes sachent qu'elles interagissent avec une IA, sauf si c'est évident.",
+      "action_ids": ["ACT-TRANS-01"],
+      "deadline_ids": ["transparency_art50"],
+      "condition": { "field": "direct_interaction", "eq": "yes" }
+    },
+    {
+      "id": "R-AIA-LIM-02",
+      "axis": "ai_act",
+      "kind": "level",
+      "level": "limited",
+      "label": "Contenus générés diffusés à l'extérieur",
+      "legal_ref": "Règlement (UE) 2024/1689, art. 50, § 2 et § 4",
+      "explanation": "L'usage produit des images, sons ou vidéos diffusés à des clients ou au public, ou des textes publiés sans relecture systématique. L'article 50 prévoit le marquage des contenus générés et la mention des contenus publiés pour informer le public. Un texte relu et publié sous le contrôle éditorial d'une personne n'est en principe pas soumis à cette divulgation : un devis ou un e-mail relu avant envoi est donc classé ici en risque minimal.",
+      "action_ids": ["ACT-TRANS-02"],
+      "deadline_ids": ["transparency_art50", "marking_grace_art50_2"],
+      "condition": {
+        "any": [
+          {
+            "all": [
+              { "field": "task_types", "includes_any": ["generation_media"] },
+              { "field": "output_audience", "in": ["external_clients", "public"] }
+            ]
+          },
+          {
+            "all": [
+              { "field": "output_audience", "eq": "public" },
+              { "not": { "field": "output_review", "eq": "systematic" } }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "R-AIA-MIN",
+      "axis": "ai_act",
+      "kind": "level",
+      "level": "minimal",
+      "fallback": true,
+      "label": "Aucune obligation spécifique identifiée",
+      "legal_ref": "Règlement (UE) 2024/1689",
+      "explanation": "Aucune autre règle de niveau ne s'applique : l'usage est classé en risque minimal, à titre indicatif. Les obligations générales restent applicables (maîtrise de l'IA, RGPD, confidentialité).",
+      "action_ids": [],
+      "deadline_ids": [],
+      "condition": { "all": [] }
+    },
+    {
+      "id": "R-AIA-LIT",
+      "axis": "ai_act",
+      "kind": "transverse",
+      "level": null,
+      "label": "Maîtrise de l'IA (littératie)",
+      "legal_ref": "Règlement (UE) 2024/1689, art. 4",
+      "explanation": "L'article 4 demande aux déployeurs de prendre des mesures pour que les personnes qui utilisent des systèmes d'IA disposent d'une maîtrise suffisante de l'IA. Cette mesure concerne tous les usages, quel que soit leur niveau.",
+      "action_ids": ["ACT-LIT-01"],
+      "deadline_ids": ["literacy_art4"],
+      "condition": { "all": [] }
+    },
+    {
+      "id": "R-GOV-01",
+      "axis": "ai_act",
+      "kind": "transverse",
+      "level": null,
+      "label": "Gouvernance des usages d'IA",
+      "legal_ref": "Bonne pratique de gouvernance ; RGPD, art. 5, § 2 (responsabilité) et art. 30 (registre des traitements)",
+      "explanation": "Tout usage recensé appelle un cadre commun : une charte d'usage (outils autorisés, données interdites) et une revue régulière du registre.",
+      "action_ids": ["ACT-POL-01", "ACT-INV-01"],
+      "deadline_ids": [],
+      "condition": { "all": [] }
+    },
+    {
+      "id": "R-DAT-CRIT",
+      "axis": "data",
+      "kind": "level",
+      "level": 3,
+      "label": "Données critiques",
+      "legal_ref": "RGPD, art. 9 et art. 32",
+      "explanation": "Des identifiants (mots de passe, clés d'accès) ou des données sensibles (santé, opinions, origine…) sont envoyés à l'outil : exposition critique (niveau 3).",
+      "action_ids": [],
+      "deadline_ids": [],
+      "condition": { "field": "data_types", "includes_any": ["donnees_sensibles", "identifiants"] }
+    },
+    {
+      "id": "R-DAT-HIGH",
+      "axis": "data",
+      "kind": "level",
+      "level": 2,
+      "label": "Données personnelles ou confidentielles",
+      "legal_ref": "RGPD, art. 5 et art. 32 ; Code de commerce, art. L151-1 (secret des affaires)",
+      "explanation": "Des données de clients, de collaborateurs ou de candidats, des informations confidentielles, du code source ou des données financières sont envoyés à l'outil : exposition élevée (niveau 2).",
+      "action_ids": [],
+      "deadline_ids": [],
+      "condition": {
+        "field": "data_types",
+        "includes_any": ["donnees_clients", "donnees_collaborateurs", "donnees_candidats", "secrets_affaires", "code_source", "donnees_financieres"]
+      }
+    },
+    {
+      "id": "R-DAT-MOD",
+      "axis": "data",
+      "kind": "level",
+      "level": 1,
+      "label": "Documents internes",
+      "legal_ref": "Bonne pratique de confidentialité ; RGPD, art. 32 si des personnes y sont citées",
+      "explanation": "Des documents internes non confidentiels sont envoyés à l'outil : exposition modérée (niveau 1).",
+      "action_ids": [],
+      "deadline_ids": [],
+      "condition": { "field": "data_types", "includes_any": ["docs_internes"] }
+    },
+    {
+      "id": "R-DAT-LOW",
+      "axis": "data",
+      "kind": "level",
+      "level": 0,
+      "label": "Aucune donnée de l'entreprise",
+      "legal_ref": "—",
+      "explanation": "Aucune donnée de l'entreprise ni sur des personnes n'est envoyée à l'outil : exposition faible (niveau 0).",
+      "action_ids": [],
+      "deadline_ids": [],
+      "condition": { "field": "data_types", "includes_any": ["aucune"] }
+    },
+    {
+      "id": "R-DAT-PERSO",
+      "axis": "data",
+      "kind": "modifier",
+      "level": null,
+      "delta": 1,
+      "cap": 3,
+      "min_base": 1,
+      "label": "Compte personnel : exposition relevée d'un cran",
+      "legal_ref": "RGPD, art. 28 et art. 32",
+      "explanation": "L'outil est utilisé avec un compte personnel : l'entreprise ne maîtrise ni le contrat ni la conservation des données. L'exposition augmente d'un cran, sans dépasser 3. Ce modificateur ne s'applique pas lorsqu'aucune donnée de l'entreprise n'est envoyée.",
+      "action_ids": [],
+      "deadline_ids": [],
+      "condition": { "field": "account_type", "in": ["personal_free", "personal_paid"] }
+    },
+    {
+      "id": "R-DAT-SHADOW",
+      "axis": "data",
+      "kind": "signal",
+      "level": null,
+      "signal": "shadow_ai",
+      "label": "Compte personnel (IA fantôme)",
+      "legal_ref": "RGPD, art. 28 et art. 32",
+      "explanation": "L'usage passe par un compte personnel, hors du cadre de l'entreprise (« shadow AI »). Le plus simple est de proposer un compte professionnel ou un outil validé.",
+      "action_ids": ["ACT-SHADOW-01"],
+      "deadline_ids": [],
+      "condition": { "field": "account_type", "in": ["personal_free", "personal_paid"] }
+    },
+    {
+      "id": "R-DAT-Q-ACCOUNT",
+      "axis": "data",
+      "kind": "question",
+      "level": null,
+      "signal": "shadow_ai",
+      "label": "Type de compte à confirmer",
+      "legal_ref": "RGPD, art. 28 et art. 32",
+      "explanation": "La personne ne sait pas avec quel type de compte l'outil est utilisé. Il pourrait s'agir d'un compte personnel : l'exposition des données reste « à qualifier ».",
+      "action_ids": ["ACT-QUAL-01"],
+      "deadline_ids": [],
+      "question": "L'outil est-il utilisé avec un compte fourni par l'entreprise ou avec un compte personnel ?",
+      "condition": { "field": "account_type", "eq": "unknown" }
+    },
+    {
+      "id": "R-DAT-CREDENTIALS",
+      "axis": "data",
+      "kind": "signal",
+      "level": null,
+      "signal": "credentials",
+      "label": "Identifiants dans un prompt",
+      "legal_ref": "RGPD, art. 32 (sécurité)",
+      "explanation": "Des mots de passe, clés d'accès ou identifiants ont été envoyés à l'outil. Action de sécurité immédiate : les retirer des conversations et les renouveler.",
+      "action_ids": ["ACT-SEC-01"],
+      "deadline_ids": [],
+      "condition": { "field": "data_types", "includes_any": ["identifiants"] }
+    },
+    {
+      "id": "R-DAT-SENSITIVE",
+      "axis": "data",
+      "kind": "signal",
+      "level": null,
+      "signal": "sensitive_data",
+      "label": "Données sensibles",
+      "legal_ref": "RGPD, art. 9 et art. 35",
+      "explanation": "Des données sensibles au sens du RGPD (santé, opinions, origine, vie syndicale…) sont envoyées à l'outil. Une analyse d'impact (AIPD) est probablement nécessaire.",
+      "action_ids": ["ACT-DPIA-01"],
+      "deadline_ids": [],
+      "condition": { "field": "data_types", "includes_any": ["donnees_sensibles"] }
+    },
+    {
+      "id": "R-DAT-NO-REVIEW",
+      "axis": "data",
+      "kind": "signal",
+      "level": null,
+      "signal": "no_review_external",
+      "label": "Envoi externe sans relecture",
+      "legal_ref": "Bonne pratique ; Règlement (UE) 2024/1689, art. 50, § 4 (contrôle éditorial)",
+      "explanation": "Le résultat est envoyé à des clients ou publié sans relecture humaine. Une relecture avant tout envoi externe limite les erreurs et les fuites d'informations.",
+      "action_ids": ["ACT-REV-01"],
+      "deadline_ids": [],
+      "condition": {
+        "all": [
+          { "field": "output_audience", "in": ["external_clients", "public"] },
+          { "field": "output_review", "eq": "none" }
+        ]
+      }
+    },
+    {
+      "id": "R-DAT-PERSONAL",
+      "axis": "data",
+      "kind": "signal",
+      "level": null,
+      "signal": "personal_data",
+      "label": "Données personnelles confiées à l'outil",
+      "legal_ref": "RGPD, art. 28 et chapitre V",
+      "explanation": "Des données personnelles sont confiées à l'outil : il faut vérifier le contrat de sous-traitance (DPA), la localisation des données et la désactivation de l'entraînement.",
+      "action_ids": ["ACT-DPA-01"],
+      "deadline_ids": [],
+      "condition": {
+        "field": "data_types",
+        "includes_any": ["donnees_clients", "donnees_collaborateurs", "donnees_candidats", "donnees_sensibles"]
+      }
+    },
+    {
+      "id": "R-DAT-CONFIDENTIAL",
+      "axis": "data",
+      "kind": "signal",
+      "level": null,
+      "signal": "confidential_data",
+      "label": "Informations confidentielles confiées à l'outil",
+      "legal_ref": "Code de commerce, art. L151-1 (secret des affaires) ; conditions contractuelles de l'outil",
+      "explanation": "Des informations confidentielles (secrets d'affaires, code source, données financières) sont confiées à l'outil : il faut vérifier les clauses de confidentialité et la désactivation de l'entraînement.",
+      "action_ids": ["ACT-DPA-01"],
+      "deadline_ids": [],
+      "condition": { "field": "data_types", "includes_any": ["secrets_affaires", "code_source", "donnees_financieres"] }
+    }
+  ]
+}

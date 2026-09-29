@@ -1,0 +1,3085 @@
+{
+  "rules_version": "2026-09-29.1",
+  "note": "Table de vérité du moteur de règles (CDC §6.4). Chaque cas fixe les niveaux et la liste exacte des déclencheurs et des échéances : toute modification de data/rules.json doit être répercutée ici (rules_version compris).",
+  "cases": [
+    {
+      "id": "annexA-01",
+      "description": "Annexe A n°1 : reformulation de mails avec ChatGPT, compte personnel gratuit, documents internes (1 + 1 = 2).",
+      "usage": {
+        "usage_name": "Reformulation de mails",
+        "department": "Commercial et devis",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "personal_free",
+        "task_types": [
+          "redaction"
+        ],
+        "business_domain": "commercial_devis",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "daily",
+        "users_count": "6-15",
+        "output_audience": "external_clients",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 2,
+        "data_to_qualify": false,
+        "role": "deployer",
+        "triggers_include": [
+          "R-AIA-MIN",
+          "R-DAT-MOD",
+          "R-DAT-PERSO",
+          "R-DAT-SHADOW",
+          "R-AIA-LIT",
+          "R-GOV-01"
+        ],
+        "triggers_exclude": [
+          "R-AIA-LIM-02",
+          "R-DAT-NO-REVIEW"
+        ],
+        "actions_include": [
+          "ACT-SHADOW-01",
+          "ACT-LIT-01",
+          "ACT-POL-01",
+          "ACT-INV-01"
+        ],
+        "signals_include": [
+          "shadow_ai"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-MOD",
+          "R-DAT-PERSO",
+          "R-DAT-SHADOW"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "annexA-02",
+      "description": "Annexe A n°2 : rédaction de devis avec Copilot professionnel, données clients, relus avant envoi (minimal).",
+      "usage": {
+        "usage_name": "Rédaction de devis",
+        "department": "Commercial et devis",
+        "tool": "microsoft_copilot",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "redaction"
+        ],
+        "business_domain": "commercial_devis",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "daily",
+        "users_count": "2-5",
+        "output_audience": "external_clients",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 2,
+        "data_to_qualify": false,
+        "triggers_include": [
+          "R-AIA-MIN",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "triggers_exclude": [
+          "R-AIA-LIM-02",
+          "R-DAT-PERSO",
+          "R-DAT-SHADOW"
+        ],
+        "actions_include": [
+          "ACT-DPA-01"
+        ],
+        "signals_include": [
+          "personal_data"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "annexA-03",
+      "description": "Annexe A n°3 : chatbot tiers configuré sur le site web, en contact direct avec les clients (art. 50).",
+      "usage": {
+        "usage_name": "Chatbot du site web",
+        "department": "Service client",
+        "tool": "other",
+        "tool_other": "Chatbot tiers",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "chatbot_externe"
+        ],
+        "business_domain": "service_client",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "daily",
+        "users_count": null,
+        "output_audience": "external_clients",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "yes",
+        "biometric_emotion": "no",
+        "built_or_customized": "configured_prompt",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "limited",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-LIM-01",
+          "R-DAT-HIGH"
+        ],
+        "triggers_exclude": [
+          "R-AIA-MIN",
+          "R-AIA-PRV-01"
+        ],
+        "actions_include": [
+          "ACT-TRANS-01",
+          "ACT-DPA-01"
+        ],
+        "triggers": [
+          "R-AIA-LIM-01",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "transparency_art50"
+        ]
+      }
+    },
+    {
+      "id": "annexA-04",
+      "description": "Annexe A n°4 : tri automatique de CV par l'IA intégrée à l'outil de recrutement (annexe III, emploi).",
+      "usage": {
+        "usage_name": "Tri automatique de CV",
+        "department": "RH et administratif",
+        "tool": "embedded_software_ai",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "evaluation_tri_personnes"
+        ],
+        "business_domain": "rh",
+        "data_types": [
+          "donnees_candidats"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "partial",
+        "affects_people": "yes_decision",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "high",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-EMP",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-OTH",
+          "R-AIA-MIN"
+        ],
+        "actions_include": [
+          "ACT-HR-01",
+          "ACT-HR-02",
+          "ACT-HR-03",
+          "ACT-LOG-01",
+          "ACT-DPA-01"
+        ],
+        "triggers": [
+          "R-AIA-HI-EMP",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "annexA-05",
+      "description": "Annexe A n°5 : aide à l'évaluation annuelle avec ChatGPT, compte personnel, données de collaborateurs (2 + 1 = 3).",
+      "usage": {
+        "usage_name": "Aide à l'évaluation annuelle",
+        "department": "RH et administratif",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "personal_paid",
+        "task_types": [
+          "redaction",
+          "evaluation_tri_personnes"
+        ],
+        "business_domain": "rh",
+        "data_types": [
+          "donnees_collaborateurs"
+        ],
+        "frequency": "occasional",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "yes_input",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "high",
+        "data_level": 3,
+        "triggers_include": [
+          "R-AIA-HI-EMP",
+          "R-DAT-HIGH",
+          "R-DAT-PERSO",
+          "R-DAT-SHADOW"
+        ],
+        "actions_include": [
+          "ACT-HR-01",
+          "ACT-SHADOW-01",
+          "ACT-DPA-01"
+        ],
+        "signals_include": [
+          "shadow_ai",
+          "personal_data"
+        ],
+        "triggers": [
+          "R-AIA-HI-EMP",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSO",
+          "R-DAT-SHADOW",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "annexA-06",
+      "description": "Annexe A n°6 : visuels marketing publiés, Midjourney sur compte personnel, sans donnée (le +1 ne s'applique pas).",
+      "usage": {
+        "usage_name": "Visuels marketing",
+        "department": "Marketing",
+        "tool": "midjourney",
+        "tool_other": null,
+        "model": null,
+        "account_type": "personal_paid",
+        "task_types": [
+          "generation_media"
+        ],
+        "business_domain": "marketing_com",
+        "data_types": [
+          "aucune"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "public",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "limited",
+        "data_level": 0,
+        "triggers_include": [
+          "R-AIA-LIM-02",
+          "R-DAT-LOW",
+          "R-DAT-SHADOW"
+        ],
+        "triggers_exclude": [
+          "R-DAT-PERSO",
+          "R-AIA-MIN"
+        ],
+        "actions_include": [
+          "ACT-TRANS-02",
+          "ACT-SHADOW-01"
+        ],
+        "signals_include": [
+          "shadow_ai"
+        ],
+        "triggers": [
+          "R-AIA-LIM-02",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-LOW",
+          "R-DAT-SHADOW"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "transparency_art50",
+          "marking_grace_art50_2"
+        ]
+      }
+    },
+    {
+      "id": "annexA-07",
+      "description": "Annexe A n°7 : résumé de contrats fournisseurs avec Claude, compte professionnel, secrets d'affaires.",
+      "usage": {
+        "usage_name": "Résumé de contrats fournisseurs",
+        "department": "Direction",
+        "tool": "claude",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "resume"
+        ],
+        "business_domain": "direction",
+        "data_types": [
+          "secrets_affaires"
+        ],
+        "frequency": "monthly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-MIN",
+          "R-DAT-HIGH",
+          "R-DAT-CONFIDENTIAL"
+        ],
+        "triggers_exclude": [
+          "R-DAT-PERSONAL"
+        ],
+        "actions_include": [
+          "ACT-DPA-01"
+        ],
+        "signals_include": [
+          "confidential_data"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-CONFIDENTIAL"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "annexA-08",
+      "description": "Annexe A n°8 : transcription de réunions avec un outil professionnel, documents internes (1).",
+      "usage": {
+        "usage_name": "Transcription de réunions",
+        "department": "Direction",
+        "tool": "other",
+        "tool_other": "Outil de transcription",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "resume",
+          "transcription"
+        ],
+        "business_domain": "direction",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 1,
+        "triggers_include": [
+          "R-AIA-MIN",
+          "R-DAT-MOD"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-BIO",
+          "R-AIA-Q-BIO"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-MOD"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "annexA-09",
+      "description": "Annexe A n°9 : analyse d'émotions en visioconférence (pilote RH) : interdit suspecté (art. 5).",
+      "usage": {
+        "usage_name": "Analyse d'émotions en visio (test)",
+        "department": "RH et administratif",
+        "tool": "other",
+        "tool_other": "Outil d'analyse vidéo",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees"
+        ],
+        "business_domain": "rh",
+        "data_types": [
+          "donnees_collaborateurs"
+        ],
+        "frequency": "occasional",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "yes",
+        "built_or_customized": "use_as_is",
+        "status": "pilot",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "prohibited_suspected",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-PRO-01"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-BIO",
+          "R-AIA-PRO-02",
+          "R-AIA-MIN"
+        ],
+        "actions_include": [
+          "ACT-PRO-01"
+        ],
+        "triggers": [
+          "R-AIA-PRO-01",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "prohibitions_art5"
+        ]
+      }
+    },
+    {
+      "id": "annexA-10",
+      "description": "Annexe A n°10 : aide au code du site avec GitHub Copilot professionnel, code source (service Marketing, domaine informatique).",
+      "usage": {
+        "usage_name": "Aide au code du site",
+        "department": "Marketing",
+        "tool": "github_copilot",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "code"
+        ],
+        "business_domain": "it_dev",
+        "data_types": [
+          "code_source"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "not_applicable",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-MIN",
+          "R-DAT-HIGH",
+          "R-DAT-CONFIDENTIAL"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-CONFIDENTIAL"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "edge-b2b-scoring",
+      "description": "Cas limite : scoring de solvabilité d'entreprises clientes (B2B), aucune personne physique : pas de haut risque.",
+      "usage": {
+        "usage_name": "Scoring de solvabilité des clients professionnels",
+        "department": "Comptabilité",
+        "tool": "other",
+        "tool_other": "Module de scoring financier",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees",
+          "aide_decision"
+        ],
+        "business_domain": "finance_credit",
+        "data_types": [
+          "donnees_financieres"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-MIN",
+          "R-DAT-CONFIDENTIAL"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-CRE",
+          "R-AIA-HI-OTH"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-CONFIDENTIAL"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "edge-unknown-everywhere",
+      "description": "Cas limite : « Je ne sais pas » partout (compte, personnes, biométrie) : à qualifier, jamais minimal.",
+      "usage": {
+        "usage_name": "Assistant de rédaction",
+        "department": null,
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "unknown",
+        "task_types": [
+          "redaction"
+        ],
+        "business_domain": "autre",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "unknown",
+        "direct_interaction": "no",
+        "biometric_emotion": "unknown",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "to_qualify",
+        "data_level": 1,
+        "data_to_qualify": true,
+        "triggers_include": [
+          "R-AIA-Q-AFF",
+          "R-AIA-Q-BIO",
+          "R-DAT-Q-ACCOUNT"
+        ],
+        "triggers_exclude": [
+          "R-AIA-MIN",
+          "R-DAT-PERSO"
+        ],
+        "actions_include": [
+          "ACT-QUAL-01"
+        ],
+        "signals_include": [
+          "shadow_ai"
+        ],
+        "triggers": [
+          "R-AIA-Q-AFF",
+          "R-AIA-Q-BIO",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-MOD",
+          "R-DAT-Q-ACCOUNT"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "prohibitions_art5",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "edge-credentials",
+      "description": "Cas limite : identifiants collés dans un prompt, compte personnel : exposition critique (3, plafonnée).",
+      "usage": {
+        "usage_name": "Débogage d'un script de connexion",
+        "department": "Comptabilité",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "personal_free",
+        "task_types": [
+          "code"
+        ],
+        "business_domain": "it_dev",
+        "data_types": [
+          "code_source",
+          "identifiants"
+        ],
+        "frequency": "occasional",
+        "users_count": null,
+        "output_audience": "not_applicable",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 3,
+        "triggers_include": [
+          "R-DAT-CRIT",
+          "R-DAT-CREDENTIALS",
+          "R-DAT-PERSO"
+        ],
+        "actions_include": [
+          "ACT-SEC-01",
+          "ACT-SHADOW-01"
+        ],
+        "signals_include": [
+          "credentials",
+          "shadow_ai"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-CRIT",
+          "R-DAT-HIGH",
+          "R-DAT-PERSO",
+          "R-DAT-SHADOW",
+          "R-DAT-CREDENTIALS",
+          "R-DAT-CONFIDENTIAL"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "edge-built-own",
+      "description": "Cas limite : système développé en interne et proposé sous le nom de l'entreprise : fournisseur possible, à qualifier.",
+      "usage": {
+        "usage_name": "Assistant devis maison",
+        "department": "Commercial et devis",
+        "tool": "internal_system",
+        "tool_other": null,
+        "model": null,
+        "account_type": "internal_system",
+        "task_types": [
+          "redaction",
+          "agent_automatisation"
+        ],
+        "business_domain": "commercial_devis",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "external_clients",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "built_own",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "to_qualify",
+        "data_level": 2,
+        "role": "potential_provider",
+        "triggers_include": [
+          "R-AIA-PRV-01"
+        ],
+        "triggers_exclude": [
+          "R-AIA-MIN"
+        ],
+        "actions_include": [
+          "ACT-QUAL-01"
+        ],
+        "triggers": [
+          "R-AIA-PRV-01",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "transparency_art50",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "edge-hr-chatbot",
+      "description": "Cas limite : chatbot RH qui échange avec les candidats et prépare la présélection : haut risque, déclencheur « limité » visible.",
+      "usage": {
+        "usage_name": "Chatbot de présélection des candidats",
+        "department": "RH et administratif",
+        "tool": "other",
+        "tool_other": "Chatbot de recrutement",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "chatbot_externe"
+        ],
+        "business_domain": "rh",
+        "data_types": [
+          "donnees_candidats"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "external_clients",
+        "output_review": "none",
+        "affects_people": "yes_input",
+        "direct_interaction": "yes",
+        "biometric_emotion": "no",
+        "built_or_customized": "configured_prompt",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "high",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-EMP",
+          "R-AIA-LIM-01",
+          "R-DAT-NO-REVIEW"
+        ],
+        "actions_include": [
+          "ACT-HR-01",
+          "ACT-TRANS-01",
+          "ACT-REV-01"
+        ],
+        "signals_include": [
+          "no_review_external"
+        ],
+        "triggers": [
+          "R-AIA-HI-EMP",
+          "R-AIA-LIM-01",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-NO-REVIEW",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "transparency_art50",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-pro-01-data-context",
+      "description": "R-AIA-PRO-01 : biométrie sur des collaborateurs (contexte de travail par les données, domaine « autre »).",
+      "usage": {
+        "usage_name": "Mesure du stress des équipes en visio",
+        "department": null,
+        "tool": "other",
+        "tool_other": "Extension de visioconférence",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees"
+        ],
+        "business_domain": "autre",
+        "data_types": [
+          "donnees_collaborateurs"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "yes",
+        "built_or_customized": "use_as_is",
+        "status": "planned",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "prohibited_suspected",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-PRO-01"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-BIO"
+        ],
+        "actions_include": [
+          "ACT-PRO-01"
+        ],
+        "triggers": [
+          "R-AIA-PRO-01",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "prohibitions_art5"
+        ]
+      }
+    },
+    {
+      "id": "rule-pro-01-formation",
+      "description": "R-AIA-PRO-01 : détection de l'attention des stagiaires en formation, sans autre donnée déclarée.",
+      "usage": {
+        "usage_name": "Détection de l'attention des stagiaires",
+        "department": null,
+        "tool": "other",
+        "tool_other": "Outil de classe virtuelle",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees"
+        ],
+        "business_domain": "formation",
+        "data_types": [
+          "aucune"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "yes",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "prohibited_suspected",
+        "data_level": 0,
+        "triggers_include": [
+          "R-AIA-PRO-01",
+          "R-DAT-LOW"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-BIO",
+          "R-AIA-HI-EDU"
+        ],
+        "triggers": [
+          "R-AIA-PRO-01",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-LOW"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "prohibitions_art5"
+        ]
+      }
+    },
+    {
+      "id": "rule-pro-02",
+      "description": "R-AIA-PRO-02 : analyse faciale de clients avec données sensibles (catégorisation biométrique suspectée).",
+      "usage": {
+        "usage_name": "Profilage de clients d'après leur visage",
+        "department": null,
+        "tool": "other",
+        "tool_other": "Logiciel d'analyse faciale",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees"
+        ],
+        "business_domain": "marketing_com",
+        "data_types": [
+          "donnees_clients",
+          "donnees_sensibles"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "yes",
+        "built_or_customized": "use_as_is",
+        "status": "planned",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "prohibited_suspected",
+        "data_level": 3,
+        "triggers_include": [
+          "R-AIA-PRO-02",
+          "R-AIA-HI-BIO",
+          "R-DAT-CRIT",
+          "R-DAT-SENSITIVE"
+        ],
+        "triggers_exclude": [
+          "R-AIA-PRO-01"
+        ],
+        "actions_include": [
+          "ACT-PRO-01",
+          "ACT-DPIA-01"
+        ],
+        "signals_include": [
+          "sensitive_data"
+        ],
+        "triggers": [
+          "R-AIA-PRO-02",
+          "R-AIA-HI-BIO",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-CRIT",
+          "R-DAT-HIGH",
+          "R-DAT-SENSITIVE",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "prohibitions_art5",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-bio",
+      "description": "R-AIA-HI-BIO : analyse des émotions de visiteurs sur un salon, hors contexte de travail.",
+      "usage": {
+        "usage_name": "Analyse des émotions des visiteurs",
+        "department": null,
+        "tool": "other",
+        "tool_other": "Caméra d'analyse d'audience",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees"
+        ],
+        "business_domain": "marketing_com",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "yes",
+        "built_or_customized": "use_as_is",
+        "status": "pilot",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "high",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-BIO"
+        ],
+        "triggers_exclude": [
+          "R-AIA-PRO-01",
+          "R-AIA-PRO-02"
+        ],
+        "actions_include": [
+          "ACT-HR-03",
+          "ACT-LOG-01",
+          "ACT-DPIA-01"
+        ],
+        "triggers": [
+          "R-AIA-HI-BIO",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-emp-affects",
+      "description": "R-AIA-HI-EMP (domaine RH et influence sur une décision) : aide aux décisions de promotion.",
+      "usage": {
+        "usage_name": "Aide aux décisions de promotion",
+        "department": "RH et administratif",
+        "tool": "claude",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "resume",
+          "aide_decision"
+        ],
+        "business_domain": "rh",
+        "data_types": [
+          "donnees_collaborateurs"
+        ],
+        "frequency": "occasional",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "yes_input",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "high",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-EMP"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-OTH"
+        ],
+        "triggers": [
+          "R-AIA-HI-EMP",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-emp-candidates",
+      "description": "R-AIA-HI-EMP (tri de personnes et données de candidats) : présélection faite par la direction.",
+      "usage": {
+        "usage_name": "Présélection de candidatures",
+        "department": "Direction",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "resume",
+          "evaluation_tri_personnes"
+        ],
+        "business_domain": "direction",
+        "data_types": [
+          "donnees_candidats"
+        ],
+        "frequency": "occasional",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "yes_input",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "high",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-EMP"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-OTH"
+        ],
+        "triggers": [
+          "R-AIA-HI-EMP",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-emp-unknown",
+      "description": "R-AIA-HI-EMP avec « Je ne sais pas » sur l'impact : reste haut risque, avec une question à confirmer.",
+      "usage": {
+        "usage_name": "Tri de candidatures spontanées",
+        "department": "Production",
+        "tool": "gemini",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "evaluation_tri_personnes"
+        ],
+        "business_domain": "production",
+        "data_types": [
+          "donnees_candidats"
+        ],
+        "frequency": "monthly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "unknown",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "high",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-EMP",
+          "R-AIA-Q-AFF"
+        ],
+        "actions_include": [
+          "ACT-HR-01",
+          "ACT-QUAL-01"
+        ],
+        "triggers": [
+          "R-AIA-HI-EMP",
+          "R-AIA-Q-AFF",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-rh-no-affect",
+      "description": "R-AIA-HI-EMP ne s'applique pas : offres d'emploi rédigées en RH, sans évaluation de personnes, relues avant publication.",
+      "usage": {
+        "usage_name": "Rédaction d'offres d'emploi",
+        "department": "RH et administratif",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "redaction"
+        ],
+        "business_domain": "rh",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "public",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 1,
+        "triggers_include": [
+          "R-AIA-MIN",
+          "R-DAT-MOD"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-EMP",
+          "R-AIA-LIM-02"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-MOD"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-cre",
+      "description": "R-AIA-HI-CRE : pré-accord de crédit pour des clients particuliers (personnes physiques).",
+      "usage": {
+        "usage_name": "Pré-accord de financement pour particuliers",
+        "department": "Comptabilité",
+        "tool": "embedded_software_ai",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees",
+          "aide_decision"
+        ],
+        "business_domain": "finance_credit",
+        "data_types": [
+          "donnees_clients",
+          "donnees_financieres"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "yes_decision",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "high",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-CRE"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-OTH"
+        ],
+        "actions_include": [
+          "ACT-HR-03",
+          "ACT-LOG-01",
+          "ACT-DPIA-01"
+        ],
+        "triggers": [
+          "R-AIA-HI-CRE",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL",
+          "R-DAT-CONFIDENTIAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-edu",
+      "description": "R-AIA-HI-EDU : aide à la notation des évaluations de stagiaires.",
+      "usage": {
+        "usage_name": "Aide à la notation des stagiaires",
+        "department": null,
+        "tool": "mistral_le_chat",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees"
+        ],
+        "business_domain": "formation",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "yes_input",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "high",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-EDU"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-OTH"
+        ],
+        "triggers": [
+          "R-AIA-HI-EDU",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-oth-affects",
+      "description": "R-AIA-HI-OTH : décision de remboursement de clients particuliers (domaine hors RH, crédit et formation).",
+      "usage": {
+        "usage_name": "Décision de remboursement",
+        "department": "Service client",
+        "tool": "embedded_software_ai",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "aide_decision"
+        ],
+        "business_domain": "service_client",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "yes_decision",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "to_qualify",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-OTH"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-EMP",
+          "R-AIA-HI-CRE",
+          "R-AIA-HI-EDU",
+          "R-AIA-MIN"
+        ],
+        "actions_include": [
+          "ACT-QUAL-01"
+        ],
+        "triggers": [
+          "R-AIA-HI-OTH",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-oth-sorting",
+      "description": "R-AIA-HI-OTH : tri de personnes hors emploi (classement de prospects particuliers).",
+      "usage": {
+        "usage_name": "Classement de prospects particuliers",
+        "department": "Commercial et devis",
+        "tool": "embedded_software_ai",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees",
+          "evaluation_tri_personnes"
+        ],
+        "business_domain": "commercial_devis",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "to_qualify",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-OTH"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-EMP"
+        ],
+        "triggers": [
+          "R-AIA-HI-OTH",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-q-aff",
+      "description": "R-AIA-Q-AFF : impact sur les personnes inconnu (traitement des réclamations).",
+      "usage": {
+        "usage_name": "Aide au traitement des réclamations",
+        "department": "Service client",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "redaction",
+          "aide_decision"
+        ],
+        "business_domain": "service_client",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "external_clients",
+        "output_review": "systematic",
+        "affects_people": "unknown",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "to_qualify",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-Q-AFF"
+        ],
+        "triggers_exclude": [
+          "R-AIA-MIN"
+        ],
+        "actions_include": [
+          "ACT-QUAL-01"
+        ],
+        "triggers": [
+          "R-AIA-Q-AFF",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-q-bio",
+      "description": "R-AIA-Q-BIO : analyse d'appels clients, biométrie inconnue.",
+      "usage": {
+        "usage_name": "Analyse des appels clients",
+        "department": "Service client",
+        "tool": "other",
+        "tool_other": "Plateforme de téléphonie",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees",
+          "transcription"
+        ],
+        "business_domain": "service_client",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "unknown",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "to_qualify",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-Q-BIO"
+        ],
+        "actions_include": [
+          "ACT-QUAL-01"
+        ],
+        "triggers": [
+          "R-AIA-Q-BIO",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "prohibitions_art5",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-lim-01-voice",
+      "description": "R-AIA-LIM-01 : agent vocal d'accueil téléphonique, réponses sans relecture.",
+      "usage": {
+        "usage_name": "Agent vocal d'accueil",
+        "department": "Service client",
+        "tool": "other",
+        "tool_other": "Standard téléphonique IA",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "chatbot_externe",
+          "agent_automatisation"
+        ],
+        "business_domain": "service_client",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "daily",
+        "users_count": null,
+        "output_audience": "external_clients",
+        "output_review": "none",
+        "affects_people": "no",
+        "direct_interaction": "yes",
+        "biometric_emotion": "no",
+        "built_or_customized": "configured_prompt",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "limited",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-LIM-01",
+          "R-DAT-NO-REVIEW"
+        ],
+        "signals_include": [
+          "no_review_external"
+        ],
+        "actions_include": [
+          "ACT-TRANS-01",
+          "ACT-REV-01"
+        ],
+        "triggers": [
+          "R-AIA-LIM-01",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-NO-REVIEW",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "transparency_art50"
+        ]
+      }
+    },
+    {
+      "id": "rule-lim-02-public-no-review",
+      "description": "R-AIA-LIM-02 : publications automatiques sur les réseaux sociaux, sans relecture.",
+      "usage": {
+        "usage_name": "Publications automatiques",
+        "department": "Marketing",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "redaction",
+          "agent_automatisation"
+        ],
+        "business_domain": "marketing_com",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "public",
+        "output_review": "none",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "limited",
+        "data_level": 1,
+        "triggers_include": [
+          "R-AIA-LIM-02",
+          "R-DAT-NO-REVIEW"
+        ],
+        "actions_include": [
+          "ACT-TRANS-02",
+          "ACT-REV-01"
+        ],
+        "triggers": [
+          "R-AIA-LIM-02",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-MOD",
+          "R-DAT-NO-REVIEW"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "transparency_art50",
+          "marking_grace_art50_2"
+        ]
+      }
+    },
+    {
+      "id": "rule-lim-02-public-partial",
+      "description": "R-AIA-LIM-02 : articles de blog publiés, relus seulement parfois.",
+      "usage": {
+        "usage_name": "Articles de blog",
+        "department": "Marketing",
+        "tool": "mistral_le_chat",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "redaction"
+        ],
+        "business_domain": "marketing_com",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "public",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "limited",
+        "data_level": 1,
+        "triggers_include": [
+          "R-AIA-LIM-02"
+        ],
+        "triggers_exclude": [
+          "R-DAT-NO-REVIEW"
+        ],
+        "triggers": [
+          "R-AIA-LIM-02",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-MOD"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "transparency_art50",
+          "marking_grace_art50_2"
+        ]
+      }
+    },
+    {
+      "id": "rule-lim-02-media-clients",
+      "description": "R-AIA-LIM-02 : rendus d'images générés et envoyés aux clients, même relus.",
+      "usage": {
+        "usage_name": "Rendus 3D pour les clients",
+        "department": "Commercial et devis",
+        "tool": "other",
+        "tool_other": "Générateur de rendus",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "generation_media"
+        ],
+        "business_domain": "commercial_devis",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "external_clients",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "limited",
+        "data_level": 1,
+        "triggers_include": [
+          "R-AIA-LIM-02"
+        ],
+        "triggers": [
+          "R-AIA-LIM-02",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-MOD"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "transparency_art50",
+          "marking_grace_art50_2"
+        ]
+      }
+    },
+    {
+      "id": "rule-lim-02-reviewed-text",
+      "description": "R-AIA-LIM-02 ne s'applique pas : actualités publiées, relues sous contrôle éditorial.",
+      "usage": {
+        "usage_name": "Actualités du site",
+        "department": "Marketing",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "redaction"
+        ],
+        "business_domain": "marketing_com",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "public",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 1,
+        "triggers_include": [
+          "R-AIA-MIN"
+        ],
+        "triggers_exclude": [
+          "R-AIA-LIM-02"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-MOD"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "rule-media-internal",
+      "description": "R-AIA-LIM-02 ne s'applique pas : illustrations générées pour un usage interne.",
+      "usage": {
+        "usage_name": "Illustrations des présentations internes",
+        "department": null,
+        "tool": "gemini",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "generation_media"
+        ],
+        "business_domain": "marketing_com",
+        "data_types": [
+          "aucune"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 0,
+        "triggers_include": [
+          "R-AIA-MIN",
+          "R-DAT-LOW"
+        ],
+        "triggers_exclude": [
+          "R-AIA-LIM-02"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-LOW"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "rule-no-review-external",
+      "description": "R-DAT-NO-REVIEW : réponses aux e-mails clients envoyées sans relecture.",
+      "usage": {
+        "usage_name": "Réponses aux e-mails clients",
+        "department": "Service client",
+        "tool": "microsoft_copilot",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "redaction"
+        ],
+        "business_domain": "service_client",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "daily",
+        "users_count": null,
+        "output_audience": "external_clients",
+        "output_review": "none",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 2,
+        "triggers_include": [
+          "R-DAT-NO-REVIEW",
+          "R-AIA-MIN"
+        ],
+        "triggers_exclude": [
+          "R-AIA-LIM-02"
+        ],
+        "signals_include": [
+          "no_review_external"
+        ],
+        "actions_include": [
+          "ACT-REV-01"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-NO-REVIEW",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "rule-sensitive-data",
+      "description": "R-DAT-SENSITIVE : données de santé de salariés, compte professionnel : exposition critique.",
+      "usage": {
+        "usage_name": "Synthèse des aptitudes médicales pour le planning",
+        "department": "Production",
+        "tool": "claude",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "resume"
+        ],
+        "business_domain": "production",
+        "data_types": [
+          "donnees_collaborateurs",
+          "donnees_sensibles"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 3,
+        "triggers_include": [
+          "R-DAT-CRIT",
+          "R-DAT-SENSITIVE",
+          "R-DAT-PERSONAL"
+        ],
+        "signals_include": [
+          "sensitive_data",
+          "personal_data"
+        ],
+        "actions_include": [
+          "ACT-DPIA-01",
+          "ACT-DPA-01"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-CRIT",
+          "R-DAT-HIGH",
+          "R-DAT-SENSITIVE",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "rule-personal-cap",
+      "description": "R-DAT-PERSO plafonné : données sensibles sur compte personnel restent à 3.",
+      "usage": {
+        "usage_name": "Reformulation de courriers délicats",
+        "department": "Service client",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "personal_free",
+        "task_types": [
+          "redaction"
+        ],
+        "business_domain": "service_client",
+        "data_types": [
+          "donnees_sensibles"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "external_clients",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 3,
+        "triggers_include": [
+          "R-DAT-PERSO",
+          "R-DAT-CRIT",
+          "R-DAT-SHADOW"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-CRIT",
+          "R-DAT-PERSO",
+          "R-DAT-SHADOW",
+          "R-DAT-SENSITIVE",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "rule-personal-docs",
+      "description": "R-DAT-PERSO : traduction de notices avec DeepL sur compte personnel gratuit (1 + 1 = 2).",
+      "usage": {
+        "usage_name": "Traduction de notices de pose",
+        "department": "Production",
+        "tool": "deepl",
+        "tool_other": null,
+        "model": null,
+        "account_type": "personal_free",
+        "task_types": [
+          "traduction"
+        ],
+        "business_domain": "production",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "external_clients",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 2,
+        "triggers_include": [
+          "R-DAT-PERSO",
+          "R-DAT-MOD"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-MOD",
+          "R-DAT-PERSO",
+          "R-DAT-SHADOW"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "rule-personal-no-data",
+      "description": "R-DAT-SHADOW sans R-DAT-PERSO : recherche d'idées sans donnée, compte personnel (reste à 0).",
+      "usage": {
+        "usage_name": "Idées de noms de gammes",
+        "department": "Marketing",
+        "tool": "perplexity",
+        "tool_other": null,
+        "model": null,
+        "account_type": "personal_free",
+        "task_types": [
+          "recherche_information"
+        ],
+        "business_domain": "marketing_com",
+        "data_types": [
+          "aucune"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "not_applicable",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 0,
+        "triggers_include": [
+          "R-DAT-SHADOW",
+          "R-DAT-LOW"
+        ],
+        "triggers_exclude": [
+          "R-DAT-PERSO"
+        ],
+        "signals_include": [
+          "shadow_ai"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-LOW",
+          "R-DAT-SHADOW"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "rule-financial-data",
+      "description": "R-DAT-CONFIDENTIAL : analyse des écarts budgétaires (données financières internes).",
+      "usage": {
+        "usage_name": "Analyse des écarts budgétaires",
+        "department": "Comptabilité",
+        "tool": "microsoft_copilot",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees"
+        ],
+        "business_domain": "finance_credit",
+        "data_types": [
+          "donnees_financieres"
+        ],
+        "frequency": "monthly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 2,
+        "triggers_include": [
+          "R-DAT-CONFIDENTIAL",
+          "R-DAT-HIGH"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-CRE"
+        ],
+        "actions_include": [
+          "ACT-DPA-01"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-CONFIDENTIAL"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "rule-api-integration",
+      "description": "Accès par API configuré (tri des e-mails entrants), sans décision sur des personnes : minimal.",
+      "usage": {
+        "usage_name": "Tri automatique des e-mails entrants",
+        "department": "Service client",
+        "tool": "claude",
+        "tool_other": null,
+        "model": null,
+        "account_type": "api_integration",
+        "task_types": [
+          "agent_automatisation"
+        ],
+        "business_domain": "service_client",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "daily",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "configured_prompt",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-MIN",
+          "R-DAT-PERSONAL"
+        ],
+        "triggers_exclude": [
+          "R-AIA-PRV-01",
+          "R-DAT-SHADOW"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "rule-translation-clients",
+      "description": "Traduction de courriers clients avec DeepL professionnel, relus : minimal.",
+      "usage": {
+        "usage_name": "Traduction de courriers clients",
+        "department": "Service client",
+        "tool": "deepl",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "traduction"
+        ],
+        "business_domain": "service_client",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "external_clients",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-MIN"
+        ],
+        "triggers_exclude": [
+          "R-AIA-LIM-02"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "rule-pro-01-direction",
+      "description": "R-AIA-PRO-01 (domaine direction) : analyse de l'humeur des participants en comité de direction, sans autre donnée déclarée.",
+      "usage": {
+        "usage_name": "Analyse de l'humeur en comité de direction",
+        "department": "Direction",
+        "tool": "other",
+        "tool_other": "Module d'analyse de visioconférence",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees"
+        ],
+        "business_domain": "direction",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "monthly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "yes",
+        "built_or_customized": "use_as_is",
+        "status": "planned",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "prohibited_suspected",
+        "data_level": 1,
+        "triggers_include": [
+          "R-AIA-PRO-01"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-BIO",
+          "R-AIA-PRO-02"
+        ],
+        "actions_include": [
+          "ACT-PRO-01"
+        ],
+        "triggers": [
+          "R-AIA-PRO-01",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-MOD"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "prohibitions_art5"
+        ]
+      }
+    },
+    {
+      "id": "rule-pro-01-production",
+      "description": "R-AIA-PRO-01 (domaine production) : suivi de l'attention des opérateurs par caméra ; une éventuelle exception de sécurité reste à qualifier.",
+      "usage": {
+        "usage_name": "Suivi de l'attention des opérateurs",
+        "department": "Production",
+        "tool": "embedded_software_ai",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees"
+        ],
+        "business_domain": "production",
+        "data_types": [
+          "aucune"
+        ],
+        "frequency": "daily",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "yes",
+        "built_or_customized": "use_as_is",
+        "status": "pilot",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "prohibited_suspected",
+        "data_level": 0,
+        "triggers_include": [
+          "R-AIA-PRO-01",
+          "R-DAT-LOW"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-BIO"
+        ],
+        "actions_include": [
+          "ACT-PRO-01"
+        ],
+        "triggers": [
+          "R-AIA-PRO-01",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-LOW"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "prohibitions_art5"
+        ]
+      }
+    },
+    {
+      "id": "rule-pro-01-rh-docs",
+      "description": "R-AIA-PRO-01 (domaine RH) : analyse vocale du climat social en réunion, à partir de documents internes.",
+      "usage": {
+        "usage_name": "Analyse du climat social en réunion",
+        "department": "RH et administratif",
+        "tool": "other",
+        "tool_other": "Outil d'analyse vocale",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees",
+          "transcription"
+        ],
+        "business_domain": "rh",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "monthly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "yes",
+        "built_or_customized": "use_as_is",
+        "status": "planned",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "prohibited_suspected",
+        "data_level": 1,
+        "triggers_include": [
+          "R-AIA-PRO-01"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-BIO",
+          "R-AIA-HI-EMP"
+        ],
+        "triggers": [
+          "R-AIA-PRO-01",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-MOD"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "prohibitions_art5"
+        ]
+      }
+    },
+    {
+      "id": "rule-pro-01-candidates",
+      "description": "R-AIA-PRO-01 (données de candidats) : présélection de commerciaux sur entretiens vidéo, déclarée dans le domaine commercial.",
+      "usage": {
+        "usage_name": "Présélection vidéo de commerciaux",
+        "department": "Commercial et devis",
+        "tool": "other",
+        "tool_other": "Plateforme d'entretiens vidéo",
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "evaluation_tri_personnes"
+        ],
+        "business_domain": "commercial_devis",
+        "data_types": [
+          "donnees_candidats"
+        ],
+        "frequency": "occasional",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "partial",
+        "affects_people": "yes_input",
+        "direct_interaction": "no",
+        "biometric_emotion": "yes",
+        "built_or_customized": "use_as_is",
+        "status": "pilot",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "prohibited_suspected",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-PRO-01",
+          "R-AIA-HI-EMP"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-BIO",
+          "R-AIA-HI-OTH"
+        ],
+        "actions_include": [
+          "ACT-PRO-01",
+          "ACT-HR-01"
+        ],
+        "triggers": [
+          "R-AIA-PRO-01",
+          "R-AIA-HI-EMP",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "prohibitions_art5",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-emp-rh-sorting",
+      "description": "R-AIA-HI-EMP (domaine RH et tri de personnes) : synthèse des entretiens annuels, même déclarée sans impact sur les personnes.",
+      "usage": {
+        "usage_name": "Synthèse des entretiens annuels",
+        "department": "RH et administratif",
+        "tool": "claude",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "resume",
+          "evaluation_tri_personnes"
+        ],
+        "business_domain": "rh",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "monthly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "high",
+        "data_level": 1,
+        "triggers_include": [
+          "R-AIA-HI-EMP"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-OTH"
+        ],
+        "triggers": [
+          "R-AIA-HI-EMP",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-MOD"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-emp-rh-decision",
+      "description": "R-AIA-HI-EMP (domaine RH et décision automatisée) : planification automatique des horaires d'équipe.",
+      "usage": {
+        "usage_name": "Planification des horaires d'équipe",
+        "department": "RH et administratif",
+        "tool": "embedded_software_ai",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "agent_automatisation"
+        ],
+        "business_domain": "rh",
+        "data_types": [
+          "donnees_collaborateurs"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "partial",
+        "affects_people": "yes_decision",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "high",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-EMP"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-OTH"
+        ],
+        "triggers": [
+          "R-AIA-HI-EMP",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-emp-collaborators",
+      "description": "R-AIA-HI-EMP (tri de personnes et données de collaborateurs, hors domaine RH) : classement des opérateurs par productivité.",
+      "usage": {
+        "usage_name": "Classement des opérateurs par productivité",
+        "department": "Production",
+        "tool": "microsoft_copilot",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees",
+          "evaluation_tri_personnes"
+        ],
+        "business_domain": "production",
+        "data_types": [
+          "donnees_collaborateurs"
+        ],
+        "frequency": "monthly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "yes_input",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "high",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-EMP"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-OTH"
+        ],
+        "triggers": [
+          "R-AIA-HI-EMP",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-cre-input",
+      "description": "R-AIA-HI-CRE (aide à la décision) : étude des dossiers de financement de clients particuliers.",
+      "usage": {
+        "usage_name": "Étude des dossiers de financement",
+        "department": "Comptabilité",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees",
+          "evaluation_tri_personnes"
+        ],
+        "business_domain": "finance_credit",
+        "data_types": [
+          "donnees_clients",
+          "donnees_financieres"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "yes_input",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "high",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-CRE"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-OTH",
+          "R-AIA-HI-EMP"
+        ],
+        "triggers": [
+          "R-AIA-HI-CRE",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL",
+          "R-DAT-CONFIDENTIAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-edu-decision",
+      "description": "R-AIA-HI-EDU (décision automatisée) : sélection des inscrits à une formation certifiante.",
+      "usage": {
+        "usage_name": "Sélection des inscrits en formation",
+        "department": null,
+        "tool": "embedded_software_ai",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "aide_decision",
+          "agent_automatisation"
+        ],
+        "business_domain": "formation",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "occasional",
+        "users_count": null,
+        "output_audience": "external_clients",
+        "output_review": "partial",
+        "affects_people": "yes_decision",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "high",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-EDU"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-OTH",
+          "R-AIA-LIM-02"
+        ],
+        "triggers": [
+          "R-AIA-HI-EDU",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-oth-client-scoring",
+      "description": "R-AIA-HI-OTH (tri de personnes qui influence une décision, hors emploi) : notation de clients particuliers pour prioriser les relances.",
+      "usage": {
+        "usage_name": "Notation des clients pour les relances",
+        "department": "Commercial et devis",
+        "tool": "embedded_software_ai",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "analyse_donnees",
+          "evaluation_tri_personnes"
+        ],
+        "business_domain": "commercial_devis",
+        "data_types": [
+          "donnees_clients"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "yes_input",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "to_qualify",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-OTH"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-EMP"
+        ],
+        "actions_include": [
+          "ACT-QUAL-01"
+        ],
+        "triggers": [
+          "R-AIA-HI-OTH",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-oth-collaborators",
+      "description": "R-AIA-HI-OTH (données de collaborateurs, sans tri de personnes, hors RH) : aide à la validation des demandes de congés en atelier.",
+      "usage": {
+        "usage_name": "Validation des demandes de congés",
+        "department": "Production",
+        "tool": "chatgpt",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "aide_decision"
+        ],
+        "business_domain": "production",
+        "data_types": [
+          "donnees_collaborateurs"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "yes_input",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "to_qualify",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-OTH"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-EMP"
+        ],
+        "triggers": [
+          "R-AIA-HI-OTH",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-internal-no-review",
+      "description": "R-DAT-NO-REVIEW ne s'applique pas : comptes rendus de réunion non relus, qui restent en interne.",
+      "usage": {
+        "usage_name": "Comptes rendus de réunion internes",
+        "department": "Direction",
+        "tool": "microsoft_copilot",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "resume",
+          "transcription"
+        ],
+        "business_domain": "direction",
+        "data_types": [
+          "docs_internes"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "none",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "minimal",
+        "data_level": 1,
+        "triggers_include": [
+          "R-AIA-MIN"
+        ],
+        "triggers_exclude": [
+          "R-DAT-NO-REVIEW"
+        ],
+        "triggers": [
+          "R-AIA-MIN",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-MOD"
+        ],
+        "deadlines": [
+          "literacy_art4"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-cre-sorting",
+      "description": "R-AIA-HI-CRE (tri automatique) : classement automatique des demandes de crédit de clients particuliers.",
+      "usage": {
+        "usage_name": "Classement des demandes de crédit",
+        "department": "Comptabilité",
+        "tool": "embedded_software_ai",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "evaluation_tri_personnes",
+          "agent_automatisation"
+        ],
+        "business_domain": "finance_credit",
+        "data_types": [
+          "donnees_clients",
+          "donnees_financieres"
+        ],
+        "frequency": "daily",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "partial",
+        "affects_people": "yes_decision",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "high",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-CRE"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-OTH",
+          "R-AIA-HI-EMP"
+        ],
+        "triggers": [
+          "R-AIA-HI-CRE",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL",
+          "R-DAT-CONFIDENTIAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "rule-hi-emp-skills-unknown",
+      "description": "R-AIA-HI-EMP (tri de personnes et données de collaborateurs) avec un impact déclaré inconnu : grille de compétences des opérateurs.",
+      "usage": {
+        "usage_name": "Grille de compétences des opérateurs",
+        "department": "Production",
+        "tool": "gemini",
+        "tool_other": null,
+        "model": null,
+        "account_type": "enterprise_provided",
+        "task_types": [
+          "evaluation_tri_personnes"
+        ],
+        "business_domain": "production",
+        "data_types": [
+          "donnees_collaborateurs"
+        ],
+        "frequency": "monthly",
+        "users_count": null,
+        "output_audience": "internal_only",
+        "output_review": "systematic",
+        "affects_people": "unknown",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "use_as_is",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "high",
+        "data_level": 2,
+        "triggers_include": [
+          "R-AIA-HI-EMP",
+          "R-AIA-Q-AFF"
+        ],
+        "triggers_exclude": [
+          "R-AIA-HI-OTH"
+        ],
+        "actions_include": [
+          "ACT-QUAL-01"
+        ],
+        "triggers": [
+          "R-AIA-HI-EMP",
+          "R-AIA-Q-AFF",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-HIGH",
+          "R-DAT-PERSONAL"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "high_risk_annex_iii"
+        ]
+      }
+    }
+  ]
+}

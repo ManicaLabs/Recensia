@@ -1,0 +1,85 @@
+{
+  "version": "2026-09-29.2",
+  "last_verified": "2026-09-29",
+  "verification_source": "primary",
+  "note": "Dates vérifiées le 29/09/2026 sur le texte du JO (règlement de base 2024/1689 et règlement modificatif 2026/1744, PDF officiel via l'Office des publications, EUR-Lex bloquant la lecture automatisée). Vérification automatisée : à faire confirmer par un juriste avant chaque release.",
+  "reference_text": "Règlement (UE) 2024/1689 sur l'intelligence artificielle, modifié par le règlement (UE) 2026/1744 du 8 juillet 2026 (« Digital Omnibus » sur l'IA), publié au JOUE le 24 juillet 2026 et entré en vigueur le 27 juillet 2026.",
+  "deadlines": [
+    {
+      "id": "prohibitions_art5",
+      "date": "2025-02-02",
+      "label": "Interdiction de certaines pratiques d'IA (art. 5)",
+      "status": "verified",
+      "source_url": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj",
+      "last_verified": "2026-09-29",
+      "note": "En vigueur depuis le 2 février 2025 (art. 113, point a). Inchangé par le règlement 2026/1744, sauf les nouvelles interdictions (voir 2 décembre 2026)."
+    },
+    {
+      "id": "literacy_art4",
+      "date": "2025-02-02",
+      "label": "Maîtrise de l'IA par les équipes (littératie, art. 4)",
+      "status": "verified",
+      "source_url": "https://eur-lex.europa.eu/eli/reg/2026/1744/oj",
+      "last_verified": "2026-09-29",
+      "note": "Applicable depuis le 2 février 2025. Nouvelle rédaction (règlement 2026/1744, applicable depuis le 27 juillet 2026) : prendre des mesures pour favoriser la maîtrise de l'IA, sans obligation de garantir un niveau donné. « Obligation de moyens » est une qualification doctrinale, absente du texte."
+    },
+    {
+      "id": "gpai_providers",
+      "date": "2025-08-02",
+      "label": "Obligations des fournisseurs de modèles d'IA à usage général",
+      "status": "verified",
+      "source_url": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj",
+      "last_verified": "2026-09-29",
+      "note": "Applicable depuis le 2 août 2025 (art. 113, point b), non modifié. Concerne les fournisseurs de modèles, pas les PME déployeuses."
+    },
+    {
+      "id": "transparency_art50",
+      "date": "2026-08-02",
+      "label": "Obligations de transparence (art. 50)",
+      "status": "verified",
+      "source_url": "https://eur-lex.europa.eu/eli/reg/2024/1689/oj",
+      "last_verified": "2026-09-29",
+      "note": "Applicable depuis le 2 août 2026 (date générale). Aucun délai de grâce pour les obligations des déployeurs (art. 50, § 1, 3 et 4)."
+    },
+    {
+      "id": "marking_grace_art50_2",
+      "date": "2026-12-02",
+      "label": "Fin du délai de grâce pour le marquage des contenus générés (art. 50, § 2)",
+      "status": "verified",
+      "source_url": "https://eur-lex.europa.eu/eli/reg/2026/1744/oj",
+      "last_verified": "2026-09-29",
+      "note": "Nouvel art. 111, § 4 : délai jusqu'au 2 décembre 2026 réservé aux FOURNISSEURS de systèmes mis sur le marché avant le 2 août 2026, pour le seul marquage de l'art. 50, § 2."
+    },
+    {
+      "id": "omnibus_new_prohibitions",
+      "date": "2026-12-02",
+      "label": "Nouvelles interdictions introduites par le règlement modificatif",
+      "status": "verified",
+      "source_url": "https://eur-lex.europa.eu/eli/reg/2026/1744/oj",
+      "last_verified": "2026-09-29",
+      "note": "Nouveaux points (ba) et (bb) de l'art. 5, § 1 : génération ou manipulation d'images intimes non consenties d'une personne identifiable et de contenus pédocriminels. Côté déployeur, interdit seulement si le système est utilisé dans ce but (art. 5, § 1 bis, point b)."
+    },
+    {
+      "id": "high_risk_annex_iii",
+      "date": "2027-12-02",
+      "label": "Systèmes à haut risque de l'annexe III (emploi, crédit, éducation…)",
+      "status": "verified",
+      "source_url": "https://eur-lex.europa.eu/eli/reg/2026/1744/oj",
+      "last_verified": "2026-09-29",
+      "note": "Nouvel art. 113, point c) i) : chapitre III, sections 1 à 3 (dont les obligations des déployeurs, art. 26 et 27) applicables le 2 décembre 2027 pour l'annexe III. Nouvel art. 111, § 2 : un système déjà en service avant cette date n'est visé qu'en cas de modification importante de sa conception."
+    },
+    {
+      "id": "high_risk_annex_i",
+      "date": "2028-08-02",
+      "label": "Systèmes à haut risque intégrés à des produits réglementés (annexe I)",
+      "status": "verified",
+      "source_url": "https://eur-lex.europa.eu/eli/reg/2026/1744/oj",
+      "last_verified": "2026-09-29",
+      "note": "Nouvel art. 113, point c) ii) : 2 août 2028 pour les systèmes relevant de l'art. 6, § 1, et de l'annexe I (au lieu du 2 août 2027)."
+    }
+  ],
+  "reference_urls": [
+    "https://eur-lex.europa.eu/eli/reg/2024/1689/oj",
+    "https://eur-lex.europa.eu/eli/reg/2026/1744/oj"
+  ]
+}
