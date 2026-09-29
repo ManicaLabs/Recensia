@@ -1,7 +1,7 @@
 // Fichier généré par tools/precache.mjs : ne pas modifier à la main.
 // Régénérer avec « node tools/precache.mjs » ou « node tools/check.mjs --fix ».
 self.__RECENSIA_PRECACHE = {
-  version: '0.1.0-6b2c71c4',
+  version: '0.1.0-048d6e54',
   files: [
     './apple-touch-icon.png',
     './config.js',
@@ -35,13 +35,22 @@ self.__RECENSIA_PRECACHE = {
     './src/engine/levels.js',
     './src/engine/stats.js',
     './src/engine/validate.js',
+    './src/export/csv.js',
+    './src/export/json.js',
     './src/export/print.css',
+    './src/export/registry.js',
+    './src/export/xlsx.js',
     './src/i18n.js',
     './src/i18n/fr/common.json',
     './src/i18n/fr/home.json',
     './src/i18n/fr/not_found.json',
     './src/i18n/fr/privacy.json',
     './src/router.js',
+    './src/storage/backup-format.js',
+    './src/storage/idb.js',
+    './src/storage/memory.js',
+    './src/storage/schema.js',
+    './src/storage/store.js',
     './src/styles/app.css',
     './src/ui/clipboard.js',
     './src/ui/components.js',
