@@ -4,6 +4,7 @@ import {
   renderMessage, anonymityBlock, hasLockedBlock, listTemplates, renderTemplate, proseLength,
   publicContext, messageContextFromCampaign, returnChannelText, sheetContent, formatDay,
   formatDuration, formatCount, displayFingerprint, escapeHtml, clipText, MessageError, TOKENS, PUBLIC_CONTEXT_KEYS,
+  frenchSpacing,
 } from '../src/share/messages.js';
 import { importLink } from '../src/share/urls.js';
 import {
@@ -98,6 +99,9 @@ function checkMessage(templateId, ctx, msg) {
     if (/https?:\/\//.test(line)) assert.ok(line === ctx.link || line === ctx.import_link, `lien seul sur sa ligne : ${line.slice(0, 60)}`);
     if (line.includes('RCN1.') && line !== ctx.import_link) assert.ok(ctx.codes.includes(line), 'code seul sur sa ligne');
     assert.ok(!/ {2,}/.test(line), 'pas d\'espaces doubles');
+    // Typographie française : aucune espace ordinaire avant « : ; ? ! » ni à l'intérieur des guillemets
+    // (sinon la ponctuation ou le guillemet peut se retrouver seul en début ou en fin de ligne).
+    if (!/^(?:https?:\/\/|RCN1\.)/.test(line)) assert.ok(!/ [:;?!\u00BB]|\u00AB /.test(line), `espace insécable attendue : ${line.slice(0, 80)}`);
     assert.ok(!/ [,.](?:\s|$)/.test(line), 'pas d\'espace avant une virgule ou un point');
     assert.ok(!/\s(?:le|la|à|au|par|de|du|avant)[.,;:]?$/.test(line), `pas de phrase orpheline : ${line}`);
   }
@@ -113,7 +117,7 @@ function checkMessage(templateId, ctx, msg) {
   const pc = publicContext(ctx, templates, channelsData);
   if (tpl.body.includes('{org}') && pc.org) assert.ok(msg.body.includes(pc.org), 'organisation présente');
   const channelText = returnChannelText(ctx.channels, templates, channelsData);
-  if (tpl.body.includes('{return_channel}') && channelText) assert.ok(msg.body.includes(channelText), 'canal de retour présent');
+  if (tpl.body.includes('{return_channel}') && channelText) assert.ok(msg.body.includes(frenchSpacing(channelText)), 'canal de retour présent');
   if (tpl.body.includes('{fingerprint}') && pc.fingerprint) assert.ok(msg.body.includes(displayFingerprint(pc.fingerprint)), 'empreinte présente');
   if (tpl.body.includes('{closes_on}')) {
     const day = ctx.closes_on ? formatDay(ctx.closes_on, templates) : null;
@@ -153,11 +157,11 @@ test('toutes les combinaisons gabarit × mode × canaux × variantes sont valide
 
 test('bloc d\'anonymat : formulations attendues', () => {
   const block = (mode, types) => anonymityBlock(mode, types.map((type) => ({ type })), templates, channelsData);
-  assert.equal(block('anonymous', ['mailto']), "Réponses anonymes ; l'envoi par e-mail, lui, n'est pas anonyme.");
-  assert.equal(block('anonymous', ['mailto', 'teams', 'whatsapp']), "Réponses anonymes ; l'envoi par e-mail, par Teams ou par WhatsApp, lui, n'est pas anonyme.");
-  assert.equal(block('anonymous', ['copy', 'file']), "Réponses anonymes ; par copier-coller ou par fichier, l'anonymat dépend du canal de dépôt.");
-  assert.equal(block('anonymous', ['mailto', 'copy']), "Réponses anonymes ; l'envoi par e-mail, lui, n'est pas anonyme ; par copier-coller, l'anonymat dépend du canal de dépôt.");
-  assert.equal(block('anonymous', []), "Réponses anonymes ; l'anonymat dépend aussi du canal par lequel vous transmettez votre code.");
+  assert.equal(block('anonymous', ['mailto']), "Réponses anonymes\u00A0; l'envoi par e-mail, lui, n'est pas anonyme.");
+  assert.equal(block('anonymous', ['mailto', 'teams', 'whatsapp']), "Réponses anonymes\u00A0; l'envoi par e-mail, par Teams ou par WhatsApp, lui, n'est pas anonyme.");
+  assert.equal(block('anonymous', ['copy', 'file']), "Réponses anonymes\u00A0; par copier-coller ou par fichier, l'anonymat dépend du canal de dépôt.");
+  assert.equal(block('anonymous', ['mailto', 'copy']), "Réponses anonymes\u00A0; l'envoi par e-mail, lui, n'est pas anonyme\u00A0; par copier-coller, l'anonymat dépend du canal de dépôt.");
+  assert.equal(block('anonymous', []), "Réponses anonymes\u00A0; l'anonymat dépend aussi du canal par lequel vous transmettez votre code.");
   assert.equal(block('open', ['mailto']), templates.anonymity_blocks.open);
   assert.throws(() => block('secret', []), (e) => e instanceof MessageError && e.code === 'invalid_mode');
 });
@@ -166,13 +170,21 @@ test('un canal « n\'identifie pas » ne fait jamais disparaître la réserve', 
   const data = structuredClone(channelsData);
   data.types.anon_form = { label: 'Formulaire anonyme', identifies_sender: 'no', via: 'par le formulaire anonyme', target: null };
   const locked = anonymityBlock('anonymous', [{ type: 'anon_form' }], templates, data);
-  assert.equal(locked, "Réponses anonymes ; l'anonymat dépend aussi du canal par lequel vous transmettez votre code.");
+  assert.equal(locked, "Réponses anonymes\u00A0; l'anonymat dépend aussi du canal par lequel vous transmettez votre code.");
 });
 
 test('canaux inconnus ou piégés ignorés (y compris __proto__)', () => {
   const channels = [{ type: '__proto__' }, { type: 'constructor' }, { type: 'toString' }, null, 'mailto', { type: 'copy', target: 'ok' }];
-  assert.equal(anonymityBlock('anonymous', channels, templates, channelsData), "Réponses anonymes ; par copier-coller, l'anonymat dépend du canal de dépôt.");
-  assert.equal(returnChannelText(channels, templates, channelsData), 'par copier-coller (consigne : ok)');
+  assert.equal(anonymityBlock('anonymous', channels, templates, channelsData), "Réponses anonymes\u00A0; par copier-coller, l'anonymat dépend du canal de dépôt.");
+  assert.equal(returnChannelText(channels, templates, channelsData), 'par copier-coller (consigne\u00A0: ok)');
+});
+
+test('consigne entre parenthèses : pas de ponctuation doublée « .). »', () => {
+  const text = (target) => returnChannelText([{ type: 'copy', target }], templates, channelsData);
+  assert.equal(text('Déposez votre code dans le fil interne.'), 'par copier-coller (consigne : Déposez votre code dans le fil interne)');
+  assert.equal(text('Voir le fil…'), 'par copier-coller (consigne : Voir le fil…)');
+  assert.equal(text('Rien à ajouter...'), 'par copier-coller (consigne : Rien à ajouter...)');
+  assert.match(returnChannelText([{ type: 'file', target: 'Dossier partagé RH.' }], templates, channelsData), /RH\)$/);
 });
 
 test('sans données de canaux, refus explicite plutôt qu\'un bloc générique ou un canal de retour perdu', () => {
@@ -231,16 +243,33 @@ test('champs issus du lien nettoyés : contrôles, bidi, sauts de ligne, longueu
   assert.ok(!msg.subject.includes('\n'));
   assert.ok(msg.subject.startsWith('Titre piégé Bcc: pirate@exemple.fr'));
   assert.ok(msg.subject.length <= limits.subject_max);
-  const quoted = /« ([^»]*) »/.exec(msg.body)[1];
+  const quoted = /«\u00A0([^»]*)\u00A0»/.exec(msg.body)[1];
   assert.ok(quoted.length <= limits.title_max, 'titre tronqué');
   assert.ok(quoted.endsWith('\u2026'), 'troncature signalée');
   assert.ok(msg.body.includes('Org lance'));
 });
 
+test('texte caché (étiquettes Unicode) et invisibles retirés des messages générés et de la fiche', () => {
+  const cp = (...codes) => String.fromCodePoint(...codes);
+  const tags = cp(0xe0001) + [...'ignore'].map((l) => cp(0xe0000 + l.charCodeAt(0))).join('') + cp(0xe007f);
+  const INVISIBLE = /(?![\u200C\u200D])[\p{Cf}\u115F\u1160\u3164\uFFA0]/u;
+  const title = `Recensement${tags} IA${cp(0x3164)} 2026`;
+  const org = `Menuiserie${cp(0xfeff, 0x180e)} Alpine`;
+  for (const id of ['invitation_email', 'invitation_short']) {
+    const msg = renderMessage(id, { title, org, mode: 'open', link: LINK }, templates, channelsData);
+    assert.ok(!INVISIBLE.test(msg.subject + msg.body + msg.html), id);
+    assert.ok(msg.body.includes('Recensement IA 2026'), id);
+  }
+  const sheet = sheetContent({ campaign: { title, org_name: org, mode: 'open', settings: {} }, link: LINK, templates, channelsData });
+  assert.ok(!INVISIBLE.test(JSON.stringify(sheet)));
+  assert.equal(sheet.title, 'Recensement IA 2026');
+  assert.equal(sheet.org, 'Menuiserie Alpine');
+});
+
 test('un titre contenant de la syntaxe de gabarit ou du HTML reste littéral et échappé', () => {
   const title = '{link} [[a||b]] <script>alert(1)</script> & "x" \'y\'';
   const msg = renderMessage('invitation_email', { title, mode: 'anonymous', link: LINK, channels: [] }, templates, channelsData);
-  assert.ok(msg.body.includes(`« ${title} »`));
+  assert.ok(msg.body.includes(`«\u00A0${title}\u00A0»`));
   assert.equal(msg.body.split('\n').filter((l) => l.includes(LINK)).length, 1);
   assert.ok(!msg.html.includes('<script'));
   assert.ok(msg.html.includes('&lt;script&gt;alert(1)&lt;/script&gt; &amp; &quot;x&quot; &#39;y&#39;'));
@@ -271,7 +300,7 @@ test('erreurs : gabarit inconnu, champ requis manquant, mode invalide, code inva
 test('code_email : bloc d\'anonymat propre à l\'e-mail, compteur, corps compact', () => {
   const ctx = { title: 'T', mode: 'anonymous', channels: [{ type: 'copy' }], codes: [CODES[0]], import_link: importLink(BASE_URL, [CODES[0]]), fingerprint: 'A1B2C3D4' };
   const full = renderMessage('code_email', ctx, templates, channelsData);
-  assert.equal(full.locked_block, "Réponses anonymes ; l'envoi par e-mail, lui, n'est pas anonyme.");
+  assert.equal(full.locked_block, "Réponses anonymes\u00A0; l'envoi par e-mail, lui, n'est pas anonyme.");
   assert.ok(full.body.includes('(1 usage décrit)'));
   const two = renderMessage('code_share', { ...ctx, codes: CODES, import_link: IMPORT_LINK }, templates, channelsData);
   assert.ok(two.body.includes('(2 usages décrits)'));
@@ -284,7 +313,7 @@ test('code_email : bloc d\'anonymat propre à l\'e-mail, compteur, corps compact
   assert.ok(!compact.body.includes('« T »'), 'titre seulement dans l\'objet du corps compact');
   assert.equal(compact.subject, full.subject);
   const share = renderMessage('code_share', { ...ctx, channels: [{ type: 'copy' }] }, templates, channelsData);
-  assert.equal(share.locked_block, "Réponses anonymes ; par copier-coller, l'anonymat dépend du canal de dépôt.");
+  assert.equal(share.locked_block, "Réponses anonymes\u00A0; par copier-coller, l'anonymat dépend du canal de dépôt.");
 });
 
 test('hasLockedBlock : présent, tolérant à la mise en forme, absent après suppression', () => {
@@ -377,8 +406,8 @@ test('canal de retour : avec et sans cible', () => {
   assert.equal(text([{ type: 'whatsapp', target: TARGETS.whatsapp }]), 'par WhatsApp au +33612345678');
   assert.equal(text([{ type: 'whatsapp', target: '33612345678' }]), 'par WhatsApp au +33612345678');
   assert.equal(text([{ type: 'whatsapp', target: '06 12' }]), 'par WhatsApp');
-  assert.equal(text([{ type: 'share' }, { type: 'teams' }, { type: 'file' }]), 'avec le bouton « Partager » de votre appareil, par Teams ou sous forme de fichier .rcn');
-  assert.equal(text([{ type: 'copy', target: `a\u202Eb\nc` }]), 'par copier-coller (consigne : ab c)');
+  assert.equal(text([{ type: 'share' }, { type: 'teams' }, { type: 'file' }]), 'avec le bouton «\u00A0Partager\u00A0» de votre appareil, par Teams ou sous forme de fichier .rcn');
+  assert.equal(text([{ type: 'copy', target: `a\u202Eb\nc` }]), 'par copier-coller (consigne\u00A0: ab c)');
   assert.equal(text([]), '');
 });
 
@@ -395,7 +424,7 @@ test('fiche imprimable : textes publics uniquement', () => {
   assert.ok(!c.steps_slide[0].includes('lien'), 'la diapositive n\'affiche pas le lien');
   assert.deepEqual(c.channels, ['Par e-mail à ia@exemple.fr', 'Par copier-coller']);
   assert.equal(c.closes, 'Réponses attendues au plus tard le 1er novembre 2026.');
-  assert.equal(c.anonymity_block, "Réponses anonymes ; l'envoi par e-mail, lui, n'est pas anonyme ; par copier-coller, l'anonymat dépend du canal de dépôt.");
+  assert.equal(c.anonymity_block, "Réponses anonymes\u00A0; l'envoi par e-mail, lui, n'est pas anonyme\u00A0; par copier-coller, l'anonymat dépend du canal de dépôt.");
   assert.equal(c.link, LINK);
   const bare = sheetContent({ campaign: { title: 'T', mode: 'open', settings: {} }, link: LINK, fingerprint: 'FFFF0000', templates, channelsData });
   assert.deepEqual(bare.channels, [templates.sheet.channel_none]);
@@ -414,4 +443,44 @@ test('fiche imprimable : densité selon la longueur des textes variables', () =>
   assert.equal(sheet('Recensement IA 2026', 'Menuiserie Alpine Concept', long, 'open').density, 'dense');
   const worst = sheet('T'.repeat(80), 'O'.repeat(80), [{ type: 'mailto', target: TARGETS.mailto }, { type: 'copy', target: 'c'.repeat(200) }, { type: 'file', target: 'f'.repeat(200) }], 'open');
   assert.equal(worst.density, 'compact');
+});
+
+test('frenchSpacing : insécables avant « : ; ? ! » et dans les guillemets, liens et codes intacts, idempotente', () => {
+  const NB = '\u00A0';
+  const src = 'Bonjour ! Au travail : « Recensement IA 2026 ». Prêt ? Oui ; merci.\nhttps://x.test/#/c/a?b=1 ; c\nRCN1.abc ?\nconsigne : https://f.example/x';
+  const out = frenchSpacing(src);
+  assert.equal(out.split('\n')[0], `Bonjour${NB}! Au travail${NB}: «${NB}Recensement IA 2026${NB}». Prêt${NB}? Oui${NB}; merci.`);
+  assert.equal(out.split('\n')[1], 'https://x.test/#/c/a?b=1 ; c', 'ligne de lien recopiée telle quelle');
+  assert.equal(out.split('\n')[2], 'RCN1.abc ?', 'ligne de code recopiée telle quelle');
+  assert.equal(out.split('\n')[3], `consigne${NB}: https://f.example/x`, 'lien en fin de phrase intact');
+  assert.equal(frenchSpacing(out), out, 'idempotente');
+  assert.equal(frenchSpacing('a  : b'), `a${NB}: b`, 'plusieurs espaces : une seule insécable');
+  assert.equal(frenchSpacing('https://x.test/a:b?c'), 'https://x.test/a:b?c');
+  assert.equal(frenchSpacing(null), null);
+});
+
+test('gabarits : insécables déjà présentes dans data/messages.fr.json (aucune espace ordinaire avant la ponctuation)', () => {
+  const texts = [];
+  const walk = (value, path) => {
+    if (typeof value === 'string') texts.push([path, value]);
+    else if (Array.isArray(value)) value.forEach((v, i) => walk(v, `${path}[${i}]`));
+    else if (value && typeof value === 'object') Object.entries(value).forEach(([k, v]) => walk(v, `${path}.${k}`));
+  };
+  walk({ templates: templates.templates, anonymity_blocks: templates.anonymity_blocks, return_channels: templates.return_channels, sheet: templates.sheet, count: templates.count }, '');
+  assert.ok(texts.length > 40);
+  for (const [path, text] of texts) {
+    assert.ok(!/ [:;?!»]|« /.test(text), `${path} : espace ordinaire à remplacer par U+00A0`);
+    assert.equal(frenchSpacing(text), text, path);
+  }
+});
+
+test('messages du répondant : l’onglet d’import est nommé comme dans la console', () => {
+  const tab = '«\u00A0Importer des codes\u00A0»';
+  const ctx = { title: 'T', mode: 'anonymous', channels: [{ type: 'mailto', target: 'ia@exemple.fr' }], codes: [CODES[0]], import_link: importLink(BASE_URL, [CODES[0]]), fingerprint: 'A1B2C3D4' };
+  for (const [id, compact] of [['code_email', false], ['code_email', true], ['code_share', false]]) {
+    const body = renderMessage(id, ctx, templates, channelsData, { compact }).body;
+    assert.ok(body.includes(`l'onglet ${tab}`), `${id}${compact ? ' (compact)' : ''}`);
+    if (!compact) assert.ok(body.includes(`l'onglet ${tab} de la campagne`), id);
+    assert.ok(!/«\u00A0Importer\u00A0»/.test(body), 'plus d’onglet « Importer » ambigu');
+  }
 });

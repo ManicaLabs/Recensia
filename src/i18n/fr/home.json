@@ -5,7 +5,7 @@
   "hero": {
     "eyebrow": "Registre des usages IA · AI Act · RGPD",
     "title": "Faites l'inventaire des usages de l'IA dans votre entreprise",
-    "lead": "Recensia recueille les usages auprès de vos équipes, les classe selon l'AI Act et l'exposition des données, puis vous propose un plan d'actions. Gratuit, sans compte et sans serveur : les réponses sont chiffrées et vous seul pouvez les lire.",
+    "lead": "Recensia recueille les usages auprès de vos équipes, les classe selon l'AI Act et l'exposition des données, puis vous propose un plan d'actions. Gratuit, sans compte et sans serveur de stockage : les réponses sont chiffrées et ne se lisent que dans votre navigateur, qui détient la clé de la campagne.",
     "cta_new": "Créer une campagne",
     "cta_demo": "Voir la démo",
     "cta_admin": "Mes campagnes",
@@ -53,7 +53,7 @@
     }
   },
   "serverless": {
-    "title": "Comment ça marche sans serveur ?",
+    "title": "Comment ça marche sans serveur de stockage ?",
     "intro": "Recensia n'a ni base de données ni compte utilisateur : le site ne fait que livrer l'application à votre navigateur. Les réponses ne transitent jamais par un serveur de Recensia.",
     "flow_label": "Circuit d'une réponse",
     "flow": {
@@ -90,8 +90,12 @@
     },
     "exports": {
       "title": "Des exports",
-      "text": "XLSX, CSV et rapport imprimable, pour votre direction, votre DPO ou votre CSE."
+      "text": "Excel (.xlsx), CSV et rapport imprimable, pour votre direction, votre DPO ou votre CSE."
     }
   },
-  "disclaimer_extra": "Recensia est un outil d'organisation : il ne remplace pas l'analyse d'un juriste ou de votre DPO."
+  "disclaimer_extra": "Recensia est un outil d'organisation : il ne remplace pas l'analyse d'un juriste ou de votre DPO.",
+  "publisher": {
+    "label": "Éditeur de l'outil",
+    "text": "Recensia est un outil proposé par"
+  }
 }

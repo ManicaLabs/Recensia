@@ -1,16 +1,22 @@
 // Fichier de récupération et codes en attente (src/services/recovery.js) : création de la campagne,
-// ajout de clé, refus d'écrasement, mauvais mot de passe, fichier de sauvegarde, codes de session.
+// ajout de clé, refus d'écrasement, mauvais mot de passe, fichier de sauvegarde, codes de session,
+// mise en page et dialogue de suppression de l'onglet Paramètres, typographie des catalogues de
+// l'administration.
 import { describe, test, before } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
+import { b64urlEncode } from '../src/crypto/b64url.js';
 import { generateCampaignKeys } from '../src/crypto/keys.js';
 import { encryptEntry } from '../src/crypto/codes.js';
 import { randomId } from '../src/crypto/random.js';
 import { openStore } from '../src/storage/store.js';
 import {
-  PENDING_MAX, RecoveryError, buildRecoveryFile, campaignFromRecovery, createPendingCodes, importRecovery,
-  inspectRecoveryFile, markRecoverySaved, normalizeSettings, parseRecoveryFile, recoveryFilename,
+  PENDING_MAX, PLAIN_BACKUP_MARK, RECOVERY_MIME, RecoveryError, UNPROTECTED_RECOVERY_MARK, backupDownloadFilename,
+  buildRecoveryFile, campaignFromRecovery, createPendingCodes, importRecovery, inspectRecoveryFile, markRecoverySaved,
+  normalizeSettings, parseRecoveryFile, recoveryFilename,
 } from '../src/services/recovery.js';
+import { backupFilename } from '../src/export/json.js';
 import { importCodes } from '../src/services/import.js';
 import { loadQuestionnaire, makeUsage } from './helpers/load-data.js';
 
@@ -58,8 +64,21 @@ describe('fichier de récupération', () => {
   });
 
   test('nom de fichier et informations lisibles avant le mot de passe', () => {
-    assert.equal(protectedFile.filename, 'recensia-cle-recensement-ia-2026-2026-09-29.recensia-key');
-    assert.equal(recoveryFilename({ title: 'Été 2026 !' }, '2026-01-02'), 'recensia-cle-ete-2026-2026-01-02.recensia-key');
+    // Nom canonique (création comme paramètres) : slug du titre, empreinte, date ; un seul type MIME.
+    // Le fichier non protégé porte un marqueur : il ne remplace jamais le fichier protégé du même jour.
+    assert.equal(protectedFile.filename, `recensia-cle-recensement-ia-2026-${source.fingerprint}-2026-09-29.recensia-key`);
+    assert.equal(openFile.filename, `recensia-cle-recensement-ia-2026-${source.fingerprint}-2026-09-29-NON-PROTEGEE.recensia-key`);
+    assert.notEqual(openFile.filename, protectedFile.filename);
+    const P = { protected: true };
+    assert.equal(recoveryFilename({ title: 'Été 2026 !', fingerprint: 'a1b2c3d4' }, '2026-01-02', P), 'recensia-cle-ete-2026-A1B2C3D4-2026-01-02.recensia-key');
+    assert.equal(recoveryFilename({ title: 'Recensement IA : été 2026 !', fingerprint: '8A7C048A' }, '2026-09-30', P),
+      'recensia-cle-recensement-ia-ete-2026-8A7C048A-2026-09-30.recensia-key');
+    assert.equal(recoveryFilename({ title: 'Été 2026 !', fingerprint: 'pas une empreinte' }, '2026-01-02', P), 'recensia-cle-ete-2026-2026-01-02.recensia-key');
+    assert.equal(recoveryFilename({ id: 'k3J9xQ2mP0aZ', fingerprint: 'A1B2C3D4' }, '2026-01-02', P), 'recensia-cle-k3j9xq2mp0az-A1B2C3D4-2026-01-02.recensia-key');
+    assert.equal(RECOVERY_MIME, 'application/json');
+    assert.equal(protectedFile.mime, RECOVERY_MIME);
+    assert.equal(openFile.mime, RECOVERY_MIME);
+    assert.ok(protectedFile.text.endsWith('}\n'));
     assert.equal(protectedFile.protected, true);
     assert.equal(openFile.protected, false);
     const info = inspectRecoveryFile(protectedFile.text);
@@ -68,6 +87,43 @@ describe('fichier de récupération', () => {
     assert.equal(info.campaign.title, 'Recensement IA 2026');
     assert.equal(info.campaign.fingerprint, source.fingerprint);
     assert.ok(!protectedFile.text.includes(source.private_key_jwk.d), 'clé privée absente du fichier protégé en clair');
+  });
+
+  test('nom de fichier : seul un fichier explicitement protégé ou chiffré porte le nom sans marqueur', () => {
+    const c = { title: 'Campagne X', fingerprint: '8cc20f70' };
+    const day = '2026-09-30';
+    // Récupération : marqueur NON-PROTEGEE par défaut, pour toute valeur autre que true.
+    assert.equal(UNPROTECTED_RECOVERY_MARK, 'NON-PROTEGEE');
+    for (const options of [undefined, {}, { protected: false }, { protected: 'oui' }, { protected: 1 }]) {
+      assert.equal(recoveryFilename(c, day, options), 'recensia-cle-campagne-x-8CC20F70-2026-09-30-NON-PROTEGEE.recensia-key', JSON.stringify(options));
+    }
+    assert.equal(recoveryFilename(c, day, { protected: true }), 'recensia-cle-campagne-x-8CC20F70-2026-09-30.recensia-key');
+    // Sauvegarde : nom de src/export/json.js pour la version chiffrée, marqueur EN-CLAIR sinon.
+    assert.equal(PLAIN_BACKUP_MARK, 'EN-CLAIR');
+    assert.equal(backupDownloadFilename(c, day, { encrypted: true }), backupFilename(c, day));
+    assert.equal(backupDownloadFilename(c, day, { encrypted: true }), 'recensia-sauvegarde-campagne-x-2026-09-30.json');
+    for (const options of [undefined, {}, { encrypted: false }, { encrypted: 'oui' }]) {
+      assert.equal(backupDownloadFilename(c, day, options), 'recensia-sauvegarde-campagne-x-2026-09-30-EN-CLAIR.json', JSON.stringify(options));
+    }
+    // Les deux restent reconnus comme fichiers sensibles par tools/check.mjs (extension et préfixe inchangés).
+    assert.match(backupDownloadFilename(c, day), /^recensia-sauvegarde-[^/]*\.json$/);
+    assert.match(recoveryFilename(c, day), /\.recensia-key$/);
+  });
+
+  test('Paramètres : le nom et le message de fin rappellent le mode de protection', () => {
+    const src = readFileSync(new URL('../src/views/console/settings.js', import.meta.url), 'utf8');
+    assert.match(src, /backupDownloadFilename\(fresh, localDay\(\), \{ encrypted \}\)/, 'nom de sauvegarde marqué selon le chiffrement');
+    assert.doesNotMatch(src, /\bbackupFilename\(/, 'nom de sauvegarde sans marqueur');
+    const { recovery: cat, backup } = JSON.parse(readFileSync(new URL('../src/i18n/fr/settings.json', import.meta.url), 'utf8'));
+    for (const text of [cat.done, cat.done_unprotected, backup.done, backup.done_plain]) assert.ok(text.includes('{filename}'), text);
+    assert.match(cat.done, /protégé/);
+    assert.match(cat.done_unprotected, /non protégé/);
+    assert.match(backup.done, /chiffrée/);
+    assert.match(backup.done_plain, /non chiffrée/);
+    // Les catalogues annoncent le marqueur réellement produit (trait d'union insécable U+2011 : jamais coupé).
+    const quoted = (mark) => `«\u00a0${mark.replaceAll('-', '\u2011')}\u00a0»`;
+    assert.ok(cat.unprotected_text.includes(quoted(UNPROTECTED_RECOVERY_MARK)), cat.unprotected_text);
+    assert.ok(backup.plain_help.includes(quoted(PLAIN_BACKUP_MARK)), backup.plain_help);
   });
 
   test('création de la campagne absente (fichier protégé) : clé, réglages, recovery_saved_at', async () => {
@@ -183,7 +239,13 @@ describe('codes en attente (session)', () => {
       raw: map,
     };
   }
-  const c = (i) => `RCN1.${String(i).padStart(60, 'k')}`;
+  // Codes de forme valide (octet de version 1, taille minimale atteinte), sans chiffrement réel.
+  const c = (i) => {
+    const bytes = new Uint8Array(120);
+    bytes[0] = 1;
+    new DataView(bytes.buffer).setUint32(1, i);
+    return `RCN1.${b64urlEncode(bytes)}`;
+  };
 
   test('add / list / remove / clear, dédoublonnage et liens d\'import', () => {
     const area = memoryArea();
@@ -203,13 +265,25 @@ describe('codes en attente (session)', () => {
     const area = memoryArea();
     area.set('pending_codes', ['<script>', 42, c(1), 'RCN1.ok-code_123']);
     const pending = createPendingCodes(area);
-    assert.deepEqual(pending.list(), [c(1), 'RCN1.ok-code_123']);
+    assert.deepEqual(pending.list(), [c(1)], 'valeur non textuelle, texte quelconque et code mal formé ignorés');
     area.set('pending_codes', 'pas un tableau');
     assert.deepEqual(pending.list(), []);
     const many = Array.from({ length: PENDING_MAX + 10 }, (_, i) => c(i));
     assert.equal(pending.add(many), PENDING_MAX);
     assert.equal(pending.list().length, PENDING_MAX);
     assert.equal(pending.add([c(99999)]), 0);
+  });
+
+  test('un code mal formé (lien coupé) n\'est pas mis en attente ; une version future l\'est', () => {
+    const area = memoryArea();
+    const pending = createPendingCodes(area);
+    const future = `RCN2.${'Q'.repeat(200)}`;
+    const truncated = c(5).slice(0, 40);
+    assert.equal(pending.add(['RCN1.abc', 'RCN1.abcdefghijklmnop', truncated]), 0);
+    assert.deepEqual(pending.list(), []);
+    assert.equal(area.raw.size, 0, 'rien n\'est écrit dans la session');
+    assert.equal(pending.add(`https://manicalabs.github.io/Recensia/#/i/RCN1.abc~${c(6)}~${future}`), 2);
+    assert.deepEqual(pending.list(), [c(6), future]);
   });
 
   test('instance par défaut : fonctionne sans navigateur (repli mémoire de safe-storage)', async () => {
@@ -259,5 +333,81 @@ describe('onglet Paramètres : fonctions pures', () => {
     assert.equal(mod.checkNewPassword('mot de passe long', 'mot de passe lon'), 'mismatch');
     assert.equal(mod.checkNewPassword('mot de passe long', 'mot de passe long'), null);
     assert.equal(mod.checkNewPassword('ééééééééé', 'ééééééééé', 9), null);
+  });
+});
+
+describe('administration : mise en page et dialogue de suppression', () => {
+  const read = (rel) => readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8');
+
+  test('rapport d\'import : grille d\'indicateurs en auto-fit (aucune piste vide à 1280 px)', () => {
+    const css = read('src/styles/admin.css');
+    const rule = css.match(/(?:^|\n)\.import-report \.kpi-grid\s*\{([^}]*)\}/)?.[1] ?? '';
+    assert.match(rule, /grid-template-columns:\s*repeat\(auto-fit,/);
+    assert.doesNotMatch(rule, /auto-fill/);
+  });
+
+  // Dialogue « Supprimer la campagne » : il contient un champ de saisie, donc seuls les paragraphes
+  // d'avertissement sont reliés au dialogue (aria-describedby) ; alertdialog, car l'action est irréversible.
+  test('suppression de campagne : modal({ describe: <avertissements>, alert: true })', () => {
+    const src = read('src/views/console/settings.js');
+    const at = src.indexOf("t('settings.danger.campaign_confirm_title')");
+    assert.ok(at > 0, 'dialogue trouvé');
+    const start = src.lastIndexOf('modal({', at);
+    const end = src.indexOf('actions:', at);
+    assert.ok(start > 0 && end > at, 'appel modal() complet');
+    const call = src.slice(start, end);
+    const described = call.match(/\bdescribe:\s*([A-Za-z_$][\w$]*)\s*,/)?.[1];
+    assert.ok(described && described !== 'true', 'describe reçoit un nœud, pas true (le champ n\'est pas lu)');
+    assert.match(call, /\balert:\s*true\b/, 'alert: true');
+    const node = src.slice(src.lastIndexOf(`const ${described} = h(`, start), start);
+    assert.match(node, /t\('settings\.danger\.campaign_text'\)/, 'avertissement : conséquence de la suppression');
+    assert.match(node, /t\('settings\.danger\.campaign_confirm_text'/, 'avertissement : consigne de saisie');
+    assert.doesNotMatch(node, /\binput\b|fieldNode/, 'le champ de saisie reste hors de la description');
+  });
+
+  // Les consignes de dépôt sont saisies (ou viennent de data/) avec des espaces ordinaires : comme le
+  // formulaire répondant, l'onglet Paramètres les affiche avec la typographie française.
+  test('informations : canaux de retour affichés avec frenchSpacing (libellé et consigne)', () => {
+    const src = read('src/views/console/settings.js');
+    assert.match(src, /import \{ frenchSpacing as fr \} from '\.\.\/\.\.\/ui\/questionnaire\.js';/);
+    assert.match(src, /fr\(channelsData\?\.types\?\.\[c\.type\]\?\.label \?\? c\.type\)/);
+    assert.match(src, /\$\{fr\(c\.target\)\}/);
+  });
+});
+
+describe('catalogues de l\'administration (admin, import, import_link, settings) : typographie', () => {
+  const readCatalog = (ns) => JSON.parse(readFileSync(new URL(`../src/i18n/fr/${ns}.json`, import.meta.url), 'utf8'));
+  // Espace insécable U+00A0 avant « : ; ? ! » et à l'intérieur des guillemets. Exceptions : « :// » des
+  // adresses et les heures (« 08:00 »).
+  const issues = (text) => {
+    const found = [];
+    for (const m of text.matchAll(/(.)([:;?!])/gsu)) {
+      if (m[1] === ' ') continue;
+      if (m[2] === ':' && (text.startsWith('//', m.index + 2) || (/\d/.test(m[1]) && /\d/.test(text[m.index + 2] ?? '')))) continue;
+      found.push(`${JSON.stringify(m[1])} avant « ${m[2]} »`);
+    }
+    for (const m of text.matchAll(/«(.)/gsu)) if (m[1] !== ' ') found.push('« sans espace insécable');
+    for (const m of text.matchAll(/(.)»/gsu)) if (m[1] !== ' ') found.push('» sans espace insécable');
+    if (/^[:;?!»]/u.test(text)) found.push('ponctuation en tête');
+    return found;
+  };
+
+  test('le contrôle repère l\'espace ordinaire, l\'espace manquante et les guillemets', () => {
+    assert.deepEqual(issues('Titre : « x » ; ok ? oui ! https://a.fr 08:00'), ['" " avant « ; »']);
+    assert.equal(issues('Supprimer?').length, 1);
+    assert.equal(issues('« x »').length, 2);
+  });
+
+  test('espaces insécables avant « : ; ? ! » et dans les guillemets', () => {
+    const problems = [];
+    const walk = (value, path) => {
+      if (typeof value === 'string') {
+        for (const issue of issues(value)) problems.push(`${path} : ${issue} — ${value.slice(0, 60)}`);
+      } else if (value && typeof value === 'object') {
+        for (const [key, child] of Object.entries(value)) walk(child, `${path}.${key}`);
+      }
+    };
+    for (const ns of ['admin', 'import', 'import_link', 'settings']) walk(readCatalog(ns), ns);
+    assert.deepEqual(problems, []);
   });
 });

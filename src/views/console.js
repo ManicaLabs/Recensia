@@ -5,7 +5,7 @@
 import { h, mount, loadCss } from '../ui/dom.js';
 import { icon, button } from '../ui/components.js';
 import { formatFingerprint } from '../crypto/keys.js';
-import { formatDate } from '../i18n.js';
+import { formatDate, formatNumber } from '../i18n.js';
 import { buildCampaignModel, daysSince } from '../services/model.js';
 
 // Onglet (segment d'URL) ⇒ module et espace de noms i18n.
@@ -74,20 +74,40 @@ function header(campaign, t) {
       h('a', { class: 'btn btn-ghost btn-sm', href: '#/admin' }, icon('arrow-left'), h('span', null, t('console.back')))));
 }
 
-function tabCount(tabId, model) {
-  if (tabId === 'registre') return model.groups.length;
-  if (tabId === 'actions') return model.suggestions.length || null;
+/**
+ * Compteur affiché à côté d'un onglet, ou null. Registre : usages recensés (lignes du registre) ;
+ * plan d'actions : suggestions en attente, à examiner (et non actions au plan).
+ * @returns {{ count: number, key: string, attention: boolean } | null}
+ */
+export function tabCounter(tabId, model) {
+  if (tabId === 'registre') {
+    const count = model?.groups?.length ?? 0;
+    return count > 0 ? { count, key: 'console.tabs.count_registry', attention: false } : null;
+  }
+  if (tabId === 'actions') {
+    const count = model?.suggestions?.length ?? 0;
+    return count > 0 ? { count, key: 'console.tabs.count_suggestions', attention: true } : null;
+  }
   return null;
 }
 
-function tabsNav(campaign, current, model, t) {
+// Nature du compteur explicite : infobulle à l'écran, phrase complète pour les lecteurs d'écran
+// (le nombre seul est masqué pour ne pas être lu deux fois).
+function tabCountBadge(counter, t) {
+  const label = t(counter.key, { count: counter.count });
+  return h('span', { class: ['tab-count', counter.attention ? 'tab-count-attention' : null], title: label },
+    h('span', { 'aria-hidden': 'true' }, formatNumber(counter.count)),
+    h('span', { class: 'visually-hidden' }, ` (${label})`));
+}
+
+export function tabsNav(campaign, current, model, t) {
   return h('nav', { class: 'console-tabs', 'aria-label': t('console.tabs.label') },
     h('ul', { class: 'tabs' }, TABS.map((tab) => {
-      const count = tabCount(tab.id, model);
+      const counter = tabCounter(tab.id, model);
       return h('li', null, h('a', {
         href: `#/admin/${campaign.id}/${tab.id}`,
         'aria-current': tab.id === current ? 'page' : null,
-      }, t(`console.tabs.${tab.id}`), count ? h('span', { class: 'tab-count' }, String(count)) : null));
+      }, t(`console.tabs.${tab.id}`), counter ? tabCountBadge(counter, t) : null));
     })));
 }
 
@@ -149,7 +169,8 @@ export async function render(root, { params, ctx }) {
 
     const content = h('section', { class: 'console-content', 'aria-labelledby': 'console-tab-title' });
     runTabCleanup();
-    mount(root, h('div', { class: 'page page-wide console' },
+    // Même largeur que l'en-tête du site (--page-max) : seuls les tableaux larges défilent, dans leur conteneur.
+    mount(root, h('div', { class: 'page console' },
       header(campaign, t),
       h('div', { class: 'stack console-banners' }, banners(campaign, model, t)),
       tabsNav(campaign, tab.id, model, t),

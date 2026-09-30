@@ -15,7 +15,7 @@ import { qrSvgElement, qrSvgString, qrPngBlob } from '../../share/qr.js';
 import { buildPrintableSheet, printSheet, SHEET_CSS } from '../../share/sheet.js';
 import { slugify } from '../../export/registry.js';
 import { formatDate, formatNumber } from '../../i18n.js';
-import { publicCampaign, textToRichHtml, restoreLockedBlock, planMessageMailto } from '../new/share-helpers.js';
+import { publicCampaign, textToRichHtml, restoreLockedBlock, planMessageMailto, lockedStatusChange } from '../new/share-helpers.js';
 import { LINK_TARGET_LENGTH } from '../new/build-campaign.js';
 
 const CSS = 'src/styles/share.css';
@@ -290,8 +290,18 @@ export async function render(root, { campaign, model, ctx }) {
       else mailtoButton.removeAttribute('aria-disabled');
     }
 
-    function updateStatus() {
+    // Présence de la phrase verrouillée lors de la mise à jour précédente (null : pas encore affichée).
+    let lockedWasPresent = null;
+
+    // announceChange : saisie dans le message. Seul le passage de « présente » à « absente » (ou
+    // l'inverse) est annoncé, une fois, dans la région live ; l'indicateur lui-même n'en est pas une,
+    // pour ne rien répéter à chaque frappe. Changement de modèle, « Rétablir » : leur propre annonce.
+    function updateStatus({ announceChange = false } = {}) {
       const ok = !current || hasLockedBlock(body.value, current.original.locked_block);
+      const change = lockedStatusChange(lockedWasPresent, ok);
+      lockedWasPresent = ok;
+      if (announceChange && change === 'missing') announce(t('share.messages.locked.announce_missing'));
+      else if (announceChange && change === 'present') announce(t('share.messages.locked.announce_present'));
       lockedStatus.replaceChildren(icon(ok ? 'check' : 'alert'), h('span', null, ok ? t('share.messages.locked.present') : t('share.messages.locked.missing')));
       lockedStatus.classList.toggle('is-missing', !ok);
       lockedMissing.hidden = ok;
@@ -303,7 +313,7 @@ export async function render(root, { campaign, model, ctx }) {
     }
 
     function onEdit() {
-      updateStatus();
+      updateStatus({ announceChange: true });
     }
 
     function restorePhrase() {
@@ -321,6 +331,9 @@ export async function render(root, { campaign, model, ctx }) {
     async function guardedBody() {
       if (!current) return null;
       if (hasLockedBlock(body.value, current.original.locked_block)) return body.value;
+      // Contenu court et sans champ : relié au dialogue (aria-describedby), il est lu à l'ouverture,
+      // phrase verrouillée comprise, alors que le focus va directement sur « Rétablir la phrase ».
+      // alertdialog : continuer sans la phrase risque de promettre un anonymat faux.
       const choice = await modal({
         title: t('share.messages.locked.dialog.title'),
         content: [
@@ -328,6 +341,8 @@ export async function render(root, { campaign, model, ctx }) {
           h('blockquote', { class: 'share-locked-text' }, current.original.locked_block),
           h('p', null, t('share.messages.locked.dialog.risk')),
         ],
+        describe: true,
+        alert: true,
         actions: [
           { label: t('share.messages.locked.dialog.continue'), value: 'continue' },
           { label: t('share.messages.locked.dialog.restore'), value: 'restore', variant: 'primary', autofocus: true },

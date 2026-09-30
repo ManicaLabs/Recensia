@@ -8,6 +8,31 @@
 .form-header-meta .badge .icon { width: 1em; height: 1em; }
 .form-page > .callout { margin-bottom: var(--space-4); }
 .form-steps { margin: 0 0 var(--space-5); }
+/* Repère d'étape explicite (numéro, pastille pleine en cours, coche terminée) à la place du compteur. */
+.form-steps .stepper-item::before { content: none; display: none; }
+.form-steps .stepper-item > .form-step-mark {
+  grid-column: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 2px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+.form-steps .stepper-item[aria-current="step"] > .form-step-mark {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-contrast);
+}
+.form-steps .stepper-item.is-done > .form-step-mark { border-color: var(--success); color: var(--success); }
+.form-steps .form-step-mark .icon { width: 1rem; height: 1rem; stroke-width: 3; }
 
 /* --- Étape 1 : notice ---------------------------------------------------------------- */
 
@@ -29,6 +54,17 @@
 .form-fingerprint h3 .icon,
 .form-identity h3 .icon,
 .form-before-send h3 .icon { color: var(--primary); }
+.form-mode-summary { margin: 0 0 var(--space-2); }
+.form-mode-details summary {
+  display: list-item;
+  box-sizing: border-box;
+  min-height: 2.75rem; /* cible tactile d'au moins 44 px */
+  padding-block: var(--space-2);
+  color: var(--link);
+  font-weight: 600;
+  cursor: pointer;
+}
+.form-mode-details summary:hover { color: var(--link-hover); }
 .form-mode .check-list { margin: 0; }
 .form-mode .check-list .icon { color: var(--success); }
 .form-mode-limits { margin: var(--space-4) 0 var(--space-2); font-size: var(--fs-base); }
@@ -123,7 +159,7 @@
 .form-send-link { justify-content: flex-start; text-align: left; }
 .form-send-link .btn-label { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .form-send-detail { font-size: var(--fs-sm); font-weight: 500; overflow-wrap: anywhere; }
-.form-send-fallback { padding: var(--space-3); border: 1px dashed var(--border-strong); border-radius: var(--radius); }
+.form-send-fallback { flex: 1 1 100%; padding: var(--space-3); border: 1px dashed var(--border-strong); border-radius: var(--radius); }
 .form-send-fallback p { margin: 0; }
 @media (max-width: 40rem) {
   .form-send-actions:not(.is-list) > .btn { flex: 1 1 100%; }

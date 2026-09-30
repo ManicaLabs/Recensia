@@ -30,7 +30,7 @@
       "one": "Suggestions ({count})",
       "other": "Suggestions ({count})"
     },
-    "help": "Une suggestion acceptée rejoint le plan d'actions au statut « À faire ». Une suggestion rejetée n'est plus proposée ; vous la retrouvez dans les actions rejetées et pouvez la réactiver à tout moment.",
+    "help": "Une suggestion acceptée rejoint le plan d'actions au statut « À faire ». Une suggestion rejetée n'est plus proposée ; vous la retrouvez dans les actions rejetées et pouvez la réactiver à tout moment.",
     "campaign": "Actions transverses (toute la campagne)",
     "campaign_help": "Ces actions concernent l'ensemble des usages recensés.",
     "count": {
@@ -38,7 +38,7 @@
       "other": "{count} suggestions"
     },
     "empty": "Aucune suggestion en attente : toutes ont été acceptées ou rejetées.",
-    "empty_no_usage": "Aucune suggestion pour le moment : elles apparaîtront dès que des usages seront recensés (import de codes ou saisie directe)."
+    "empty_no_usage": "Aucune suggestion pour le moment : elles apparaîtront dès que des usages seront recensés (import de codes ou saisie directe)."
   },
   "accept_all": {
     "button": {
@@ -65,6 +65,7 @@
     "usage_none": "Aucun en particulier (action transverse)",
     "usage_help": "Facultatif : rattachez l'action à une ligne du registre.",
     "usage_locked": "Cette action vient d'une suggestion liée à cet usage : son rattachement ne peut pas être modifié.",
+    "usage_locked_transverse": "Cette action vient d'une suggestion transverse : elle concerne toute la campagne et son rattachement ne peut pas être modifié.",
     "owner": "Responsable",
     "owner_placeholder": "Nom ou fonction de la personne en charge",
     "owner_placeholder_role": "Rôle suggéré : {role}",
@@ -98,11 +99,11 @@
   "delete": {
     "title": "Supprimer cette action ?",
     "message": "L'action « {title} » sera définitivement retirée du plan.",
-    "suggested_note": "Elle vient d'une suggestion : une fois supprimée, elle pourra vous être proposée de nouveau. Pour ne plus la voir, choisissez plutôt le statut « Rejeté »."
+    "suggested_note": "Elle vient d'une suggestion : une fois supprimée, elle pourra vous être proposée de nouveau. Pour ne plus la voir, choisissez plutôt le statut « Rejeté »."
   },
   "item": {
     "overdue": "En retard",
-    "suggested": "Suggérée",
+    "from_suggestion": "Issue d'une suggestion",
     "manual": "Ajoutée manuellement",
     "usage": "Usage",
     "owner": "Responsable",
@@ -112,6 +113,9 @@
     "no_due": "Aucune",
     "updated": "Mise à jour",
     "status_label": "Statut",
+    "apply": "Appliquer",
+    "apply_label": "Appliquer le statut « {status} » à l'action « {title} »",
+    "filtered_out": "Ne correspond plus aux filtres : cette action sera masquée au prochain changement de filtre.",
     "edit_label": "Modifier l'action « {title} »",
     "delete_label": "Supprimer l'action « {title} »"
   },
@@ -163,7 +167,7 @@
       "one": "{count} action faite sur {total} ({percent} %).",
       "other": "{count} actions faites sur {total} ({percent} %)."
     },
-    "none": "Aucune action engagée pour le moment.",
+    "none": "Aucune action au plan pour le moment.",
     "kpi": {
       "todo": {
         "one": "à faire",

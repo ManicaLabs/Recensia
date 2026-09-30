@@ -4,6 +4,7 @@
     "title": "Recensia — registre des usages IA",
     "tagline": "Registre des usages IA",
     "version": "version {version}",
+    "published_by": "Un outil proposé par",
     "footer_disclaimer": "Outil d'organisation, pas un avis juridique.",
     "loading": "Chargement de Recensia…"
   },
@@ -97,7 +98,12 @@
       "1": "Modéré",
       "2": "Élevé",
       "3": "Critique"
-    }
+    },
+    "axis": {
+      "ai_act": "AI Act",
+      "data": "Exposition des données"
+    },
+    "axis_prefix": "{axis} : "
   },
   "validation": {
     "to_review": "À valider",

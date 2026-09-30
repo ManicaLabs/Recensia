@@ -383,7 +383,7 @@
       "signal": "shadow_ai",
       "label": "Compte personnel (IA fantôme)",
       "legal_ref": "RGPD, art. 28 et art. 32",
-      "explanation": "L'usage passe par un compte personnel, hors du cadre de l'entreprise (« shadow AI »). Le plus simple est de proposer un compte professionnel ou un outil validé.",
+      "explanation": "L'usage passe par un compte personnel, hors du cadre de l'entreprise (« IA fantôme », shadow AI). Le plus simple est de proposer un compte professionnel ou un outil validé.",
       "action_ids": ["ACT-SHADOW-01"],
       "deadline_ids": [],
       "condition": { "field": "account_type", "in": ["personal_free", "personal_paid"] }

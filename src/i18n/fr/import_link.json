@@ -15,6 +15,27 @@
     "title": "Code d'une version plus récente",
     "text": "Ce code a été produit par une version plus récente de Recensia. Rechargez la page pour mettre l'application à jour, puis rouvrez le lien : le code est conservé le temps de cette session."
   },
+  "unreadable": {
+    "title": {
+      "one": "Code illisible dans ce navigateur",
+      "other": "Codes illisibles dans ce navigateur"
+    },
+    "lead": {
+      "one": "Le lien a probablement été coupé par la messagerie : demandez à l'expéditeur le fichier .rcn ou le code complet (il commence par RCN1.).",
+      "other": "Le lien a probablement été coupé par la messagerie : demandez à l'expéditeur les fichiers .rcn ou les codes complets (ils commencent par RCN1.)."
+    },
+    "steps_title": "Que faire ?",
+    "step_ask": "Répondez au message reçu pour redemander le fichier .rcn ou le code complet ; en mode anonyme, une relance générale évite d'identifier l'expéditeur. Collez ensuite le code dans l'onglet « Importer des codes » de la campagne, ou déposez-y le fichier.",
+    "step_recovery": "Si la campagne a été créée dans un autre navigateur, importez son fichier de récupération (.recensia-key) ou restaurez sa sauvegarde (.json) : les codes conservés seront importés aussitôt.",
+    "kept": {
+      "one": "Rien n'a été enregistré. Le code reste chiffré et il est conservé le temps de cette session (jusqu'à la fermeture de l'onglet) : il sera importé dès que la clé de sa campagne sera dans ce navigateur.",
+      "other": "Rien n'a été enregistré. {count} codes restent chiffrés et ils sont conservés le temps de cette session (jusqu'à la fermeture de l'onglet) : ils seront importés dès que la clé de leur campagne sera dans ce navigateur."
+    },
+    "none_kept": {
+      "one": "Rien n'a été enregistré, et ce code incomplet n'a pas été conservé : seul le code complet pourra être importé.",
+      "other": "Rien n'a été enregistré, et ces codes incomplets n'ont pas été conservés : seuls les codes complets pourront être importés."
+    }
+  },
   "no_key": {
     "title": "Clé de campagne absente de ce navigateur",
     "lead": {
@@ -25,8 +46,11 @@
       "one": "Rien n'est perdu : le code reste chiffré et il est conservé le temps de cette session (jusqu'à la fermeture de l'onglet). Importez le fichier de récupération de la campagne : il sera importé aussitôt.",
       "other": "Rien n'est perdu : les codes restent chiffrés et ils sont conservés le temps de cette session (jusqu'à la fermeture de l'onglet). Importez le fichier de récupération de la campagne : ils seront importés aussitôt."
     },
+    "dropped": {
+      "one": "Un autre code de ce lien est incomplet (coupé par la messagerie ?) : il n'a pas été conservé. Demandez-le de nouveau à l'expéditeur.",
+      "other": "{count} autres codes de ce lien sont incomplets (coupés par la messagerie ?) : ils n'ont pas été conservés. Demandez-les de nouveau à l'expéditeur."
+    },
     "respondent": "Vous avez répondu au questionnaire ? Ce lien ne sert qu'au responsable de la campagne : il n'y a rien à importer ici. Transmettez-le-lui par le canal indiqué dans le formulaire (e-mail, messagerie, fichier).",
-    "maybe_truncated": "Si la campagne est bien dans ce navigateur, le lien a peut-être été tronqué ou modifié par la messagerie : demandez le code brut à l'expéditeur et collez-le dans l'onglet « Importer des codes ».",
     "steps_title": {
       "one": "Pour lire ce code",
       "other": "Pour lire ces codes"
@@ -40,7 +64,7 @@
       "one": "Le code a été retiré de cette session.",
       "other": "Les codes ont été retirés de cette session."
     },
-    "key_ready": "Clé de la campagne « {title} » disponible dans ce navigateur. Les codes oubliés ne peuvent plus être importés d'ici : rouvrez le lien reçu pour les importer.",
+    "key_ready": "Clé de la campagne « {title} » disponible dans ce navigateur. Les codes oubliés ne peuvent plus être importés d'ici : rouvrez le lien reçu pour les importer.",
     "wrong_campaign": "Clé importée pour « {title} », mais ce code appartient à une autre campagne : il reste en attente le temps de la session."
   },
   "no_store": {

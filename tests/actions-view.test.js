@@ -8,9 +8,11 @@ import {
   groupSuggestions, nextSuggestionKey, suggestionKey, filterActions, sortActions, progressOf, isOverdue,
   normalizeActionInput, applyActionChanges, createManualAction, transitionStatus, acceptSuggestion,
   rejectSuggestion, acceptAllSuggestions, normalizeView, usageOptions, isValidDay, DEFAULT_VIEW, LIMITS,
-  USAGE_CAMPAIGN, bucketIdOf, initialOpenBuckets,
+  USAGE_CAMPAIGN, bucketIdOf, initialOpenBuckets, visibleActions, usageLockedKey, statusControl,
+  axisBadges, saveErrorSlot, saveErrorPresenter,
 } from '../src/views/console/actions.js';
 import { readFileSync } from 'node:fs';
+import { installFakeDocument } from './helpers/fake-dom.js';
 import {
   priorityUsages, keyTriggers, mainRisks, maskedBarItems, questionsByUsage, planActions, entrySources, TOP_TOOLS,
 } from '../src/views/console/report.js';
@@ -181,6 +183,277 @@ describe('liste des actions : filtres, tri, avancement', () => {
     assert.equal(normalizeView({ usage: 'k1' }, ['k1']).usage, 'k1');
     assert.equal(normalizeView({ usage: USAGE_CAMPAIGN }, []).usage, USAGE_CAMPAIGN);
     assert.deepEqual(usageOptions(groups).map((o) => o.value), groups.map((g) => g.usage_key));
+  });
+});
+
+describe('sélecteur de statut : aucun enregistrement au simple changement d\'option (WCAG 3.2.2)', () => {
+  const tr = (key, vars) => (vars ? `${key}:${JSON.stringify(vars)}` : key);
+  // Contrôle relié à un faux store : « Appliquer » enregistre, comme changeStatus() dans la vue.
+  function setup(status = 'done') {
+    const dom = installFakeDocument();
+    const puts = [];
+    const store = { putAction: (a) => { puts.push(a); } };
+    const a = action({ id: 'A1', title: 'Rédiger une charte', status });
+    const control = statusControl(a, tr, {
+      id: 'action-status-A1',
+      onApply: (value) => store.putAction(transitionStatus(a, value, NOW).value),
+    });
+    return { dom, puts, control };
+  }
+
+  test('parcourir les options (événements change) n\'appelle jamais putAction', () => {
+    const { dom, puts, control } = setup('done');
+    try {
+      assert.equal(control.select.getAttribute('id'), 'action-status-A1');
+      assert.equal(control.apply.hidden, true, 'rien à appliquer au départ');
+      for (const value of ['rejected', 'in_progress', 'todo']) {
+        control.select.value = value;
+        control.select.dispatch('change');
+        control.select.dispatch('input');
+      }
+      assert.deepEqual(puts, [], 'aucun enregistrement pendant le parcours des options');
+      assert.equal(control.apply.hidden, false, '« Appliquer » affiché : le statut choisi diffère');
+      assert.match(control.apply.getAttribute('aria-label'), /actions\.item\.apply_label.*todo.*Rédiger une charte/);
+      // Retour au statut enregistré : plus rien à appliquer.
+      control.select.value = 'done';
+      control.select.dispatch('change');
+      assert.equal(control.apply.hidden, true);
+      assert.equal(control.apply.getAttribute('aria-label'), null);
+      assert.deepEqual(puts, []);
+    } finally {
+      dom.restore();
+    }
+  });
+
+  test('« Appliquer » ou Entrée enregistre le statut choisi, une seule fois', () => {
+    const { dom, puts, control } = setup('done');
+    try {
+      control.select.value = 'in_progress';
+      control.select.dispatch('change');
+      control.apply.dispatch('click');
+      assert.equal(puts.length, 1);
+      assert.equal(puts[0].status, 'in_progress');
+
+      let prevented = false;
+      control.select.value = 'rejected';
+      control.select.dispatch('change');
+      control.select.dispatch('keydown', { key: 'Enter', preventDefault: () => { prevented = true; } });
+      assert.equal(puts.length, 2);
+      assert.equal(puts[1].status, 'rejected');
+      assert.equal(prevented, true);
+
+      control.select.dispatch('keydown', { key: 'ArrowDown', preventDefault: () => {} });
+      assert.equal(puts.length, 2, 'une flèche n\'enregistre rien');
+      control.reset();
+      assert.equal(control.select.value, 'done', 'reset : retour au statut enregistré');
+      control.select.dispatch('keydown', { key: 'Enter', preventDefault: () => {} });
+      control.apply.dispatch('click');
+      assert.equal(puts.length, 2, 'statut inchangé : ni Entrée ni « Appliquer » n\'enregistrent');
+    } finally {
+      dom.restore();
+    }
+  });
+
+  test('reset après un échec : « Appliquer » masqué, le focus qu\'il avait passe au sélecteur', () => {
+    const { dom, control } = setup('done');
+    try {
+      let focused = 0;
+      control.select.focus = () => { focused += 1; dom.document.activeElement = control.select; };
+      control.select.value = 'todo';
+      control.select.dispatch('change');
+      assert.equal(control.apply.hidden, false);
+      dom.document.activeElement = control.apply; // clic sur « Appliquer »
+      control.reset(); // enregistrement en échec (ou statut déjà enregistré)
+      assert.equal(control.apply.hidden, true);
+      assert.equal(control.select.value, 'done');
+      assert.equal(focused, 1, 'focus rendu au sélecteur, pas à la page');
+      assert.equal(dom.document.activeElement, control.select);
+      // Focus ailleurs (Entrée sur le sélecteur, autre élément) : reset() ne le déplace pas.
+      dom.document.activeElement = null;
+      control.select.value = 'todo';
+      control.select.dispatch('change');
+      control.reset();
+      assert.equal(focused, 1);
+    } finally {
+      dom.restore();
+    }
+  });
+
+  test('la vue ne relie plus l\'enregistrement du statut à l\'événement change', () => {
+    const source = readFileSync(new URL('../src/views/console/actions.js', import.meta.url), 'utf8');
+    assert.doesNotMatch(source, /onChange:\s*\([^)]*\)\s*=>\s*changeStatus\(/);
+    assert.match(source, /statusControl\(action, t, \{/);
+  });
+});
+
+describe('liste : action modifiée gardée à l\'écran jusqu\'au prochain changement de filtre', () => {
+  const list = [
+    action({ id: 'a', title: 'Charte', priority: 'high', status: 'rejected' }),
+    action({ id: 'b', title: 'Bascule', priority: 'high', status: 'in_progress' }),
+    action({ id: 'c', title: 'Contrat', priority: 'medium', status: 'todo' }),
+    action({ id: 'd', title: 'Ancienne', priority: 'low', status: 'rejected' }),
+  ];
+
+  test('sans action gardée : exactement les actions filtrées, dans l\'ordre du tri', () => {
+    const shown = visibleActions(list, DEFAULT_VIEW);
+    assert.deepEqual(shown.map((x) => x.action.id), sortActions(filterActions(list, DEFAULT_VIEW), 'priority').map((a) => a.id));
+    assert.ok(shown.every((x) => x.matches));
+    assert.deepEqual(visibleActions(undefined, DEFAULT_VIEW), []);
+  });
+
+  test('action que l\'on vient de rejeter : toujours affichée, signalée comme hors filtre ; les autres rejetées restent masquées', () => {
+    const shown = visibleActions(list, DEFAULT_VIEW, new Set(['a']));
+    assert.deepEqual(shown.map((x) => [x.action.id, x.matches]), [['b', true], ['a', false], ['c', true]]);
+    assert.deepEqual(visibleActions(list, { ...DEFAULT_VIEW, status: 'todo' }, ['b']).map((x) => [x.action.id, x.matches]), [['b', false], ['c', true]]);
+    assert.deepEqual(visibleActions(list, { ...DEFAULT_VIEW, sort: 'title' }, new Set(['a', 'x'])).map((x) => x.action.id), ['b', 'a', 'c'], 'identifiant inconnu ignoré, tri respecté');
+  });
+});
+
+describe('textes : suggestion acceptée, action transverse', () => {
+  const catalog = JSON.parse(readFileSync(new URL('../src/i18n/fr/actions.json', import.meta.url), 'utf8'));
+  register('actions', catalog);
+
+  test('une action du plan issue d\'une suggestion ne porte pas le mot « Suggérée »', () => {
+    assert.equal(t('actions.item.from_suggestion'), 'Issue d\'une suggestion');
+    assert.notEqual(t('actions.item.from_suggestion'), t('actions.item.manual'));
+    assert.equal(Object.hasOwn(catalog.item, 'suggested'), false, 'ancienne clé « Suggérée » retirée de la liste du plan');
+    const source = readFileSync(new URL('../src/views/console/actions.js', import.meta.url), 'utf8');
+    assert.match(source, /action\.suggested \? t\('actions\.item\.from_suggestion'\)/);
+  });
+
+  test('dialogue d\'édition : mention propre aux actions transverses issues d\'une suggestion', () => {
+    const transverse = acceptSuggestion(suggestions.find((x) => x.usage_key === null), 'demo', NOW);
+    const linked = acceptSuggestion(suggestions.find((x) => x.usage_key !== null), 'demo', NOW);
+    assert.equal(usageLockedKey(transverse), 'actions.form.usage_locked_transverse');
+    assert.equal(usageLockedKey(linked), 'actions.form.usage_locked');
+    assert.equal(usageLockedKey({ ...linked, usage_key: undefined }), 'actions.form.usage_locked_transverse');
+    assert.match(t(usageLockedKey(transverse)), /^Cette action vient d'une suggestion transverse : elle concerne toute la campagne/);
+    assert.doesNotMatch(t(usageLockedKey(transverse)), /liée à cet usage/);
+    assert.match(t(usageLockedKey(linked)), /liée à cet usage/);
+  });
+});
+
+describe('résumés : badges des deux axes, axe affiché et libellé complet', () => {
+  register('common', JSON.parse(readFileSync(new URL('../src/i18n/fr/common.json', import.meta.url), 'utf8')));
+  const prefix = (axis) => t('common.levels.axis_prefix', { axis: t(`common.levels.axis.${axis}`) });
+
+  test('axisBadges : « AI Act : Interdit suspecté » et « Exposition des données : Critique », axe visible', () => {
+    const dom = installFakeDocument();
+    try {
+      const [ai, data] = axisBadges({ ai_act_level: 'prohibited_suspected', data_level: 3 }, t);
+      assert.equal(ai.textContent, `${prefix('ai_act')}${t('common.levels.ai_act.prohibited_suspected')}`);
+      assert.equal(data.textContent, `${prefix('data')}${t('common.levels.data.3')}`);
+      for (const badge of [ai, data]) {
+        assert.equal(badge.children[0].getAttribute('class'), 'badge-axis', 'axe affiché, pas seulement lu par les lecteurs d\'écran');
+        assert.ok(!badge.children.some((c) => c.getAttribute('class') === 'visually-hidden'), 'libellé complet, pas de libellé court');
+      }
+      assert.doesNotMatch(ai.textContent, new RegExp(t('common.levels.ai_act_short.prohibited_suspected').replace('?', '\\?')));
+      assert.equal(ai.getAttribute('title'), null);
+      // Niveau inconnu : badge neutre, axe toujours nommé.
+      const [none] = axisBadges(undefined, t);
+      assert.equal(none.textContent, `${prefix('ai_act')}—`);
+    } finally {
+      dom.restore();
+    }
+  });
+
+  test('rubriques de suggestions et fiches prioritaires du rapport : axisBadges, jamais le libellé court', () => {
+    const actionsSource = readFileSync(new URL('../src/views/console/actions.js', import.meta.url), 'utf8');
+    const reportSource = readFileSync(new URL('../src/views/console/report.js', import.meta.url), 'utf8');
+    assert.match(actionsSource, /sugg-summary-badges' \}, axisBadges\(g\.effective, t\)\)/);
+    assert.match(reportSource, /report-usage-levels' \},\s*axisBadges\(g\.effective, t\)/);
+    assert.doesNotMatch(actionsSource, /short: true/);
+    assert.doesNotMatch(reportSource, /levelBadge\(/, 'le rapport passe par axisBadges');
+  });
+});
+
+describe('erreur d\'enregistrement : notification et encart persistant', () => {
+  const tr = (key) => key;
+
+  test('encart dans l\'emplacement de l\'élément concerné, déplacé par une autre erreur, retiré par clear()', () => {
+    const dom = installFakeDocument();
+    try {
+      const fallback = saveErrorSlot();
+      const item = saveErrorSlot();
+      const dialog = saveErrorSlot({ live: true });
+      assert.equal(item.getAttribute('class'), 'actions-save-error');
+      assert.equal(item.getAttribute('role'), null, 'hors dialogue : la notification est déjà annoncée');
+      assert.equal(dialog.getAttribute('role'), 'alert', 'dans un dialogue modal : annoncé par l\'encart');
+      assert.equal(item.childNodes.length, 0, 'vide au départ (masqué par la feuille de style)');
+
+      const errors = saveErrorPresenter(tr, fallback);
+      assert.equal(errors.show(item), item);
+      assert.equal(item.children.length, 1);
+      assert.match(item.children[0].getAttribute('class'), /\bcallout-danger\b/);
+      assert.equal(item.textContent, 'actions.toast.save_error');
+      assert.equal(errors.current(), item);
+
+      errors.show(dialog);
+      assert.equal(item.childNodes.length, 0, 'un seul encart à la fois');
+      assert.equal(dialog.textContent, 'actions.toast.save_error');
+
+      errors.clear();
+      assert.equal(dialog.childNodes.length, 0);
+      assert.equal(errors.current(), null);
+      errors.clear();
+
+      assert.equal(errors.show(undefined), fallback, 'sans emplacement : encart en tête de l\'onglet');
+      assert.equal(fallback.textContent, 'actions.toast.save_error');
+      assert.equal(saveErrorPresenter(tr).show(null), null);
+    } finally {
+      dom.restore();
+    }
+  });
+
+  test('la vue affiche l\'encart à chaque échec d\'enregistrement ; emplacement vide sans encombrement', () => {
+    const source = readFileSync(new URL('../src/views/console/actions.js', import.meta.url), 'utf8');
+    assert.match(source, /const reportError = \(err, slot\) => \{[^}]*toast\(t\('actions\.toast\.save_error'\), 'danger'\);\s*saveErrors\.show\(slot\);/);
+    assert.doesNotMatch(source, /reportError\(err\)/, 'chaque échec indique où placer l\'encart');
+    assert.equal((source.match(/reportError\(err, /g) ?? []).length, 6, 'accepter, rejeter, tout accepter, dialogue, supprimer, statut');
+    assert.match(source, /saveErrorSlot\(\{ live: true \}\)/, 'dialogue d\'édition');
+    assert.match(source, /const save = async \(\) => \{\s*saveErrors\.clear\(\);/, 'nouvelle tentative : encart retiré');
+    const css = readFileSync(new URL('../src/styles/actions.css', import.meta.url), 'utf8');
+    assert.match(css, /\.actions-save-error:empty\s*\{\s*display:\s*none;\s*\}/);
+  });
+});
+
+describe('mise en page et typographie', () => {
+  test('grilles d\'indicateurs (plan d\'actions, démo, rapport) en auto-fit : aucune piste vide', () => {
+    const read = (file) => readFileSync(new URL(`../src/styles/${file}`, import.meta.url), 'utf8');
+    const rule = (css, selector) => css.match(new RegExp(`(?:^|\\n)${selector.replace(/\./g, '\\.')}\\s*\\{([^}]*)\\}`))?.[1] ?? '';
+    const actionsCss = read('actions.css');
+    const reportCss = read('report.css');
+    assert.match(rule(actionsCss, '.kpi-grid-compact'), /grid-template-columns:\s*repeat\(auto-fit,/);
+    assert.match(rule(reportCss, '.report-kpis'), /grid-template-columns:\s*repeat\(auto-fit,/);
+    // Huit indicateurs : quatre colonnes au plus (deux rangées de quatre, jamais 6 + 2).
+    assert.match(rule(reportCss, '.report-kpis'), /\(100% - 3 \* var\(--space-3\)\) \/ 4/);
+    assert.doesNotMatch(actionsCss + reportCss, /auto-fill/);
+  });
+
+  test('fiche prioritaire du rapport : titre sans la marge haute des intertitres (.report-section h4)', () => {
+    const css = readFileSync(new URL('../src/styles/report.css', import.meta.url), 'utf8');
+    assert.match(css, /\.report-section h4 \{ margin-top:/, 'intertitres de section espacés');
+    // Même spécificité que l'intertitre au moins (deux sélecteurs), sinon sa marge haute l'emporte.
+    assert.match(css, /\n\.report-section \.report-usage-name \{ margin: 0 0 var\(--space-1\); \}/);
+  });
+
+  test('catalogues actions, report et demo : espaces insécables avant « : ; ? ! » et dans les guillemets', () => {
+    const problems = [];
+    const walk = (value, path) => {
+      if (typeof value === 'string') {
+        // Espace ordinaire au lieu de l'insécable, ou aucune espace (« mot: », « «mot» ») ; les
+        // « : » d'une adresse (https://) ou d'une heure (10:30) ne sont pas de la ponctuation.
+        if (/ [:;?!»]|« /.test(value)
+          || /[^\s  !?][;?!](?=\s|$)|[^\s  ]:(?=\s|$)/.test(value)
+          || /«(?![  ])|[^  ]»/.test(value)) problems.push(`${path} : ${value.slice(0, 60)}`);
+      } else if (value && typeof value === 'object') {
+        for (const [key, child] of Object.entries(value)) walk(child, `${path}.${key}`);
+      }
+    };
+    for (const ns of ['actions', 'report', 'demo']) {
+      walk(JSON.parse(readFileSync(new URL(`../src/i18n/fr/${ns}.json`, import.meta.url), 'utf8')), ns);
+    }
+    assert.deepEqual(problems, []);
   });
 });
 
@@ -378,6 +651,23 @@ describe('rapport : logique pure', () => {
     assert.equal(t('report.kpi.to_qualify', { count: 0 }), 'usage à qualifier');
     assert.equal(t('report.kpi.responses', { count: 23 }), 'déclarations reçues');
     assert.equal(t('report.charts.other_tools', { count: 3 }), 'Autres outils (3)');
+  });
+
+  test('vocabulaire : « IA fantôme » (glosé une seule fois), comptes « non maîtrisés », exports nommés comme au registre', () => {
+    const read = (ns) => JSON.parse(readFileSync(new URL(`../src/i18n/fr/${ns}.json`, import.meta.url), 'utf8'));
+    const texts = (obj) => (typeof obj === 'string' ? [obj] : Object.values(obj ?? {}).flatMap(texts));
+    const report = read('report');
+    const all = texts(report);
+    const glossed = all.filter((x) => /shadow ai/i.test(x));
+    assert.equal(glossed.length, 1, glossed.join(' | '));
+    assert.match(glossed[0], /IA fantôme \(shadow AI\)/);
+    assert.ok(!all.some((x) => /non identifiés/i.test(x)), 'comptes « personnels ou non maîtrisés », jamais « non identifiés »');
+    assert.ok(!texts(read('demo')).some((x) => /shadow ai/i.test(x) && !/IA fantôme \(shadow AI\)/.test(x)));
+    // Mêmes fichiers, mêmes messages que les boutons d'export de l'onglet Registre.
+    const registry = read('registry');
+    assert.equal(report.export.csv_done, registry.export.done_csv);
+    assert.equal(report.export.xlsx_done, registry.export.done_xlsx);
+    assert.ok(!all.some((x) => /\bXLSX\b/.test(x)), 'le format est nommé « Excel (.xlsx) », jamais « XLSX » seul');
   });
 
   test('questions regroupées par usage, sans doublon', () => {

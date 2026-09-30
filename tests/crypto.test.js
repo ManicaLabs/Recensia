@@ -13,8 +13,8 @@ import {
   isFingerprint, normalizePrivateJwk, publicKeyFromPrivateJwk, verifyKeyPair,
 } from '../src/crypto/keys.js';
 import {
-  CODE_MAX_LENGTH, CODE_MIN_BYTES, CODE_PREFIX, CodeError, PLAIN_MAX_BYTES, _encryptEntryWith, codeHash, decryptEntry,
-  encryptEntry, extractCodes, isCampaignId, isIsoTimestamp, isValidDay, validatePlain,
+  CODE_MAX_LENGTH, CODE_MIN_BYTES, CODE_PREFIX, CodeError, PLAIN_MAX_BYTES, _encryptEntryWith, checkCodeFormat, codeHash, decryptEntry,
+  encryptEntry, extractCodes, extractCodeCandidates, isCampaignId, isIsoTimestamp, isValidDay, validatePlain,
 } from '../src/crypto/codes.js';
 
 const VECTORS = JSON.parse(readFileSync(new URL('./vectors/codes-v1.json', import.meta.url), 'utf8'));
@@ -396,6 +396,36 @@ describe('codes : chiffrement et déchiffrement', async () => {
     await rejects(decryptEntry(bytesToCode(v2), keys.privateKeyJwk, CAMPAIGN), 'version');
   });
 
+  test('checkCodeFormat : contrôles préalables, même raison que decryptEntry', async () => {
+    const code = await encryptEntry(plainFor(), keys.publicKeyB64, CAMPAIGN);
+    assert.equal(checkCodeFormat(code), null, 'code bien formé');
+    const short = new Uint8Array(CODE_MIN_BYTES - 1);
+    short[0] = 1;
+    const v2 = codeBytes(code);
+    v2[0] = 2;
+    const cases = [
+      [null, 'format'], [42, 'format'], [undefined, 'format'], ['', 'format'],
+      [code.slice(5), 'format'], [`rcn1.${code.slice(5)}`, 'format'], [CODE_PREFIX, 'format'],
+      [`${code.slice(0, 100)}+${code.slice(101)}`, 'format'], [`${code}=`, 'format'], [` ${code}`, 'format'],
+      [`${code.slice(0, 100)}\n${code.slice(101)}`, 'format'], [CODE_PREFIX + 'A', 'format'],
+      [bytesToCode(short), 'format'],
+      [`RCN2.${code.slice(5)}`, 'version'], ['RCN12.abc', 'version'], [bytesToCode(v2), 'version'],
+      [CODE_PREFIX + 'A'.repeat(CODE_MAX_LENGTH), 'size'], ['x'.repeat(CODE_MAX_LENGTH + 1), 'size'],
+    ];
+    for (const [input, reason] of cases) {
+      const label = typeof input === 'string' ? `${input.slice(0, 12)}… (${input.length})` : String(input);
+      assert.equal(checkCodeFormat(input), reason, label);
+      await rejects(decryptEntry(input, keys.privateKeyJwk, CAMPAIGN), reason);
+    }
+    // Bien formé mais illisible avec cette clé, altéré ou d'une autre campagne : le déchiffrement tranche.
+    const flipped = codeBytes(code);
+    flipped[flipped.length - 1] ^= 1;
+    for (const input of [bytesToCode(flipped), await encryptEntry(plainFor(), other.publicKeyB64, CAMPAIGN)]) {
+      assert.equal(checkCodeFormat(input), null);
+      await rejects(decryptEntry(input, keys.privateKeyJwk, CAMPAIGN), 'decrypt');
+    }
+  });
+
   test('structure du clair vérifiée après déchiffrement', async () => {
     const pk = keys.publicKeyB64;
     const cases = [
@@ -529,7 +559,10 @@ describe('codes : vecteurs figés (compatibilité ascendante)', () => {
   test('codes figés à rejeter', async () => {
     for (const v of VECTORS.reject_vectors) {
       await rejects(decryptEntry(v.code, key.private_key_jwk, v.campaign_id), v.reason);
+      const early = ['format', 'size', 'version'].includes(v.reason) ? v.reason : null;
+      assert.equal(checkCodeFormat(v.code), early, `checkCodeFormat : ${v.name}`);
     }
+    for (const v of [...VECTORS.decrypt_vectors, ...VECTORS.deterministic_vectors]) assert.equal(checkCodeFormat(v.code), null, v.name);
   });
 });
 
@@ -568,6 +601,143 @@ describe('codes : extraction et empreinte', async () => {
     assert.deepEqual(extractCodes(rewritten), [a, b]);
     // Double encodage du séparateur (%257E).
     assert.deepEqual(extractCodes(`#/i/${a}%257E${c}`), [a, c]);
+  });
+
+  // Texte brut recoupé par une messagerie : chaque ligne coupée à `width` colonnes, préfixe compris.
+  const wrap = (text, width, prefix = '') => text.split('\n').flatMap((line) => {
+    const size = width - prefix.length;
+    if (line.length <= size) return [`${prefix}${line}`];
+    const out = [];
+    for (let i = 0; i < line.length; i += size) out.push(`${prefix}${line.slice(i, i + size)}`);
+    return out;
+  }).join('\n');
+  const importUrl = (...codes) => `https://manicalabs.github.io/Recensia/#/i/${codes.join('~')}`;
+
+  test('code recoupé à 76 colonnes (texte brut, CRLF) : recollé et déchiffrable', async () => {
+    const mail = [
+      'Bonjour,', '', 'Voici ma réponse chiffrée. Ouvrez ce lien :', importUrl(a), '',
+      'En secours, copiez le texte ci-dessous :', a, '', 'Empreinte : A1B2-C3D4',
+    ].join('\n');
+    const wrapped = wrap(mail, 76);
+    assert.ok(wrapped.split('\n').every((l) => l.length <= 76) && wrapped.split('\n').length > 20, 'prérequis : texte recoupé');
+    assert.deepEqual(extractCodes(wrapped), [a]);
+    assert.deepEqual(extractCodes(wrapped.replace(/\n/g, '\r\n')), [a], 'CRLF');
+    assert.deepEqual((await decryptEntry(extractCodes(wrapped)[0], keys.privateKeyJwk, CAMPAIGN)).usage.usage_name, USAGE.usage_name);
+  });
+
+  test('code recoupé dans une citation « > » (72 colonnes) et « >> »', () => {
+    for (const prefix of ['> ', '>> ', '> > ', '>']) {
+      const quoted = wrap(['Le 30/09/2026, un collègue a écrit :', importUrl(a, b), '', c].join('\n'), 72, prefix);
+      assert.deepEqual(extractCodes(`Transféré :\n${quoted}\n`), [a, b, c], JSON.stringify(prefix));
+    }
+  });
+
+  test('code suivi d’un mot collé sur la ligne suivante : jamais recollé à tort', async () => {
+    // Code sur une seule ligne (non recoupé), puis un mot : le code seul est retenu.
+    assert.deepEqual(extractCodes(`${a}\nMerci`), [a]);
+    const [entry] = extractCodeCandidates(`${a}\nMerci`);
+    assert.deepEqual(entry.candidates, [a, `${a}Merci`], 'recollage gardé en variante');
+    await assert.rejects(decryptEntry(`${a}Merci`, keys.privateKeyJwk, CAMPAIGN),
+      (err) => err instanceof CodeError && ['decrypt', 'format'].includes(err.reason), 'recollage erroné refusé (tag ou longueur)');
+    // Code recoupé : la dernière ligne (courte) termine le code ; le mot suivant n'y est pas ajouté.
+    for (const next of ['Merci', 'Réponses anonymes ; l’envoi par e-mail, lui, n’est pas anonyme.', 'Cordialement,', 'A1B2']) {
+      const text = `${wrap(a, 76)}\n${next}`;
+      if (text.split('\n').at(-2).length >= 74) continue; // dernière ligne pleine : cas ambigu couvert par les variantes
+      assert.deepEqual(extractCodes(text), [a], next);
+    }
+    assert.deepEqual(extractCodes(`${wrap(a, 76)}\n\nMerci`), [a], 'ligne vide après le code');
+    assert.deepEqual(extractCodes(`${wrap(importUrl(a), 76)}\nhttps://manicalabs.github.io/Recensia/`), [a], 'adresse sur la ligne suivante');
+  });
+
+  // Code recoupé dont la dernière ligne est pleine (cas ambigu) : k caractères de texte avant le code
+  // sur la première ligne, pour que le reste tombe juste sur des lignes de 76 colonnes.
+  const fullTail = (code) => {
+    const k0 = (76 - ((code.length + 1) % 76)) % 76;
+    const k = k0 < 10 ? k0 + 76 : k0;
+    const text = `${'z'.repeat(k)} ${code}`;
+    const lines = [];
+    for (let i = 0; i < text.length; i += 76) lines.push(text.slice(i, i + 76));
+    assert.equal(lines.at(-1).length, 76, 'prérequis : dernière ligne pleine');
+    return lines.join('\n');
+  };
+
+  test('dernière ligne pleine : un mot accentué ou suivi d’une lettre n’est pas une fin de code', () => {
+    assert.deepEqual(extractCodes(`${fullTail(a)}\nRéponses anonymes\u00A0; l'envoi par e-mail, lui, n'est pas anonyme.`), [a]);
+    assert.deepEqual(extractCodes(`${fullTail(a)}\nÉquipe RH`), [a]);
+    assert.deepEqual(extractCodes(`${fullTail(a)}\n2026年`), [a], 'chiffre suivi d’un caractère non latin');
+  });
+
+  test('même code deux fois (lien d’import et code brut) : le recollage confirmé l’emporte, une seule entrée', () => {
+    // Seul, « Merci » après une dernière ligne pleine est indécidable : le recollage erroné est préféré,
+    // le bon code reste candidat. Confirmé par une autre occurrence, il est retenu une seule fois.
+    const [alone] = extractCodeCandidates(`${fullTail(a)}\nMerci`);
+    assert.equal(alone.code, `${a}Merci`);
+    assert.ok(alone.candidates.includes(a));
+    for (const text of [
+      `${fullTail(a)}\nMerci\n\nLien :\n${wrap(importUrl(a), 76)}\n`,
+      `Lien :\n${wrap(importUrl(a), 76)}\n\n${fullTail(a)}\nMerci`,
+    ]) {
+      const found = extractCodeCandidates(text);
+      assert.deepEqual(found.map((f) => f.code), [a]);
+      assert.equal(found[0].candidates[0], a);
+    }
+  });
+
+  test('variantes : le bon recollage figure parmi les candidats, même mal préféré', async () => {
+    // Recoupage « en peigne » (72 puis 8 colonnes) : reconnu, recollage complet préféré ; les autres
+    // recollages restent proposés, un seul se déchiffre.
+    const lines = [];
+    for (let i = 0, odd = false; i < a.length; odd = !odd) {
+      const size = odd ? 6 : 70;
+      lines.push(`> ${a.slice(i, i + size)}`);
+      i += size;
+    }
+    const [entry] = extractCodeCandidates(lines.join('\n'));
+    assert.equal(entry.code, a, 'peigne reconnu : recollage complet préféré');
+    assert.ok(entry.candidates.includes(a), 'recollage complet proposé');
+    assert.equal(new Set(entry.candidates).size, entry.candidates.length, 'sans doublon');
+    assert.ok(entry.candidates.length <= 5);
+    let opened = 0;
+    for (const candidate of entry.candidates) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await decryptEntry(candidate, keys.privateKeyJwk, CAMPAIGN);
+        opened += 1;
+      } catch (err) {
+        assert.ok(err instanceof CodeError);
+      }
+    }
+    assert.equal(opened, 1, 'un seul candidat se déchiffre');
+    // Un code isolé non recoupé n'a qu'un candidat.
+    assert.deepEqual(extractCodeCandidates(`Code : ${a}.`), [{ code: a, candidates: [a] }]);
+  });
+
+  test('citation recoupée à nouveau (« peigne » à une ou deux dents) : codes recollés', () => {
+    const mail = ['Voici ma réponse chiffrée. Ouvrez ce lien :', importUrl(a, b), '', 'Empreinte : A1B2-C3D4', '', c, '', 'Merci'].join('\n');
+    for (const [width, times] of [[72, 2], [76, 2], [80, 3]]) {
+      let text = mail;
+      for (let k = 0; k < times; k += 1) text = wrap(text, width, '> ');
+      const lengths = text.split('\n').map((l) => l.length);
+      assert.ok(lengths.includes(width) && lengths.some((n) => n <= 8), 'prérequis : lignes longues et « dents »');
+      assert.deepEqual(extractCodes(text), [a, b, c], `${width} colonnes, ${times} citations`);
+      // Mot collé juste après le code : si la dernière dent tombe juste, le recollage est indécidable,
+      // mais le bon code reste parmi les candidats.
+      let glued = [c, 'Merci'].join('\n');
+      for (let k = 0; k < times; k += 1) glued = wrap(glued, width, '> ');
+      assert.ok(extractCodeCandidates(glued)[0].candidates.includes(c), `${width} colonnes, ${times} citations, mot collé`);
+    }
+  });
+
+  test('extraction linéaire sur un grand texte recoupé', () => {
+    const block = `${wrap(importUrl(a), 76)}\n`;
+    const noise = `${'x'.repeat(76)}\n`.repeat(20000);
+    const big = `${block}\n${noise}${block}\nRCN1.${'y'.repeat(75)}\n${noise}`;
+    const start = performance.now();
+    const found = extractCodes(big);
+    assert.ok(performance.now() - start < 2000, 'moins de 2 s');
+    assert.equal(found[0], a);
+    assert.equal(found.length, 2, 'code et bruit : 2 candidats distincts');
+    assert.ok(found[1].length <= 12000 + 76, 'taille plafonnée');
   });
 
   test('codeHash : SHA-256 hexadécimal de la chaîne', async () => {

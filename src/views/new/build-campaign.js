@@ -7,7 +7,8 @@
 //   (validateCampaignConfig(campaignToLinkConfig(c)).value) : le formulaire répondant et l'import
 //   comparent ensuite les services au caractère près.
 // - draftCampaign / collectUrlLength : aperçu en direct de la longueur du lien de collecte.
-// - passwordStrength / recoveryFilename : étape « Protégez votre clé ».
+// - passwordStrength : étape « Protégez votre clé » (le fichier lui-même : buildRecoveryFile,
+//   src/services/recovery.js, commun avec l'onglet Paramètres).
 
 import { cleanLine } from '../../engine/validate.js';
 import { validateChannels, CHANNELS_MAX } from '../../share/channels.js';
@@ -15,7 +16,6 @@ import { validateCampaignConfig, campaignToLinkConfig, LINK_LIMITS, MODES } from
 import { isValidDay } from '../../crypto/codes.js';
 import { b64urlEncode } from '../../crypto/b64url.js';
 import { deflateJson } from '../../crypto/compress.js';
-import { slugify } from '../../export/registry.js';
 
 export const TITLE_MAX = LINK_LIMITS.title;
 export const ORG_MAX = LINK_LIMITS.org;
@@ -351,11 +351,4 @@ function isSequence(pw) {
   const s = pw.toLowerCase();
   const runs = ['0123456789', 'abcdefghijklmnopqrstuvwxyz', 'azertyuiop', 'qwertyuiop'];
   return runs.some((run) => (run + run).includes(s) || (run + run).split('').reverse().join('').includes(s));
-}
-
-/** Nom du fichier de récupération : recensia-cle-<slug du titre>-<EMPREINTE>.recensia-key */
-export function recoveryFilename(campaign) {
-  const slug = slugify(campaign?.title || campaign?.org_name || campaign?.id);
-  const fp = String(campaign?.fingerprint ?? '').toUpperCase().replace(/[^0-9A-F]/g, '') || 'CLE';
-  return `recensia-cle-${slug}-${fp}.recensia-key`;
 }

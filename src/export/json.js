@@ -6,6 +6,7 @@ import {
   BackupError, ENCRYPTED_FORMAT, decryptWithPassword, encryptWithPassword, isEncryptedEnvelope, isRecoveryFile,
 } from '../crypto/backup.js';
 import { StoreError, validateBackup } from '../storage/store.js';
+import { isValidIso } from '../storage/backup-format.js';
 import { exportFilename } from './registry.js';
 
 export const JSON_MIME = 'application/json';
@@ -21,15 +22,38 @@ function describeErrors(errors) {
   return errors.length > 5 ? `${shown}…` : shown;
 }
 
+function isObj(v) {
+  return v !== null && typeof v === 'object' && !Array.isArray(v);
+}
+
 /**
- * Exporte une campagne en Blob JSON. Option `markBackup` (vrai par défaut) : inscrit la date
- * de sauvegarde dans campaign.last_backup_at (bandeau « dernière sauvegarde il y a X jours »).
+ * Sauvegarde dont campaign.last_backup_at vaut au moins exported_at : le fichier prouve qu'une copie
+ * existait à la date de son export. Rattrape les sauvegardes produites avant que l'export n'inscrive
+ * sa propre date (la campagne restaurée affichait « dernière sauvegarde : jamais » ou la date de la
+ * sauvegarde précédente). Une valeur invalide est laissée telle quelle : la validation la signale.
+ */
+function withBackupDate(data) {
+  if (!isObj(data) || !isObj(data.campaign) || !isValidIso(data.exported_at)) return data;
+  const current = data.campaign.last_backup_at;
+  if (current !== null && current !== undefined) {
+    if (!isValidIso(current) || Date.parse(current) >= Date.parse(data.exported_at)) return data;
+  }
+  return { ...data, campaign: { ...data.campaign, last_backup_at: data.exported_at } };
+}
+
+/**
+ * Exporte une campagne en Blob JSON. Option `markBackup` (vrai par défaut) : la date de cette
+ * sauvegarde (exported_at) est inscrite dans campaign.last_backup_at, dans le fichier produit
+ * (une campagne restaurée depuis ce fichier affiche cette date) et dans le store (bandeau
+ * « dernière sauvegarde il y a X jours »).
  * La sauvegarde est contrôlée avec la validation de l'import avant d'être produite : une
  * sauvegarde qui ne pourrait pas être réimportée est refusée (StoreError 'invalid_backup').
  */
 export async function exportJson(store, campaignId, { password, markBackup = true } = {}) {
   const encrypted = hasPassword(password);
   const data = await store.exportCampaignData(campaignId, { includePrivateKey: encrypted });
+  const backupAt = data?.exported_at;
+  if (markBackup && isObj(data?.campaign)) data.campaign.last_backup_at = backupAt;
   const check = validateBackup(data);
   if (!check.ok) {
     throw new StoreError('invalid_backup',
@@ -41,7 +65,7 @@ export async function exportJson(store, campaignId, { password, markBackup = tru
   if (markBackup) {
     try {
       const campaign = await store.getCampaign(campaignId);
-      if (campaign) await store.putCampaign({ ...campaign, last_backup_at: new Date().toISOString() });
+      if (campaign) await store.putCampaign({ ...campaign, last_backup_at: backupAt });
     } catch {
       // La sauvegarde est produite même si la date ne peut pas être inscrite.
     }
@@ -52,7 +76,8 @@ export async function exportJson(store, campaignId, { password, markBackup = tru
 /**
  * Importe une sauvegarde (texte JSON, ou Blob/File) : détecte l'enveloppe chiffrée ou le JSON
  * clair, déchiffre si besoin, valide puis importe. Option `overwrite` : remplace une campagne
- * existante (sinon erreur « conflict », à confirmer par l'utilisateur).
+ * existante (sinon erreur « conflict », à confirmer par l'utilisateur). La campagne restaurée
+ * porte comme dernière sauvegarde la date du fichier (exported_at) si elle est plus récente.
  * → { campaign_id, entries, assessments, actions, encrypted }
  * Erreurs (StoreError.code) : invalid_json, too_large, recovery_file, password_required,
  * wrong_password, invalid_backup, conflict, key_mismatch.
@@ -98,7 +123,7 @@ export async function importJson(fileText, password, store, { overwrite = false 
     }
   }
 
-  const result = await store.importCampaignData(data, { overwrite });
+  const result = await store.importCampaignData(withBackupDate(data), { overwrite });
   return { ...result, encrypted };
 }
 

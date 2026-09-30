@@ -5,9 +5,14 @@ import { existsSync, readFileSync } from 'node:fs';
 import * as XLSX from '../vendor/xlsx.mjs';
 import {
   REGISTRY_COLUMNS, registryRows, applicableDeadline, formatDateFr, slugify, exportFilename, FALLBACK_LABELS, toDay,
+  registryColumns, commentsText, COMMENTS_MAX_CHARS,
 } from '../src/export/registry.js';
 import { toCSV } from '../src/export/csv.js';
-import { buildWorkbook, workbookBlob, XLSX_MIME, SHEET_NAMES } from '../src/export/xlsx.js';
+import {
+  buildWorkbook, workbookBlob, XLSX_MIME, SHEET_NAMES, CALENDAR_STATUS, calendarStatusText, ACTION_ORIGIN, originLabel,
+  SHADOW_AI_SECTION, SHADOW_AI_LABEL,
+} from '../src/export/xlsx.js';
+import { loadCalendar } from './helpers/load-data.js';
 import { exportJson, importJson, backupFilename, MAX_IMPORT_CHARS } from '../src/export/json.js';
 import { openStore, validateBackup } from '../src/storage/store.js';
 import { consolidate } from '../src/engine/consolidate.js';
@@ -158,6 +163,41 @@ test('registryRows : jamais d’identité de répondant ni de commentaire', () =
   }
 });
 
+// CDC §7.4 : les commentaires libres « peuvent être exclus des exports » (option de campagne).
+test('registryRows : commentaires libres seulement si la campagne l’autorise', () => {
+  const withComments = (mode) => makeCampaign(mode, { settings: { ...makeCampaign(mode).settings, comments_exportable: true } });
+  assert.equal(registryColumns(makeCampaign()), REGISTRY_COLUMNS, 'défaut : les 20 colonnes du §8.2');
+  assert.equal(registryColumns(undefined), REGISTRY_COLUMNS);
+  const cols = registryColumns(withComments('anonymous'));
+  assert.deepEqual(cols.slice(0, 20), [...REGISTRY_COLUMNS], 'ordre du §8.2 conservé');
+  assert.deepEqual(cols[20], { key: 'comments', label: 'Commentaires' });
+  assert.ok(Object.isFrozen(cols));
+  for (const row of rowsFor('open')) assert.ok(!('comments' in row), 'option inactive : aucune colonne');
+
+  const groups = makeGroups({ open: true });
+  groups[0].members[1].usage.comment = '  =1+1\u202E commentaire\ntest  ';
+  groups[0].members[2].excluded = true;
+  groups[0].members[2].usage.comment = 'Commentaire d’une déclaration écartée';
+  const rows = registryRows(groups, { campaign: withComments('open'), actions: [], questionnaire, rules, calendar, t, today: TODAY });
+  assert.deepEqual(Object.keys(rows[0]), cols.map((c) => c.key));
+  assert.equal(rows[0].comments, 'Commentaire confidentiel sur Mme Durand ; =1+1 commentaire test',
+    'nettoyé (contrôles, retours à la ligne), sans doublon, déclarations écartées ignorées');
+  assert.equal(rows[1].comments, 'Commentaire confidentiel sur Mme Durand', 'sept fois le même commentaire : une seule fois');
+  const csv = toCSV([{ ...rows[0], comments: '=1+1 commentaire test' }], cols);
+  assert.ok(csv.split('\r\n')[1].endsWith(";'=1+1 commentaire test"), 'neutralisé dans le CSV');
+  for (const s of ['Jeanne', 'Dupont', 'jeanne.dupont']) assert.ok(!JSON.stringify(rows).includes(s), `jamais d’identité : ${s}`);
+});
+
+test('commentsText : borné, mention des commentaires non repris', () => {
+  const members = Array.from({ length: 10 }, (_, i) => ({ usage: { comment: `${i}`.repeat(400) } }));
+  const text = commentsText({ members });
+  assert.ok(text.length <= COMMENTS_MAX_CHARS + 40, `${text.length} caractères`);
+  assert.ok(text.endsWith('… (6 commentaires non repris)'), text.slice(-40));
+  assert.equal(commentsText({ members: [...members.slice(0, 5), { usage: { comment: '' } }, { usage: {} }, null] }).endsWith('… (1 commentaire non repris)'), true);
+  assert.equal(commentsText({ members: [] }), '');
+  assert.equal(commentsText(undefined), '');
+});
+
 test('registryRows : repli sur les libellés intégrés sans t ni questionnaire', () => {
   const groups = makeGroups();
   const [g1] = registryRows(groups, { campaign: makeCampaign(), actions: makeActions(groups), today: TODAY });
@@ -296,9 +336,12 @@ test('classeur : contenus hostiles neutralisés dans les quatre feuilles (Synth�
   for (const v of ["'=cmd|' /C calc'!A0", "'+Organisation", "'-outil", "'=RH", "'\t@échéance à venir"]) {
     assert.ok(flat('Synthèse').includes(v), `Synthèse : ${v}`);
   }
-  for (const v of ["'=version()", "'+2026", "'=règle()", "'+réf", "'-id", "'@échéance", "'=statut", '\'=HYPERLINK("http://exemple.invalid")']) {
+  for (const v of ["'=version()", "'+2026", "'=règle()", "'+réf", "'-id", "'@échéance", '\'=HYPERLINK("http://exemple.invalid")']) {
     assert.ok(flat('Référentiel').includes(v), `Référentiel : ${v}`);
   }
+  // Un statut inconnu n'est jamais recopié tel quel : libellé neutre.
+  assert.ok(!flat('Référentiel').some((v) => String(v).includes('statut')), 'statut brut absent');
+  assert.ok(flat('Référentiel').includes('À venir (vérification non précisée)'));
   assert.ok(flat('Registre').includes("'@Service"));
   assert.ok(hostile >= 16, `contenus hostiles effectivement exercés : ${hostile}`);
 });
@@ -325,8 +368,28 @@ test('classeur : plan d’actions trié et lisible', () => {
   assert.equal(a1[5], 'Haute');
   assert.equal(a1[6], 'En cours');
   assert.equal(a1[8], '15/12/2026');
-  assert.equal(a1[10], 'Suggérée');
+  assert.equal(a1[10], "Issue d'une suggestion", 'action acceptée depuis une suggestion');
   assert.equal(acts.find((r) => r[0] === 'a3')[3], 'Transverse (toute l’organisation)');
+  assert.equal(acts.find((r) => r[0] === 'a3')[10], 'Ajoutée manuellement');
+  assert.ok(!acts.flat().includes('Suggérée'), 'plus de « Suggérée » dans le plan');
+});
+
+test('classeur : vocabulaire aligné sur l’interface (origine des actions, IA fantôme)', () => {
+  // Libellés de la liste du plan d'actions (src/i18n/fr/actions.json, item.*), espaces normalisés.
+  const catalog = JSON.parse(readFileSync(new URL('../src/i18n/fr/actions.json', import.meta.url), 'utf8'));
+  const plain = (s) => String(s).replace(/[\u00a0\u202f]/g, ' ');
+  assert.equal(ACTION_ORIGIN.suggestion, plain(catalog.item.from_suggestion));
+  assert.equal(ACTION_ORIGIN.manual, plain(catalog.item.manual));
+  assert.equal(originLabel({ suggested: true }), ACTION_ORIGIN.suggestion);
+  for (const a of [{ suggested: false }, {}, null, undefined]) assert.equal(originLabel(a), ACTION_ORIGIN.manual);
+  // Synthèse : « IA fantôme (shadow AI) », comptes « personnels ou non maîtrisés » (tableau de bord, rapport).
+  const dashboard = JSON.parse(readFileSync(new URL('../src/i18n/fr/dashboard.json', import.meta.url), 'utf8'));
+  const report = JSON.parse(readFileSync(new URL('../src/i18n/fr/report.json', import.meta.url), 'utf8'));
+  assert.ok(plain(JSON.stringify(report)).includes(SHADOW_AI_SECTION), 'glose du rapport');
+  assert.ok(plain(JSON.stringify(dashboard)).toLowerCase().includes('personnels ou non maîtrisés'));
+  assert.ok(SHADOW_AI_LABEL.endsWith('personnels ou non maîtrisés'));
+  const flat = sheetRows(readBack(buildSample()), 'Synthèse').flat().map(String);
+  assert.ok(!flat.some((v) => /non identifiés|^shadow ai$/i.test(v)), 'ni « non identifiés » ni « Shadow AI » seul');
 });
 
 test('classeur : synthèse avec effectifs masqués et mention indicative', () => {
@@ -340,7 +403,7 @@ test('classeur : synthèse avec effectifs masqués et mention indicative', () =>
   assert.equal(find('Exposition des données', '3 — Critique'), 1);
   assert.equal(find('Répartition par service', 'RH'), '< 5');
   assert.equal(find('Principaux outils', 'IA intégrée à un logiciel'), '< 5');
-  assert.equal(find('Shadow AI', 'Usages sur comptes personnels ou non identifiés'), '1 (33 %)');
+  assert.equal(find('IA fantôme (shadow AI)', 'Usages sur comptes personnels ou non maîtrisés'), '1 (33 %)');
   assert.equal(find("Plan d'actions", 'Suggestions en attente'), 2);
   assert.equal(find('Échéances à venir', '02/12/2027'), 'Haut risque — annexe III');
   assert.ok(rows.some((r) => String(r[2]).startsWith('Indicatif, à confirmer')));
@@ -361,14 +424,60 @@ test('classeur : référentiel (règles utilisées, calendrier, versions, mentio
   assert.deepEqual(used.map((r) => r[0]), ['R-AIA-HI-EMP', 'R-AIA-LIM-02', 'R-AIA-PRV-01', 'R-AIA-LIT', 'R-DATA-PERSO'],
     'seules les règles déclenchées, dans l’ordre du référentiel');
   const lit = used.find((r) => r[0] === 'R-AIA-LIT');
-  assert.deepEqual(lit, ['R-AIA-LIT', 'AI Act', '—', 'Littératie IA', 'art. 4', 2]);
+  assert.deepEqual(lit.slice(0, 6), ['R-AIA-LIT', 'AI Act', '—', 'Littératie IA', 'art. 4', 2]);
   assert.deepEqual(used.find((r) => r[0] === 'R-AIA-HI-EMP').slice(0, 3), ['R-AIA-HI-EMP', 'AI Act', 'Haut risque']);
   assert.equal(used.find((r) => r[0] === 'R-DATA-PERSO')[2], 'Modificateur +1');
   const cal = rows.slice(calHeader + 1);
   assert.equal(cal.length, 4);
-  assert.deepEqual(cal[3], ['annex3', '02/12/2027', 'Haut risque — annexe III', 'À venir',
+  assert.deepEqual(rows[calHeader], ['ID', 'Date', 'Libellé', 'Statut', 'Concerne', 'Source', 'Dernière vérification']);
+  assert.deepEqual(cal[3], ['annex3', '02/12/2027', 'Haut risque — annexe III', 'À venir', '',
     'https://eur-lex.europa.eu/eli/reg/2024/1689/oj', '15/09/2026']);
-  assert.equal(cal[2][5], '15/09/2026', 'date de vérification globale en repli');
+  assert.equal(cal[2][3], 'En vigueur', 'art. 50 : date passée au jour de l’export');
+  assert.equal(cal[2][6], '15/09/2026', 'date de vérification globale en repli');
+});
+
+test('classeur : statut du calendrier réel en français, jamais la clé brute', () => {
+  const real = loadCalendar();
+  for (const d of real.deadlines) assert.ok(Object.hasOwn(CALENDAR_STATUS, d.status), `${d.id} : statut « ${d.status} » sans libellé`);
+  const wb = buildWorkbook({ campaign: makeCampaign(), groups: [], calendar: real, rules, today: '2026-09-30' });
+  const rows = sheetRows(readBack(wb), 'Référentiel');
+  const calHeader = rows.findIndex((r) => r[0] === 'ID' && r[1] === 'Date');
+  const cal = rows.slice(calHeader + 1);
+  assert.equal(cal.length, real.deadlines.length);
+  const keys = new Set(real.deadlines.map((d) => d.status));
+  for (const r of cal) {
+    assert.ok(!keys.has(r[3]), `${r[0]} : statut brut « ${r[3]} »`);
+    assert.match(r[3], /^(En vigueur|À venir)( \(.+\))?$/, r[0]);
+  }
+  const byId = Object.fromEntries(cal.map((r) => [r[0], r]));
+  assert.equal(byId.transparency_art50[3], 'En vigueur');
+  assert.equal(byId.marking_grace_art50_2[3], 'À venir');
+  assert.equal(byId.marking_grace_art50_2[4], 'Fournisseurs uniquement');
+  assert.equal(byId.high_risk_annex_iii[4], '', 'sans restriction de rôle : cellule vide');
+  assert.equal(calendarStatusText({ date: '2027-12-02', status: 'to_verify' }, '2026-09-30'), 'À venir (à vérifier)');
+  assert.equal(calendarStatusText({ date: '2026-09-30', status: 'verified' }, '2026-09-30'), 'À venir', 'le jour même : encore à venir');
+  assert.equal(calendarStatusText({ date: '2026-09-29', status: 'inconnu' }, '2026-09-30'), 'En vigueur (vérification non précisée)');
+  assert.equal(calendarStatusText({ status: 'verified' }, '2026-09-30'), 'Date non précisée');
+});
+
+test('classeur : colonne « Commentaires » et mention si la campagne l’autorise', () => {
+  const groups = makeGroups();
+  groups[1].members[0].usage.comment = '=1+1 commentaire test';
+  const campaign = makeCampaign('anonymous', { settings: { ...makeCampaign().settings, comments_exportable: true } });
+  const wb = buildWorkbook({ campaign, groups, actions: [], stats: makeStats(), rules, calendar, questionnaire, t, today: TODAY });
+  assert.equal(wb.Sheets.Registre['!autofilter'].ref, 'A1:U4');
+  const back = readBack(wb);
+  const reg = registryTable(back);
+  assert.equal(reg[0].length, 21);
+  assert.equal(reg[0][20], 'Commentaires');
+  assert.equal(reg[2][20], "'=1+1 commentaire test", 'neutralisé');
+  const all = sheetRows(back, 'Registre');
+  assert.ok(all.some((r) => String(r[0]).startsWith('Commentaires libres inclus : même en mode anonyme')), 'avertissement');
+  const summary = sheetRows(back, 'Synthèse');
+  assert.equal(summary.find((r) => r[1] === 'Commentaires libres')[2], 'Inclus dans le registre');
+  const off = readBack(buildSample());
+  assert.equal(sheetRows(off, 'Synthèse').find((r) => r[1] === 'Commentaires libres')[2], 'Exclus des exports');
+  assert.equal(registryTable(off)[0].length, 20);
 });
 
 test('classeur : mode ouvert sans identité ni commentaire', () => {
@@ -484,6 +593,58 @@ test('import JSON clair : aller-retour, conflit, écrasement sans perte de clé'
 
   const blobRes = await importJson(new Blob([text]), undefined, await openStore({ forceMemory: true }));
   assert.equal(blobRes.campaign_id, 'campA', 'Blob / File accepté');
+});
+
+test('sauvegarde JSON : le fichier porte la date de cette sauvegarde ; restaurée, la campagne l’affiche', async () => {
+  const s = await storeWithCampaign(await makeKeys());
+  const before = '2026-09-01T08:00:00.000Z';
+  await s.putCampaign({ ...(await s.getCampaign('campA')), last_backup_at: before });
+
+  // Sans marquage : le fichier garde la date précédente, le store n'est pas modifié.
+  const unmarked = JSON.parse(await (await exportJson(s, 'campA', { markBackup: false })).text());
+  assert.equal(unmarked.campaign.last_backup_at, before);
+  assert.equal((await s.getCampaign('campA')).last_backup_at, before);
+
+  const obj = JSON.parse(await (await exportJson(s, 'campA')).text());
+  assert.ok(Date.parse(obj.exported_at) > Date.parse(before));
+  assert.equal(obj.campaign.last_backup_at, obj.exported_at, 'date de cette sauvegarde dans le fichier');
+  assert.equal((await s.getCampaign('campA')).last_backup_at, obj.exported_at, 'même date dans le store');
+  const restored = await openStore({ forceMemory: true });
+  await importJson(JSON.stringify(obj), null, restored);
+  assert.equal((await restored.getCampaign('campA')).last_backup_at, obj.exported_at, 'plus « jamais » après restauration');
+
+  // Sauvegarde chiffrée : même date, lue après déchiffrement.
+  const password = 'correct horse battery staple';
+  const env = await (await exportJson(s, 'campA', { password })).text();
+  const stamp = (await s.getCampaign('campA')).last_backup_at;
+  assert.ok(Date.parse(stamp) >= Date.parse(obj.exported_at));
+  const target = await openStore({ forceMemory: true });
+  await importJson(env, password, target);
+  assert.equal((await target.getCampaign('campA')).last_backup_at, stamp);
+});
+
+test('restauration d’une sauvegarde antérieure : date du fichier retenue si plus récente', async () => {
+  const s = await storeWithCampaign(null);
+  const legacy = await s.exportCampaignData('campA');
+  const exportedAt = '2026-09-20T10:00:00.000Z';
+  const restore = async (last) => {
+    const target = await openStore({ forceMemory: true });
+    const data = structuredClone(legacy);
+    data.exported_at = exportedAt;
+    data.campaign.last_backup_at = last;
+    await importJson(JSON.stringify(data), null, target);
+    return (await target.getCampaign('campA')).last_backup_at;
+  };
+  assert.equal(await restore(null), exportedAt, 'jamais sauvegardée avant ce fichier');
+  assert.equal(await restore('2026-09-10T10:00:00.000Z'), exportedAt, 'date de la sauvegarde précédente remplacée');
+  assert.equal(await restore('2026-09-25T10:00:00.000Z'), '2026-09-25T10:00:00.000Z', 'date plus récente conservée');
+  const bad = structuredClone(legacy);
+  bad.campaign.last_backup_at = 'hier';
+  await assert.rejects(importJson(JSON.stringify(bad), null, await openStore({ forceMemory: true })), { code: 'invalid_backup' });
+  // Le store garde l'aller-retour brut : exportCampaignData / importCampaignData ne touchent pas la date.
+  const raw = await openStore({ forceMemory: true });
+  await raw.importCampaignData(legacy);
+  assert.equal((await raw.getCampaign('campA')).last_backup_at, legacy.campaign.last_backup_at);
 });
 
 test('import JSON : fichiers refusés avec un code explicite', async () => {

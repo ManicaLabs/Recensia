@@ -55,7 +55,12 @@
     "forget": "Oublier ces codes",
     "forgotten": "Codes en attente oubliés.",
     "working": "Recherche de la campagne concernée…",
-    "no_match": "Aucune campagne de ce navigateur ne peut lire ces codes. Importez le fichier de récupération de la campagne concernée : ils seront importés aussitôt."
+    "no_match": "Aucune campagne de ce navigateur ne peut lire ces codes. Importez le fichier de récupération de la campagne concernée : ils seront importés aussitôt.",
+    "unreadable": {
+      "one": "Aucune campagne de ce navigateur ne peut lire ce code : son lien a probablement été coupé par la messagerie. Demandez à l'expéditeur le fichier .rcn ou le code complet (il commence par RCN1.) ; s'il vient d'une campagne créée dans un autre navigateur, importez plutôt le fichier de récupération de cette campagne.",
+      "other": "Aucune campagne de ce navigateur ne peut lire ces {count} codes : leur lien a probablement été coupé par la messagerie. Demandez à l'expéditeur les fichiers .rcn ou les codes complets (ils commencent par RCN1.) ; s'ils viennent d'une campagne créée dans un autre navigateur, importez plutôt le fichier de récupération de cette campagne."
+    },
+    "version": "Ces codes ont été produits par une version plus récente de Recensia : rechargez la page pour mettre l'application à jour, puis cliquez de nouveau sur « Importer maintenant ». Ils sont conservés le temps de cette session."
   },
   "storage": {
     "title": "Stockage de ce navigateur",

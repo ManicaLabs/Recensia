@@ -85,7 +85,8 @@ function renderReport(t, report, { campaign, questionnaire }) {
         Array.isArray(x.fields) && x.fields.length
           ? h('span', { class: 'small muted' }, t('import.report.fields', { fields: x.fields.map((f) => fieldLabel(t, questionnaire, f)).join(', ') }))
           : null))),
-      h('p', { class: 'small muted' }, t('import.report.invalid_text')),
+      // Consigne de relance : en mode anonyme, une relance générale évite d'identifier l'expéditeur.
+      h('p', { class: 'small muted' }, campaign.mode === 'open' ? t('import.report.invalid_text_open') : t('import.report.invalid_text')),
     ], { open: true }));
   }
   if (counts.other_campaign) {

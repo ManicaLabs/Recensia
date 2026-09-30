@@ -20,12 +20,21 @@ function registryHref(campaign) {
   return `#/admin/${campaign.id}/registre`;
 }
 
-function savedNotice(campaign, saved, t) {
+/**
+ * Confirmation affichée après l'enregistrement (exportée pour les tests) : nom de l'usage, classement
+ * indicatif sur les deux axes, avertissement, lien vers le registre.
+ * @param {{ id: string }} campaign
+ * @param {{ name: string, classification: { ai_act_level: string, data_level: number } | null }} saved
+ * @param {Function} t
+ * @returns {HTMLElement}
+ */
+export function savedNotice(campaign, saved, t) {
   const badges = saved.classification
     ? h('p', { class: 'cluster add-levels' },
       h('span', null, t('add.saved.levels')),
-      levelBadge('ai_act', saved.classification.ai_act_level, t),
-      levelBadge('data', saved.classification.data_level, t))
+      // Deux axes distincts (CDC D5) : l'axe est écrit à l'écran, pas seulement pour les lecteurs d'écran.
+      levelBadge('ai_act', saved.classification.ai_act_level, t, { axisLabel: 'visible' }),
+      levelBadge('data', saved.classification.data_level, t, { axisLabel: 'visible' }))
     : null;
   return h('div', { class: 'add-saved', role: 'status', tabindex: '-1' },
     callout('success',

@@ -1,7 +1,7 @@
 {
   "name": "Recensia — registre des usages IA",
   "short_name": "Recensia",
-  "description": "Recensez les usages de l'IA dans votre entreprise, classez-les (AI Act, exposition des données) et pilotez un plan d'actions, sans compte ni serveur.",
+  "description": "Recensez les usages de l'IA dans votre entreprise, classez-les (AI Act, exposition des données) et pilotez un plan d'actions, sans compte ni serveur de stockage.",
   "lang": "fr",
   "dir": "ltr",
   "id": "./",

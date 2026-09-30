@@ -1,19 +1,22 @@
 // Onglet « Rapport » de la console : rapport de synthèse imprimable (CDC §8.1) et exports
-// (impression / PDF, XLSX, CSV du registre ; la sauvegarde JSON est dans « Paramètres »).
+// (impression / PDF, Excel et CSV du registre ; la sauvegarde JSON est dans « Paramètres »).
 // Les fonctions exportées en tête de fichier sont pures (testées sous Node).
-// SheetJS (≈ 1 Mo) n'est chargé qu'au clic sur « Export XLSX ».
+// SheetJS (≈ 1 Mo) n'est chargé qu'au clic sur « Exporter en Excel (.xlsx) ».
+// Libellés et messages d'export identiques à ceux de l'onglet Registre.
 
 import { h, mount, loadCss } from '../../ui/dom.js';
-import { button, icon, levelBadge, toast, disclaimer } from '../../ui/components.js';
+import { button, icon, toast, disclaimer } from '../../ui/components.js';
 import { barChart, stackedBar, chartStyles } from '../../ui/charts.js';
 import { downloadBlob, downloadText } from '../../ui/download.js';
 import { AI_ACT_ORDER, DATA_LEVELS, isDataLevel } from '../../engine/levels.js';
 import { maskCount } from '../../engine/stats.js';
 import { optionLabel } from '../../engine/labels.js';
-import { REGISTRY_COLUMNS, registryRows, exportFilename, applicableDeadline } from '../../export/registry.js';
+import { registryColumns, commentsExportable, registryRows, exportFilename, applicableDeadline } from '../../export/registry.js';
 import { toCSV } from '../../export/csv.js';
 import { formatDate, formatNumber, LOCALE } from '../../i18n.js';
-import { sortActions, isOverdue } from './actions.js';
+import { sortActions, isOverdue, axisBadges } from './actions.js';
+// Typographie française à l'affichage des textes venus de data/ (règles, calendrier, actions).
+import { frenchSpacing as fr } from '../../ui/questionnaire.js';
 // Représentation des effectifs masqués commune au tableau de bord et au rapport.
 import { maskedItem } from './dashboard.js';
 
@@ -216,7 +219,7 @@ export async function render(root, { campaign, model, ctx }) {
   const exportCsv = () => {
     try {
       const rows = registryRows(groups, { campaign, actions: model.actions, questionnaire, rules, calendar, t, today });
-      downloadText(toCSV(rows, REGISTRY_COLUMNS), exportFilename('registre', campaign, today, 'csv'), 'text/csv;charset=utf-8');
+      downloadText(toCSV(rows, registryColumns(campaign)), exportFilename('registre', campaign, today, 'csv'), 'text/csv;charset=utf-8');
       ctx.track.event('event/export_csv');
       statusLine.textContent = t('report.export.csv_done');
     } catch (err) {
@@ -232,7 +235,7 @@ export async function render(root, { campaign, model, ctx }) {
       button(t('report.toolbar.xlsx'), exportXlsx, { icon: 'download' }),
       button(t('report.toolbar.csv'), exportCsv, { icon: 'download' }),
       h('a', { class: 'btn btn-ghost', href: `#/admin/${campaign.id}/parametres` }, icon('lock'), h('span', null, t('report.toolbar.json')))),
-    h('p', { class: 'muted report-toolbar-note' }, t('report.toolbar.note')),
+    h('p', { class: 'muted report-toolbar-note' }, t(commentsExportable(campaign) ? 'report.toolbar.note_comments' : 'report.toolbar.note')),
     statusLine);
 
   // --- En-tête -----------------------------------------------------------------------------
@@ -335,8 +338,8 @@ export async function render(root, { campaign, model, ctx }) {
 
   const priority = priorityUsages(groups);
   const triggerList = (list) => h('ul', { class: 'report-triggers', role: 'list' }, list.map((x) => h('li', null,
-    h('span', { class: 'report-trigger-label' }, x.label),
-    x.legal_ref && x.legal_ref !== '—' ? h('span', { class: 'report-trigger-ref muted' }, ` — ${x.legal_ref}`) : null)));
+    h('span', { class: 'report-trigger-label' }, fr(x.label)),
+    x.legal_ref && x.legal_ref !== '—' ? h('span', { class: 'report-trigger-ref muted' }, ` — ${fr(x.legal_ref)}`) : null)));
   const priorityCards = priority.map(({ group: g }) => {
     const trig = keyTriggers(g);
     const aiTrig = trig.filter((x) => x.axis === 'ai_act');
@@ -348,9 +351,9 @@ export async function render(root, { campaign, model, ctx }) {
       h('div', { class: 'report-usage-head' },
         h('h4', { class: 'report-usage-name' }, g.name || g.id),
         h('p', { class: 'report-usage-meta muted' }, meta),
+        // Axe affiché : la fiche (et sa version imprimée) nomme chacun des deux axes.
         h('p', { class: 'cluster report-usage-levels' },
-          levelBadge('ai_act', g.effective.ai_act_level, t),
-          levelBadge('data', g.effective.data_level, t),
+          axisBadges(g.effective, t),
           g.effective.overridden ? h('span', { class: 'tag' }, t('report.priority.overridden')) : null,
           g.computed?.data_to_qualify ? h('span', { class: 'tag' }, t('report.priority.data_to_qualify')) : null)),
       h('dl', { class: 'meta-list report-usage-details' },
@@ -358,7 +361,7 @@ export async function render(root, { campaign, model, ctx }) {
         dataTrig.length ? [h('dt', null, t('report.priority.triggers_data')), h('dd', null, triggerList(dataTrig))] : null,
         h('dt', null, t('report.priority.deadline')),
         h('dd', null, deadline
-          ? [h('strong', null, formatDate(deadline.deadline.date)), ` — ${deadline.deadline.label}`,
+          ? [h('strong', null, formatDate(deadline.deadline.date)), ` — ${fr(deadline.deadline.label)}`,
             deadline.in_force ? [' ', h('span', { class: 'tag' }, t('report.priority.in_force'))] : null]
           : t('report.priority.no_deadline'))));
   });
@@ -376,7 +379,7 @@ export async function render(root, { campaign, model, ctx }) {
     questions.length
       ? h('ul', { class: 'report-questions', role: 'list' }, questions.map((q) => h('li', null,
         h('p', { class: 'report-question-usage' }, q.name || q.group_id, q.group_id ? h('span', { class: 'muted' }, ` (${q.group_id})`) : null),
-        h('ul', null, q.questions.map((text) => h('li', null, text))))))
+        h('ul', null, q.questions.map((text) => h('li', null, fr(text)))))))
       : h('p', { class: 'report-ok' }, icon('success'), h('span', null, t('report.questions.none'))));
 
   // --- Plan d'actions ----------------------------------------------------------------------
@@ -388,7 +391,7 @@ export async function render(root, { campaign, model, ctx }) {
     const g = a.usage_key ? groupsByKey.get(a.usage_key) : null;
     const overdue = isOverdue(a, today);
     return h('tr', null,
-      h('th', { scope: 'row' }, a.title),
+      h('th', { scope: 'row' }, fr(a.title)),
       h('td', null, a.usage_key ? (g ? g.name || g.id : t('report.plan.usage_gone')) : t('report.plan.usage_campaign')),
       h('td', null, t(`common.priority.${a.priority}`)),
       h('td', null, t(`common.action_status.${a.status}`), overdue ? h('span', { class: 'tag report-overdue' }, t('report.plan.overdue')) : null),
@@ -416,7 +419,7 @@ export async function render(root, { campaign, model, ctx }) {
   const past = stats.past_deadlines ?? [];
   const deadlineRows = upcoming.map((d) => h('tr', null,
     h('td', { class: 'nowrap' }, formatDate(d.date)),
-    h('th', { scope: 'row' }, d.label,
+    h('th', { scope: 'row' }, fr(d.label),
       d.source_url ? h('span', { class: 'report-source-wrap' }, ' ',
         h('a', { class: 'report-source', href: d.source_url, target: '_blank', rel: 'noopener noreferrer' }, t('report.deadlines.source'))) : null),
     h('td', { class: 'num' }, formatNumber(d.usages_count)),
@@ -433,7 +436,7 @@ export async function render(root, { campaign, model, ctx }) {
     past.length
       ? h('div', { class: 'report-in-force' },
         h('h4', null, t('report.deadlines.in_force_title')),
-        h('ul', null, past.map((d) => h('li', null, `${d.label} (${formatDate(d.date)})`,
+        h('ul', null, past.map((d) => h('li', null, `${fr(d.label)} (${formatDate(d.date)})`,
           d.usages_count ? h('span', { class: 'muted' }, ` — ${t('report.deadlines.usages', { count: d.usages_count })}`) : null))))
       : null);
 

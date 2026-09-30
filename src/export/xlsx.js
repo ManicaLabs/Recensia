@@ -6,7 +6,7 @@ import * as XLSX from '../../vendor/xlsx.mjs';
 import { AI_ACT_ORDER, DATA_LEVELS } from '../engine/levels.js';
 import { neutralize } from './csv.js';
 import {
-  REGISTRY_COLUMNS, registryRows, aiActLabel, dataLevelLabel, actionStatusLabel, priorityLabel,
+  registryColumns, registryRows, commentsExportable, aiActLabel, dataLevelLabel, actionStatusLabel, priorityLabel,
   disclaimerText, formatDateFr, toDay,
 } from './registry.js';
 
@@ -29,14 +29,32 @@ const ACTION_COLUMNS = [
 const STATUS_ORDER = ['todo', 'in_progress', 'done', 'rejected'];
 const PRIORITY_ORDER = ['high', 'medium', 'low'];
 const AXIS_LABELS = { ai_act: 'AI Act', data: 'Données (RGPD)' };
-const CALENDAR_STATUS = {
-  in_force: 'En vigueur',
-  upcoming: 'À venir',
-  to_confirm: 'À confirmer',
+// Statut d'une échéance du calendrier (champ `status`) : état de vérification de la date.
+// L'état temporel (« En vigueur » / « À venir ») est calculé d'après la date et le jour de l'export.
+export const CALENDAR_STATUS = Object.freeze({
+  verified: 'Vérifiée',
   to_verify: 'À vérifier',
+  to_confirm: 'À confirmer',
   postponed: 'Reportée',
   proposed: 'Proposée',
-};
+  in_force: 'En vigueur',
+  upcoming: 'À venir',
+});
+// Statuts qui décrivent déjà l'état temporel (anciens calendriers) : rien à ajouter.
+const TEMPORAL_STATUS = new Set(['in_force', 'upcoming']);
+// Rôles visés par une échéance réservée (applies_to_roles) ; cellule vide sans restriction.
+const ROLE_SCOPE = Object.freeze({ potential_provider: 'Fournisseurs uniquement', deployer: 'Déployeurs uniquement' });
+
+// Vocabulaire de l'interface (tableau de bord, rapport, plan d'actions).
+export const SHADOW_AI_SECTION = 'IA fantôme (shadow AI)';
+export const SHADOW_AI_LABEL = 'Usages sur comptes personnels ou non maîtrisés';
+/** Colonne « Origine » du plan d'actions (libellés de la liste du plan, actions.item.*). */
+export const ACTION_ORIGIN = Object.freeze({ suggestion: "Issue d'une suggestion", manual: 'Ajoutée manuellement' });
+
+/** Origine d'une action : acceptée depuis une suggestion (`suggested`) ou ajoutée à la main. */
+export function originLabel(action) {
+  return action?.suggested ? ACTION_ORIGIN.suggestion : ACTION_ORIGIN.manual;
+}
 
 function rank(list, value) {
   const i = list.indexOf(value);
@@ -77,11 +95,20 @@ function makeSheet(aoa, { filter = false, widths, footer = [] } = {}) {
   return ws;
 }
 
+/** Mention placée sous le registre quand les commentaires libres y figurent. */
+export const COMMENTS_NOTICE = Object.freeze({
+  anonymous: 'Commentaires libres inclus : même en mode anonyme, ils peuvent permettre d’identifier leur auteur. Relisez-les avant de diffuser ce registre.',
+  open: 'Commentaires libres inclus : ils peuvent contenir des données personnelles. Relisez-les avant de diffuser ce registre.',
+});
+
 // Chaque classification exportée porte la mention « indicatif, à confirmer » (CDC §0).
+// Colonnes : celles du CDC §8.2, puis « Commentaires » si la campagne l'autorise.
 function registrySheet(ctx) {
+  const columns = registryColumns(ctx.campaign);
   const rows = registryRows(ctx.groups, ctx);
-  const aoa = [REGISTRY_COLUMNS.map((c) => c.label), ...rows.map((r) => REGISTRY_COLUMNS.map((c) => r[c.key]))];
+  const aoa = [columns.map((c) => c.label), ...rows.map((r) => columns.map((c) => r[c.key]))];
   const footer = [[`${disclaimerText(ctx.t)} Registre exporté le ${formatDateFr(toDay(ctx.today))}.`]];
+  if (commentsExportable(ctx.campaign)) footer.push([COMMENTS_NOTICE[ctx.campaign.mode === 'open' ? 'open' : 'anonymous']]);
   return makeSheet(aoa, { filter: true, footer });
 }
 
@@ -110,7 +137,7 @@ function actionsSheet({ campaign, groups, actions, t }) {
     a.owner ?? '',
     formatDateFr(a.due_date ?? ''),
     a.suggested_role ?? '',
-    a.suggested ? 'Suggérée' : 'Ajoutée manuellement',
+    originLabel(a),
     formatDateFr(a.created_at ?? ''),
     formatDateFr(a.updated_at ?? ''),
   ])];
@@ -128,6 +155,7 @@ function summarySheet({ campaign, groups, stats, t, today }) {
   add('Campagne', 'Mode', campaign?.mode === 'open' ? 'Ouvert (nominatif)' : 'Anonyme');
   if (campaign?.settings?.closes_on) add('Campagne', 'Date de clôture indicative', formatDateFr(campaign.settings.closes_on));
   add('Campagne', "Date d'export", formatDateFr(toDay(today)));
+  add('Campagne', 'Commentaires libres', commentsExportable(campaign) ? 'Inclus dans le registre' : 'Exclus des exports');
   if (campaign?.mode !== 'open') {
     const k = s.mask?.k ?? campaign?.settings?.min_group_size ?? 5;
     add('Campagne', 'Masquage des petits effectifs', `Effectifs inférieurs à ${k} affichés « < ${k} »`);
@@ -142,7 +170,7 @@ function summarySheet({ campaign, groups, stats, t, today }) {
 
   if (s.shadow_ai) {
     const pct = Math.round((Number(s.shadow_ai.share) || 0) * 100);
-    add('Shadow AI', 'Usages sur comptes personnels ou non identifiés', `${s.shadow_ai.count ?? 0} (${pct} %)`);
+    add(SHADOW_AI_SECTION, SHADOW_AI_LABEL, `${s.shadow_ai.count ?? 0} (${pct} %)`);
   }
   for (const tool of s.top_tools ?? []) add('Principaux outils', tool.label ?? tool.tool ?? '', tool.display ?? String(tool.count ?? ''));
   for (const d of s.by_department ?? []) add('Répartition par service', d.department ?? 'Non renseigné', d.display ?? String(d.count ?? ''));
@@ -169,6 +197,26 @@ function ruleLevel(rule, t) {
   if (rule.axis === 'data' && Number.isInteger(rule.level)) return dataLevelLabel(rule.level, t);
   if (rule.kind === 'question') return 'À qualifier';
   return '—';
+}
+
+/**
+ * Statut lisible d'une échéance : « En vigueur » (date passée) ou « À venir » (date du jour
+ * comprise, comme au tableau de bord), suivi de l'état de vérification s'il n'est pas « vérifiée »
+ * (« À venir (à vérifier) »). Jamais la clé brute du calendrier.
+ */
+export function calendarStatusText(deadline, today) {
+  const date = typeof deadline?.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(deadline.date) ? deadline.date : null;
+  const timing = date === null ? 'Date non précisée' : date < toDay(today) ? 'En vigueur' : 'À venir';
+  const status = deadline?.status;
+  if (status === null || status === undefined || status === '' || status === 'verified' || TEMPORAL_STATUS.has(status)) return timing;
+  const label = Object.hasOwn(CALENDAR_STATUS, status) ? CALENDAR_STATUS[status].toLocaleLowerCase('fr') : 'vérification non précisée';
+  return `${timing} (${label})`;
+}
+
+function roleScopeText(deadline) {
+  const roles = Array.isArray(deadline?.applies_to_roles) ? deadline.applies_to_roles : [];
+  const labels = roles.map((r) => (Object.hasOwn(ROLE_SCOPE, r) ? ROLE_SCOPE[r] : null)).filter(Boolean);
+  return labels.join(' ; ');
 }
 
 function referenceSheet({ groups, rules, calendar, t, today }) {
@@ -199,6 +247,7 @@ function referenceSheet({ groups, rules, calendar, t, today }) {
     .filter((d) => d && typeof d === 'object')
     .sort((a, b) => String(a.date ?? '').localeCompare(String(b.date ?? '')) || String(a.id).localeCompare(String(b.id)));
 
+  const day = toDay(today);
   const aoa = [
     ['Référentiel de classification et calendrier réglementaire'],
     ['Mention', INDICATIVE],
@@ -212,12 +261,13 @@ function referenceSheet({ groups, rules, calendar, t, today }) {
     ...usedRules,
     [],
     ['Calendrier réglementaire'],
-    ['ID', 'Date', 'Libellé', 'Statut', 'Source', 'Dernière vérification'],
+    ['ID', 'Date', 'Libellé', 'Statut', 'Concerne', 'Source', 'Dernière vérification'],
     ...deadlines.map((d) => [
       d.id ?? '',
       formatDateFr(d.date ?? ''),
       d.label ?? '',
-      CALENDAR_STATUS[d.status] ?? d.status ?? '',
+      calendarStatusText(d, day),
+      roleScopeText(d),
       d.source_url ?? '',
       formatDateFr(d.last_verified ?? calendar?.last_verified ?? ''),
     ]),

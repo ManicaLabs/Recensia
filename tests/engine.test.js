@@ -6,7 +6,7 @@ import { readdirSync } from 'node:fs';
 
 import { AI_ACT_ORDER, DATA_LEVELS, compareAiAct, maxAiAct, maxDataLevel, isAiActLevel } from '../src/engine/levels.js';
 import { evaluateCondition, conditionLeaves } from '../src/engine/evaluate.js';
-import { classifyUsage } from '../src/engine/classify.js';
+import { classifyUsage, deadlineAppliesToRole, resolveDeadlines } from '../src/engine/classify.js';
 import { optionLabel, formatUsageValue } from '../src/engine/labels.js';
 import { validateUsage } from '../src/engine/validate.js';
 import { loadAll, makeUsage, readText } from './helpers/load-data.js';
@@ -242,7 +242,7 @@ describe('classifyUsage : sortie', () => {
   test('échéances résolues depuis le calendrier et triées par date', () => {
     const r = classify(makeUsage({ task_types: ['generation_media'], output_audience: 'public', direct_interaction: 'yes' }));
     const ids = r.deadlines.map((d) => d.id);
-    assert.ok(ids.includes('transparency_art50') && ids.includes('marking_grace_art50_2') && ids.includes('literacy_art4'));
+    assert.ok(ids.includes('transparency_art50') && ids.includes('literacy_art4'));
     assert.equal(new Set(ids).size, ids.length);
     const dates = r.deadlines.map((d) => d.date);
     assert.deepEqual(dates, [...dates].sort());
@@ -252,6 +252,29 @@ describe('classifyUsage : sortie', () => {
       id: source.id, date: source.date, label: source.label, status: source.status,
       source_url: source.source_url, last_verified: source.last_verified,
     });
+  });
+
+  // CDC §13 : le délai de grâce du 2 décembre 2026 (nouvel art. 111, § 4) ne vise que le marquage
+  // de l'art. 50, § 2, par les FOURNISSEURS ; les obligations des déployeurs s'appliquent depuis le 2 août 2026.
+  test('échéance réservée à un rôle (applies_to_roles) : délai de grâce du marquage pour les seuls fournisseurs', () => {
+    const grace = calendar.deadlines.find((d) => d.id === 'marking_grace_art50_2');
+    assert.deepEqual(grace.applies_to_roles, ['potential_provider']);
+    const media = { task_types: ['generation_media'], output_audience: 'public', output_review: 'partial' };
+    const deployer = classify(makeUsage(media));
+    assert.equal(deployer.role, 'deployer');
+    assert.ok(deployer.triggers.some((t) => t.rule_id === 'R-AIA-LIM-02'));
+    assert.deepEqual(deployer.deadlines.map((d) => d.id), ['literacy_art4', 'transparency_art50']);
+    const provider = classify(makeUsage({ ...media, built_or_customized: 'built_own' }));
+    assert.equal(provider.role, 'potential_provider');
+    assert.ok(provider.deadlines.some((d) => d.id === 'marking_grace_art50_2'));
+    assert.ok(!('applies_to_roles' in provider.deadlines.find((d) => d.id === 'marking_grace_art50_2')), 'forme de sortie inchangée');
+    // Sans restriction dans le calendrier, l'échéance vaut pour tous les rôles.
+    const open = { ...calendar, deadlines: calendar.deadlines.map(({ applies_to_roles, ...d }) => d) };
+    assert.ok(classifyUsage(makeUsage(media), rules, open).deadlines.some((d) => d.id === 'marking_grace_art50_2'));
+    assert.equal(deadlineAppliesToRole({ applies_to_roles: [] }, 'deployer'), true);
+    assert.equal(deadlineAppliesToRole(grace), false, 'rôle par défaut : déployeur');
+    assert.deepEqual(resolveDeadlines(['marking_grace_art50_2', 'transparency_art50'], calendar).map((d) => d.id), ['transparency_art50']);
+    assert.deepEqual(resolveDeadlines(['marking_grace_art50_2'], calendar, { role: 'potential_provider' }).map((d) => d.id), ['marking_grace_art50_2']);
   });
 
   test('les dates viennent du calendrier passé en paramètre', () => {

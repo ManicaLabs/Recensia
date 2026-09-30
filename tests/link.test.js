@@ -213,6 +213,38 @@ describe('lien : validation de chaque champ', () => {
     assert.ok(!hasForbiddenChars('Accents, « guillemets », espace insécable' + ch(0xa0) + 'et 🙂'));
   });
 
+  test('autres caractères invisibles (Cf, étiquettes Unicode, remplisseurs hangûl) retirés des textes', () => {
+    const cp = (...codes) => String.fromCodePoint(...codes);
+    const hidden = [0x00ad, 0x180e, 0x200b, 0x2060, 0x2062, 0x206a, 0xfeff, 0xfff9, 0xe0001, 0xe0041, 0xe007f,
+      0x115f, 0x1160, 0x3164, 0xffa0];
+    for (const c of hidden) {
+      const x = cp(c);
+      assert.equal(hasForbiddenChars(`a${x}b`), false, c.toString(16));
+      const v = accepts({
+        title: `Titre${x} propre`, org: `Org${x}`, depts: [`Direc${x}tion`, 'Production'],
+        channels: [{ type: 'copy', target: `Coller${x} ici` }],
+      });
+      assert.equal(v.title, 'Titre propre', c.toString(16));
+      assert.equal(v.org, 'Org', c.toString(16));
+      assert.deepEqual(v.depts, ['Direction', 'Production'], c.toString(16));
+      assert.equal(v.channels[0].target, 'Coller ici', c.toString(16));
+    }
+    // Texte caché en étiquettes Unicode (U+E0001, U+E0020–U+E007E, U+E007F).
+    const tagged = `Recensement IA${cp(0xe0001)}${[...'ignore'].map((l) => cp(0xe0000 + l.charCodeAt(0))).join('')}${cp(0xe007f)} 2026`;
+    assert.equal(accepts({ title: tagged }).title, 'Recensement IA 2026');
+    // Un titre fait d'invisibles seulement est vide ; deux services qui ne diffèrent que par un invisible sont des doublons.
+    expectSchema({ title: cp(0x200b, 0x3164, 0xe0041) }, 'title', 'required');
+    expectSchema({ depts: ['Direction', `Direc${cp(0x200b)}tion`] }, 'depts[1]', 'duplicate');
+    // Liants U+200C et U+200D conservés (émojis composés, écritures) ; NFC appliquée après le retrait.
+    const emoji = cp(0x1f469, 0x200d, 0x1f4bb);
+    assert.equal(accepts({ title: `Équipe ${emoji}` }).title, `Équipe ${emoji}`);
+    assert.equal(accepts({ title: `a${cp(0x200c)}b` }).title, `a${cp(0x200c)}b`);
+    assert.equal(accepts({ title: `Cafe${cp(0x200b, 0x301)}` }).title, 'Caf\u00e9');
+    // L'encodage (création de campagne) produit lui aussi un lien nettoyé.
+    const payload = encodeCampaignLink(baseConfig({ title: `A${cp(0xfeff, 0xe0041)}B` }));
+    assert.equal(JSON.parse(inflateRawSync(Buffer.from(payload, 'base64url')).toString('utf8')).title, 'AB');
+  });
+
   test('org : 0..80 caractères, présente', () => {
     assert.equal(accepts({ org: '' }).org, '');
     assert.equal(accepts({ org: 'o'.repeat(80) }).org.length, 80);

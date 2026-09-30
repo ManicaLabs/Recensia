@@ -1,6 +1,9 @@
 // localStorage / sessionStorage protégés : tout accès est dans un try/catch (contextes sandboxés,
 // navigation privée, quota), avec repli en mémoire. Valeurs sérialisées en JSON.
-// Les clés sont préfixées : l'origine *.github.io est partagée par tous les sites du compte.
+// Les clés sont préfixées pour éviter les collisions : l'origine <compte>.github.io est partagée par tous
+// les sites du compte. Le préfixe n'isole rien : ces sites peuvent lire et modifier ces valeurs (brouillons
+// des répondants compris), comme l'IndexedDB. Seule une origine réservée à Recensia les protège
+// (page de confidentialité, section « Hébergement »).
 
 const PREFIX = 'recensia:';
 

@@ -1,19 +1,26 @@
 // Lien d'import (#/i/<code>[~<code>…], CDC §7.7) : le responsable clique sur le lien reçu.
 //
-// 1. Les codes sont IMMÉDIATEMENT placés dans les codes en attente (session), toujours chiffrés.
+// 1. Les codes de forme valide sont IMMÉDIATEMENT placés dans les codes en attente (session), toujours
+//    chiffrés. Un code mal formé (lien coupé par la messagerie) n'est pas gardé : aucune clé ne le lirait.
 // 2. Le fragment est retiré de l'adresse (history.replaceState vers #/admin, sans navigation) :
 //    les codes ne restent ni dans l'historique ni dans une copie de l'adresse.
 // 3. La campagne locale dont la clé déchiffre les codes est cherchée : s'il y en a une, import puis
 //    onglet Import de la campagne, avec le rapport (transmis par la session).
-// 4. Sinon : message clair et import du fichier de récupération sur place ; le code est conservé
-//    le temps de la session et importé dès que la clé est là.
+// 4. Sinon, diagnostic (diagnoseUnmatched) :
+//    - « Code illisible » si une campagne de ce navigateur a sa clé, ou si aucun code n'a une forme
+//      valide : le lien a probablement été coupé, la consigne est d'abord de redemander le code complet ;
+//    - « Clé absente » sinon : import du fichier de récupération sur place ; le code est conservé le temps
+//      de la session et importé dès que la clé est là.
 
 import { h, mount } from '../ui/dom.js';
 import { icon, button, callout } from '../ui/components.js';
-import { collectCodes, findCampaignForCodes, importCodes, resolvedCodes, stashReport } from '../services/import.js';
+import {
+  collectCodes, diagnoseUnmatched, findCampaignForCodes, importCodes, isKeepableCode, resolvedCodes, stashReport,
+} from '../services/import.js';
 import { addPendingCodes, removePendingCodes } from '../services/recovery.js';
 import {
   prepareAdmin, pickFiles, recoveryImportFlow, backupRestoreFlow, importPendingFor, errorMessage, showFeedback, logFailure,
+  restoreFocus,
 } from './admin.js';
 
 /** Retire les codes de l'adresse sans déclencher de navigation (aucun hashchange). */
@@ -59,7 +66,8 @@ export async function render(root, { params, ctx }) {
   } catch {
     codes = [];
   }
-  if (codes.length > 0) addPendingCodes(codes);
+  const kept = codes.filter(isKeepableCode);
+  if (kept.length > 0) addPendingCodes(kept);
   clearFragment();
 
   await prepareAdmin(ctx);
@@ -120,8 +128,9 @@ export async function render(root, { params, ctx }) {
   }
   if (disposed) return cleanup;
 
+  const diagnosis = diagnoseUnmatched(codes, campaigns);
   // Codes d'une version future du format : l'application doit d'abord être mise à jour.
-  if (codes.every((code) => !code.startsWith('RCN1.'))) {
+  if (diagnosis === 'version') {
     mount(root, simpleState(t, {
       iconName: 'refresh',
       title: t('import_link.version.title'),
@@ -134,14 +143,19 @@ export async function render(root, { params, ctx }) {
     return cleanup;
   }
 
-  drawNoKey();
+  draw(diagnosis === 'unreadable');
   return cleanup;
 
-  function drawNoKey() {
+  /**
+   * unreadable : « Code illisible » (lien probablement coupé : redemander le code complet d'abord, puis
+   * seulement la piste du fichier de récupération) ; sinon « Clé absente de ce navigateur ».
+   */
+  function draw(unreadable) {
     const feedbackZone = h('div', { class: 'admin-feedback' });
     const filesHost = h('div', { class: 'visually-hidden' });
     const count = codes.length;
-    const hasLocalKeys = campaigns.some((c) => c.private_key_jwk);
+    const keptCount = kept.length;
+    const dropped = count - keptCount;
     let forgotten = false;
 
     const afterKey = async (campaign) => {
@@ -193,41 +207,61 @@ export async function render(root, { params, ctx }) {
         if (!disposed) showFeedback(feedbackZone, 'danger', errorMessage(t, err));
       } finally {
         if (btn?.isConnected) btn.disabled = false;
+        if (!disposed) restoreFocus(btn);
       }
     };
 
     const forget = () => {
-      removePendingCodes(codes);
+      removePendingCodes(kept);
       forgotten = true;
-      showFeedback(feedbackZone, 'info', t('import_link.no_key.forgotten', { count }));
+      showFeedback(feedbackZone, 'info', t('import_link.no_key.forgotten', { count: keptCount }));
       forgetBtn.disabled = true;
       backBtn.focus(); // le bouton désactivé perdrait le focus clavier
     };
     const backBtn = backButton();
-    const forgetBtn = button(count > 1 ? t('import_link.no_key.forget_many') : t('import_link.no_key.forget'), forget, { variant: 'ghost', icon: 'trash' });
+    const forgetBtn = keptCount > 0
+      ? button(keptCount > 1 ? t('import_link.no_key.forget_many') : t('import_link.no_key.forget'), forget, { variant: 'ghost', icon: 'trash' })
+      : null;
+    const recoveryBtn = (variant) => button(t('admin.actions.import_recovery'), guarded(handleRecovery, '.recensia-key,.json,application/json'), { variant, icon: 'key' });
+    const restoreBtn = () => button(t('admin.actions.restore_backup'), guarded(handleRestore, '.json,application/json'), { icon: 'upload' });
+    const step = (text, ...actions) => ({ text, actions });
+
+    const steps = unreadable
+      ? [
+        step(t('import_link.unreadable.step_ask')),
+        // Codes de forme valide : ils peuvent venir d'une campagne créée dans un autre navigateur.
+        keptCount > 0 ? step(t('import_link.unreadable.step_recovery'), recoveryBtn('secondary'), restoreBtn()) : null,
+      ].filter(Boolean)
+      : [
+        step(t('import_link.no_key.step_recovery'), recoveryBtn('primary')),
+        step(t('import_link.no_key.step_backup'), restoreBtn()),
+        step(t('import_link.no_key.step_other')),
+      ];
+    const stepsTitle = unreadable ? t('import_link.unreadable.steps_title') : t('import_link.no_key.steps_title', { count: keptCount });
+    const keptText = unreadable
+      ? (keptCount > 0 ? t('import_link.unreadable.kept', { count: keptCount }) : t('import_link.unreadable.none_kept', { count }))
+      : t('import_link.no_key.kept', { count: keptCount });
 
     mount(root, h('div', { class: 'page page-narrow import-link' },
       h('header', { class: 'page-header' },
         h('div', null,
-          h('h1', null, t('import_link.no_key.title')),
-          h('p', { class: 'lead' }, t('import_link.no_key.lead', { count })))),
+          h('h1', null, unreadable ? t('import_link.unreadable.title', { count }) : t('import_link.no_key.title')),
+          h('p', { class: 'lead' }, unreadable ? t('import_link.unreadable.lead', { count }) : t('import_link.no_key.lead', { count: keptCount })))),
       h('div', { class: 'stack' },
-        callout('info', h('p', null, t('import_link.no_key.kept', { count }))),
-        hasLocalKeys ? h('p', { class: 'muted' }, t('import_link.no_key.maybe_truncated')) : null,
+        unreadable ? null : callout('info', h('p', null, keptText)),
+        !unreadable && dropped > 0 ? h('p', { class: 'muted' }, t('import_link.no_key.dropped', { count: dropped })) : null,
         // Répondant qui a scanné ou ouvert son propre lien : il n'a rien à importer.
-        callout('warn', h('p', null, t('import_link.no_key.respondent'))),
+        unreadable ? null : callout('warn', h('p', null, t('import_link.no_key.respondent'))),
         feedbackZone,
         h('section', { class: 'card', 'aria-labelledby': 'import-link-steps-title' },
-          h('h2', { id: 'import-link-steps-title', class: 'card-title' }, t('import_link.no_key.steps_title', { count })),
-          h('ol', { class: 'stepper import-link-steps' },
-            h('li', { class: 'stepper-item' },
-              h('p', null, t('import_link.no_key.step_recovery')),
-              h('div', null, button(t('admin.actions.import_recovery'), guarded(handleRecovery, '.recensia-key,.json,application/json'), { variant: 'primary', icon: 'key' }))),
-            h('li', { class: 'stepper-item' },
-              h('p', null, t('import_link.no_key.step_backup')),
-              h('div', null, button(t('admin.actions.restore_backup'), guarded(handleRestore, '.json,application/json'), { icon: 'upload' }))),
-            h('li', { class: 'stepper-item' },
-              h('p', null, t('import_link.no_key.step_other'))))),
+          h('h2', { id: 'import-link-steps-title', class: 'card-title' }, stepsTitle),
+          // Une seule consigne : un paragraphe plutôt qu'une liste numérotée d'un élément.
+          steps.length === 1
+            ? h('p', null, steps[0].text)
+            : h('ol', { class: 'stepper import-link-steps' }, steps.map((st) => h('li', { class: 'stepper-item' },
+              h('p', null, st.text),
+              st.actions.length ? h('div', { class: 'cluster' }, st.actions) : null)))),
+        unreadable ? h('p', { class: 'muted' }, keptText) : null,
         h('div', { class: 'import-link-actions' }, backBtn, forgetBtn)),
       filesHost));
   }

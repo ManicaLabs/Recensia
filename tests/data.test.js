@@ -144,6 +144,24 @@ describe('questionnaire.json', () => {
     }
   });
 
+  test('aides des options courtes (temps de lecture du premier usage)', () => {
+    const words = (s) => (typeof s === 'string' ? s.split(/\s+/).filter(Boolean).length : 0);
+    // Listes à cases longues, lues en entier au premier usage.
+    for (const key of ['task_types', 'data_types']) {
+      for (const o of questionnaire.fields[key].options) {
+        if ('help' in o) assert.ok(words(o.help) <= 10, `${key}.${o.value} : ${words(o.help)} mots`);
+      }
+    }
+    const total = (key) => questionnaire.fields[key].options.reduce((n, o) => n + words(o.help), 0);
+    assert.ok(total('data_types') <= 50, `data_types : ${total('data_types')} mots d'aide`);
+    assert.ok(total('task_types') <= 25, `task_types : ${total('task_types')} mots d'aide`);
+    // Exemples qui portent le sens : personnes physiques (B2B exclu), identifiants à faire changer.
+    const help = (key, value) => questionnaire.fields[key].options.find((o) => o.value === value).help;
+    assert.match(help('task_types', 'evaluation_tri_personnes'), /particuliers/);
+    assert.match(help('data_types', 'identifiants'), /changer/);
+    assert.match(help('data_types', 'donnees_sensibles'), /^Santé/);
+  });
+
   test('textes imposés : personnes physiques, commentaire sans donnée personnelle', () => {
     assert.ok(questionnaire.fields.affects_people.help.includes('personnes physiques (salariés, candidats, clients particuliers), pas des entreprises'));
     assert.ok(questionnaire.fields.comment.warning.startsWith('N\'y mettez aucune donnée personnelle'));
@@ -273,6 +291,20 @@ describe('rules.json', () => {
   test('aucune date réglementaire dans les règles (elles viennent du calendrier)', () => {
     assert.ok(!/\b20\d\d-\d\d-\d\d\b/.test(JSON.stringify(rules.rules)));
   });
+
+  // Vocabulaire de l'interface : « IA fantôme », l'anglicisme seulement en glose.
+  test('vocabulaire : « shadow AI » toujours glosé par « IA fantôme »', () => {
+    const shadow = rules.rules.find((r) => r.id === 'R-DAT-SHADOW');
+    assert.match(shadow.explanation, /« IA fantôme », shadow AI\)/);
+    const texts = [];
+    const walk = (v) => {
+      if (typeof v === 'string') texts.push(v);
+      else if (v && typeof v === 'object') Object.values(v).forEach(walk);
+    };
+    walk([rules, actions, questionnaire]);
+    for (const s of texts.filter((x) => /shadow ai/i.test(x))) assert.match(s, /IA fantôme/, s);
+    assert.ok(!texts.some((x) => /« shadow AI »/i.test(x)), 'plus de « shadow AI » seul entre guillemets');
+  });
 });
 
 describe('actions.json', () => {
@@ -345,7 +377,19 @@ describe('regulatory-calendar.json', () => {
       assert.ok(typeof d.note === 'string' && d.note.trim() !== '', d.id);
       assert.ok(d.source_url === null || d.source_url.startsWith(EUR_LEX), `${d.id} : source hors EUR-Lex`);
       if (d.source_url === null) assert.ok(/vérifi/.test(d.note), `${d.id} : une source absente doit être expliquée`);
+      if ('applies_to_roles' in d) {
+        assert.ok(Array.isArray(d.applies_to_roles) && d.applies_to_roles.length > 0, `${d.id} : applies_to_roles non vide`);
+        for (const role of d.applies_to_roles) assert.ok(['deployer', 'potential_provider'].includes(role), `${d.id} : rôle ${role}`);
+      }
     }
+  });
+
+  // CDC §13 : le délai de grâce du 2 décembre 2026 ne vise que le marquage de l'art. 50, § 2, par les fournisseurs.
+  test('délai de grâce du marquage réservé aux fournisseurs', () => {
+    const grace = calendar.deadlines.find((d) => d.id === 'marking_grace_art50_2');
+    assert.deepEqual(grace.applies_to_roles, ['potential_provider']);
+    assert.match(grace.label, /fournisseurs/);
+    assert.ok(!('applies_to_roles' in calendar.deadlines.find((d) => d.id === 'transparency_art50')), 'art. 50 : tous les rôles');
   });
 
   // Les dates elles-mêmes sont vérifiées séparément (EUR-Lex / JOUE) : seul l'enchaînement est figé ici.

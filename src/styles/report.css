@@ -68,7 +68,13 @@
 }
 .report-section h4 { margin-top: var(--space-5); }
 
-.report-kpis { margin-bottom: var(--space-4); padding: 0; grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.5rem), 1fr)); }
+/* Huit indicateurs : auto-fit (aucune piste vide) et quatre colonnes au plus (la piste fait au
+   moins le quart de la largeur), soit deux rangées de quatre sur grand écran au lieu de 6 + 2. */
+.report-kpis {
+  margin-bottom: var(--space-4);
+  padding: 0;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, max(8.5rem, (100% - 3 * var(--space-3)) / 4)), 1fr));
+}
 .report-kpis .kpi { padding: var(--space-3); }
 .report-kpis .kpi-value { font-size: var(--fs-xl); }
 
@@ -120,7 +126,10 @@
 .report-usage-high { border-left-color: var(--danger); }
 .report-usage-to_qualify { border-left-color: var(--warn); border-left-style: dashed; }
 .report-usage-head { margin-bottom: var(--space-3); }
-.report-usage-name { margin: 0 0 var(--space-1); font-size: var(--fs-md); }
+.report-usage-name { font-size: var(--fs-md); }
+/* Spécificité supérieure à « .report-section h4 » (marge haute des intertitres) : le titre de la
+   fiche reste près du bord haut, comme du bord gauche (écran et impression). */
+.report-section .report-usage-name { margin: 0 0 var(--space-1); }
 .report-usage-meta { margin: 0 0 var(--space-2); font-size: var(--fs-sm); }
 .report-usage-levels { gap: var(--space-2); margin: 0; }
 .report-usage-details { margin: 0; font-size: var(--fs-sm); }
@@ -225,7 +234,7 @@
   .report-table th[scope="row"] { min-width: 0; }
 
   .report a { color: #000000; text-decoration: none; }
-  .report a.report-source::after { content: " : " attr(href); font-size: 7.5pt; overflow-wrap: anywhere; word-break: break-all; }
+  .report a.report-source::after { content: "\00a0: " attr(href); font-size: 7.5pt; overflow-wrap: anywhere; word-break: break-all; }
 
   .report-footer { color: #3b434c; border-top: 0.5pt solid #9aa3ad; }
   .report .disclaimer { color: #3b434c; }

@@ -102,6 +102,18 @@ describe('consolidate', () => {
     assert.equal(g.effective.overridden, false);
   });
 
+  test('échéance réservée aux fournisseurs : retenue seulement si un membre fournisseur possible la déclenche', () => {
+    const media = { task_types: ['generation_media'], business_domain: 'marketing_com', output_audience: 'public', output_review: 'partial', data_types: ['aucune'] };
+    const grace = (g) => g.computed.deadlines.some((d) => d.id === 'marking_grace_art50_2');
+    const [deployers] = consolidate([makeEntry(media), makeEntry(media)], rules, calendar);
+    assert.equal(deployers.computed.role, 'deployer');
+    assert.equal(grace(deployers), false);
+    assert.ok(deployers.computed.deadlines.some((d) => d.id === 'transparency_art50'));
+    const [mixed] = consolidate([makeEntry(media), makeEntry({ ...media, built_or_customized: 'built_own' })], rules, calendar);
+    assert.equal(mixed.computed.role, 'potential_provider');
+    assert.equal(grace(mixed), true);
+  });
+
   test('le groupe n\'est jamais moins grave que chacun de ses membres', () => {
     const entries = [
       makeEntry({ direct_interaction: 'yes', data_types: ['aucune'] }),

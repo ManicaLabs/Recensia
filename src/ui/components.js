@@ -134,25 +134,45 @@ export function setFieldError(fieldNode, message) {
   }
 }
 
+const AXIS_LABEL_MODES = new Set(['hidden', 'visible', 'none']);
+
+// Préfixe « AI Act : » / « Exposition des données : » : l'axe ne repose jamais sur la seule forme
+// ou la seule couleur du badge (WCAG 1.3.1 et 1.4.1 ; CDC D5, deux axes séparés).
+function axisPrefix(axis, mode, tr) {
+  if (mode === 'none' || (axis !== 'ai_act' && axis !== 'data')) return null;
+  const text = tr('common.levels.axis_prefix', { axis: tr(`common.levels.axis.${axis}`) });
+  return h('span', { class: mode === 'visible' ? 'badge-axis' : 'visually-hidden' }, text);
+}
+
 /**
  * Badge de niveau. axis : 'ai_act' (classes badge-aia-<niveau>) ou 'data' (badge-data-<0..3>).
  * Le texte porte toujours l'information (la couleur n'est qu'un renfort).
+ * axisLabel : 'hidden' (défaut : axe lu par les lecteurs d'écran seulement), 'visible' (axe affiché),
+ * 'none' (l'axe est déjà donné par le contexte, par exemple un en-tête de colonne).
+ * short : libellé court à l'écran ; le libellé complet reste dans title et pour les lecteurs d'écran.
  */
-export function levelBadge(axis, level, t = translate, { short = false } = {}) {
+export function levelBadge(axis, level, t = translate, { short = false, axisLabel = 'hidden' } = {}) {
   const tr = typeof t === 'function' ? t : translate;
+  const mode = AXIS_LABEL_MODES.has(axisLabel) ? axisLabel : 'hidden';
   if (axis === 'ai_act' && AI_ACT_LEVELS.includes(level)) {
     const label = tr(`common.levels.ai_act.${level}`);
     return h('span', {
       class: ['badge', `badge-aia-${level}`],
       'data-level': level,
       title: short ? label : null,
-    }, short ? tr(`common.levels.ai_act_short.${level}`) : label);
+    },
+    axisPrefix(axis, mode, tr),
+    short
+      ? [h('span', { 'aria-hidden': 'true' }, tr(`common.levels.ai_act_short.${level}`)), h('span', { class: 'visually-hidden' }, label)]
+      : label);
   }
   const n = typeof level === 'string' && level.trim() !== '' ? Number(level) : level;
   if (axis === 'data' && DATA_LEVELS.includes(n)) {
-    return h('span', { class: ['badge', `badge-data-${n}`], 'data-level': String(n) }, tr(`common.levels.data.${n}`));
+    return h('span', { class: ['badge', `badge-data-${n}`], 'data-level': String(n) }, axisPrefix(axis, mode, tr), tr(`common.levels.data.${n}`));
   }
-  return h('span', { class: ['badge', 'badge-neutral'] }, level === null || level === undefined ? '—' : String(level));
+  return h('span', { class: ['badge', 'badge-neutral'] },
+    axisPrefix(axis, mode, tr),
+    level === null || level === undefined ? '—' : String(level));
 }
 
 /** Encart : info | warn | danger | success. */
@@ -168,16 +188,29 @@ export function callout(kind, ...children) {
  * à l'élément actif à l'ouverture.
  * actions : [{ label, value, variant, autofocus }] ; value peut être une fonction (éventuellement
  * asynchrone) appelée au clic : si elle renvoie undefined, la boîte reste ouverte (validation).
+ * describe : true relie le contenu au dialogue (aria-describedby), pour qu'il soit lu à l'ouverture
+ * même quand le focus va directement sur un bouton ; à réserver aux messages courts. Pour un dialogue
+ * qui contient un formulaire, passer plutôt le nœud du message d'avertissement (élément du contenu).
+ * alert : true ⇒ role="alertdialog" (confirmation d'une action risquée).
  * @returns {Promise<any>}
  */
-export function modal({ title, content, actions = [], dismissible = true, size } = {}) {
+export function modal({ title, content, actions = [], dismissible = true, size, describe = false, alert = false } = {}) {
   const d = globalThis.document;
   const previous = d.activeElement;
   const titleId = uniqueId('modal-title');
+  const describedNode = describe && typeof describe === 'object' && describe.nodeType === 1 ? describe : null;
+  if (describedNode && !describedNode.getAttribute('id')) describedNode.setAttribute('id', uniqueId('modal-desc'));
+  const contentId = describedNode ? null : (describe === true ? uniqueId('modal-content') : null);
+  const describedBy = describedNode ? describedNode.getAttribute('id') : contentId;
 
   return new Promise((resolve) => {
     let settled = false;
-    const dialog = h('dialog', { class: ['modal', size ? `modal-${size}` : null], 'aria-labelledby': titleId });
+    const dialog = h('dialog', {
+      class: ['modal', size ? `modal-${size}` : null],
+      role: alert ? 'alertdialog' : null,
+      'aria-labelledby': titleId,
+      'aria-describedby': describedBy,
+    });
 
     const finish = (value) => {
       if (settled) return;
@@ -210,7 +243,7 @@ export function modal({ title, content, actions = [], dismissible = true, size }
 
     dialog.appendChild(h('div', { class: 'modal-inner' },
       header,
-      h('div', { class: 'modal-content' }, content),
+      h('div', { class: 'modal-content', id: contentId }, content),
       actionButtons.length ? h('div', { class: 'modal-actions' }, actionButtons) : null));
 
     dialog.addEventListener('cancel', (event) => {
@@ -231,11 +264,16 @@ export function modal({ title, content, actions = [], dismissible = true, size }
   });
 }
 
-/** Demande de confirmation. danger : bouton rouge et focus initial sur « Annuler ». */
+/**
+ * Demande de confirmation. danger : bouton rouge, focus initial sur « Annuler » et role="alertdialog".
+ * Le message est relié au dialogue (aria-describedby) : il est lu à l'ouverture.
+ */
 export function confirmDialog({ title, message, confirmLabel, danger = false } = {}) {
   return modal({
     title,
     content: typeof message === 'string' ? h('p', null, message) : message,
+    describe: true,
+    alert: danger,
     actions: [
       { label: translate('common.actions.cancel'), value: false, autofocus: danger },
       { label: confirmLabel ?? translate('common.actions.confirm'), value: true, variant: danger ? 'danger' : 'primary', autofocus: !danger },
@@ -243,38 +281,204 @@ export function confirmDialog({ title, message, confirmLabel, danger = false } =
   }).then((value) => value === true);
 }
 
-const MAX_TOASTS = 4;
+// Notifications : 4 au plus, 2 sur écran étroit (la pile y occupe toute la largeur). Les erreurs et
+// avertissements restent affichés jusqu'à leur fermeture ; les autres disparaissent seuls.
+export const TOAST_LIMIT = 4;
+export const TOAST_LIMIT_NARROW = 2;
+const NARROW_QUERY = '(max-width: 40rem)';
+const TOAST_DELAY_MS = 5000;
+const PERSISTENT_KINDS = new Set(['danger', 'warn']);
+const toastDismissers = new WeakMap();
 
-/** Notification temporaire (info | success | warn | danger). Renvoie une fonction de fermeture. */
-export function toast(message, kind = 'info', { timeout } = {}) {
-  const d = globalThis.document;
+/** Nombre maximal de notifications visibles pour la largeur d'écran courante. */
+export function toastLimit(win = globalThis) {
+  try {
+    return win.matchMedia?.(NARROW_QUERY)?.matches ? TOAST_LIMIT_NARROW : TOAST_LIMIT;
+  } catch {
+    return TOAST_LIMIT;
+  }
+}
+
+/** Délai d'effacement automatique en ms, ou null si la notification reste jusqu'à sa fermeture. */
+export function toastTimeout(kind, timeout) {
+  if (timeout !== undefined) return Number.isFinite(timeout) && timeout > 0 ? timeout : null;
+  return PERSISTENT_KINDS.has(kindOf(kind)) ? null : TOAST_DELAY_MS;
+}
+
+/**
+ * Notifications à retirer pour ne pas dépasser limit : les plus anciennes, en commençant par celles
+ * qui s'effacent seules ; la dernière arrivée n'est jamais retirée.
+ * @param {{ persistent: boolean }[]} items du plus ancien au plus récent
+ * @returns {number[]} indices à retirer
+ */
+export function toastsToEvict(items, limit) {
+  const excess = items.length - Math.max(1, limit);
+  if (excess <= 0) return [];
+  const candidates = items.slice(0, -1).map((item, index) => ({ index, persistent: Boolean(item.persistent) }));
+  const ordered = [...candidates.filter((c) => !c.persistent), ...candidates.filter((c) => c.persistent)];
+  return ordered.slice(0, excess).map((c) => c.index).sort((a, b) => a - b);
+}
+
+function toastContainer(d) {
   let container = d.getElementById('toasts');
   if (!container) {
     container = h('div', { id: 'toasts', class: 'toasts', 'aria-live': 'polite' });
     d.body.appendChild(container);
   }
+  watchOverlays(d, container);
+  return container;
+}
+
+/**
+ * Suit dès le démarrage les éléments fixés en bas d'écran (pile de notifications, bannière de mise à
+ * jour) : sans cela, le suivi ne commence qu'à la première notification.
+ */
+export function watchBottomOverlays() {
+  const d = globalThis.document;
+  if (d?.body) toastContainer(d);
+}
+
+// Éléments fixés en bas d'écran (notifications, bannière de mise à jour) : leur hauteur est exposée en
+// --bottom-overlay (scroll-padding-bottom et marge basse de la page, app.css) et l'élément qui a le focus
+// clavier est ramené au-dessus d'eux s'ils le recouvrent (WCAG 2.4.11).
+let overlayWatch = null;
+
+function watchOverlays(d, container) {
+  if (overlayWatch?.container === container) return;
+  const win = d.defaultView ?? globalThis;
+  const root = d.documentElement;
+  if (!root?.style || typeof container.getBoundingClientRect !== 'function') return;
+  const watch = { container, lastOutside: null };
+  overlayWatch = watch;
+
+  const banner = () => {
+    const node = d.getElementById('update-banner');
+    return node && !node.hidden && node.isConnected ? node : null;
+  };
+  // Le conteneur de la pile, et non chaque notification : sa boîte ne suit pas l'animation d'entrée.
+  const obstacles = () => [container.children.length ? container : null, banner()].filter(Boolean);
+
+  const layout = () => {
+    const vh = win.innerHeight || root.clientHeight || 0;
+    const bar = banner();
+    const barRect = bar ? bar.getBoundingClientRect() : null;
+    // La pile de notifications se place au-dessus de la bannière de mise à jour.
+    if (barRect && barRect.height) root.style.setProperty('--update-banner-space', `${Math.ceil(barRect.height) + 8}px`);
+    else root.style.removeProperty('--update-banner-space');
+    const tops = obstacles().map((node) => node.getBoundingClientRect()).filter((r) => r.height > 0).map((r) => r.top);
+    const extent = tops.length ? Math.ceil(vh - Math.min(...tops)) + 8 : 0;
+    if (extent > 0) root.style.setProperty('--bottom-overlay', `${extent}px`);
+    else root.style.removeProperty('--bottom-overlay');
+  };
+
+  const reveal = () => {
+    const el = d.activeElement;
+    if (!el || el === d.body || el === root || typeof el.getBoundingClientRect !== 'function') return;
+    const blockers = obstacles();
+    if (!blockers.length || blockers.some((node) => node.contains(el)) || el.closest?.('dialog[open]')) return;
+    try {
+      if (!el.matches(':focus-visible')) return;
+    } catch {
+      // :focus-visible non reconnu : on considère le focus comme visible.
+    }
+    const r = el.getBoundingClientRect();
+    if (!r.width && !r.height) return;
+    const covered = blockers.map((node) => node.getBoundingClientRect())
+      .some((o) => r.left < o.right && r.right > o.left && r.top < o.bottom && r.bottom > o.top);
+    // scroll-padding-bottom (= --bottom-overlay) place l'élément au-dessus de la pile.
+    if (covered) el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  };
+
+  const update = () => {
+    if (overlayWatch !== watch) return;
+    layout();
+    reveal();
+  };
+  watch.update = update;
+
+  const RO = win.ResizeObserver;
+  if (typeof RO === 'function') {
+    const observer = new RO(update);
+    observer.observe(container);
+    const bar = d.getElementById('update-banner');
+    if (bar) observer.observe(bar);
+  }
+  win.addEventListener?.('resize', update, { passive: true });
+  d.addEventListener('focusin', (event) => {
+    if (overlayWatch !== watch) return;
+    const target = event.target;
+    if (target && !container.contains(target)) watch.lastOutside = target;
+    if (obstacles().length) reveal();
+  });
+}
+
+// Fermeture d'une notification qui contenait le focus : retour au dernier élément focalisé hors de la
+// pile (sinon au contenu principal), pour ne pas perdre le focus sur <body>.
+function restoreFocusFrom(node, d) {
+  if (typeof node.contains !== 'function' || !node.contains(d.activeElement)) return;
+  const previous = overlayWatch?.lastOutside;
+  const target = previous && previous.isConnected && typeof previous.focus === 'function'
+    ? previous
+    : d.getElementById('app');
+  target?.focus?.();
+}
+
+/**
+ * Notification (info | success | warn | danger). Les erreurs (danger) et avertissements (warn) restent
+ * jusqu'à leur fermeture ; info et success s'effacent après 5 s (pause au survol et au focus).
+ * timeout : délai en ms imposé (0 ou null : jusqu'à la fermeture). Une notification identique déjà
+ * affichée est remplacée. Échap ferme la notification qui a le focus. Renvoie la fonction de fermeture.
+ */
+export function toast(message, kind = 'info', { timeout } = {}) {
+  const d = globalThis.document;
+  const container = toastContainer(d);
   const k = kindOf(kind);
-  const delay = timeout ?? (k === 'danger' ? 9000 : 5000);
+  const delay = toastTimeout(k, timeout);
   let timer = null;
-  const node = h('div', { class: ['toast', `toast-${k}`] },
+  let closed = false;
+  const messageNode = h('p', { class: 'toast-message' }, message);
+  const node = h('div', { class: ['toast', `toast-${k}`], 'data-persistent': delay === null ? 'true' : 'false' },
     icon(KIND_ICONS[k], { className: 'toast-icon' }),
-    h('p', { class: 'toast-message' }, message),
+    messageNode,
     h('button', { type: 'button', class: 'toast-close', 'aria-label': translate('common.actions.close_notification'), onClick: () => dismiss() }, icon('close')));
   const dismiss = () => {
+    if (closed) return;
+    closed = true;
     clearTimeout(timer);
+    restoreFocusFrom(node, d);
     node.remove();
   };
   const arm = () => {
     clearTimeout(timer);
-    timer = setTimeout(dismiss, delay);
+    if (delay !== null && !closed) timer = setTimeout(dismiss, delay);
   };
+  toastDismissers.set(node, dismiss);
   node.addEventListener('mouseenter', () => clearTimeout(timer));
   node.addEventListener('mouseleave', arm);
   node.addEventListener('focusin', () => clearTimeout(timer));
   node.addEventListener('focusout', arm);
+  node.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    dismiss();
+  });
+
+  // Même message déjà affiché : l'ancien est remplacé (pas de pile de doublons).
+  const text = messageNode.textContent;
+  for (const other of Array.from(container.children)) {
+    if (other.classList?.contains(`toast-${k}`) && other.querySelector?.('.toast-message')?.textContent === text) {
+      (toastDismissers.get(other) ?? (() => other.remove()))();
+    }
+  }
   container.appendChild(node);
-  while (container.children.length > MAX_TOASTS) container.firstElementChild.remove();
+  const current = Array.from(container.children);
+  const evict = toastsToEvict(current.map((n) => ({ persistent: n.getAttribute('data-persistent') === 'true' })), toastLimit());
+  for (const index of evict) {
+    const victim = current[index];
+    (toastDismissers.get(victim) ?? (() => victim.remove()))();
+  }
   arm();
+  overlayWatch?.update?.();
   return dismiss;
 }
 

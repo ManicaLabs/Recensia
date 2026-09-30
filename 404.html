@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://gc.zgo.at; connect-src 'self' https://*.goatcounter.com; img-src 'self' data: blob: https://*.goatcounter.com; style-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; manifest-src 'self'; worker-src 'self'">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="light dark">
+  <title>Lien abîmé ou page introuvable — Recensia</title>
+  <!--
+    Page servie par GitHub Pages pour toute adresse inconnue sous /Recensia/, en particulier un lien dont
+    une messagerie a encodé le « # » en « %23 » (…/Recensia/%23/c/…). Page autonome, hors précache.
+    Elle est servie à une profondeur quelconque : ses ressources sont donc référencées par des chemins
+    absolus limités au projet (/Recensia/…). Un chemin relatif (« ../404.js ») peut remonter au-dessus
+    de /Recensia/ et charger le script d'un autre site publié sous la même origine (…github.io).
+    Avec un domaine dédié (fichier CNAME), remplacer « /Recensia/ » par « / » : tools/check.mjs le vérifie.
+    404.js recalcule la racine de l'application à partir de sa propre adresse. Rien n'est journalisé ni mesuré.
+  -->
+  <link rel="icon" href="/Recensia/favicon-32.png" sizes="32x32" type="image/png">
+  <link id="nf-css" rel="stylesheet" href="/Recensia/src/styles/app.css">
+  <script type="module" src="/Recensia/404.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a id="nf-brand" class="brand" href="/Recensia/"><span class="brand-name">Recensia</span></a>
+    </div>
+  </header>
+
+  <main id="app" class="site-main" tabindex="-1">
+    <div class="page page-narrow">
+      <div class="empty-state">
+        <section id="nf-generic" aria-labelledby="nf-generic-title">
+          <h1 id="nf-generic-title">Page introuvable</h1>
+          <p class="lead">Cette adresse ne correspond à aucune page de Recensia.</p>
+          <p class="muted">Si vous avez ouvert un lien reçu par messagerie, il a peut-être été abîmé en chemin&nbsp;: demandez à la personne qui vous l'a envoyé le code brut ou le lien complet.</p>
+        </section>
+
+        <section id="nf-broken" aria-labelledby="nf-broken-title" hidden>
+          <h1 id="nf-broken-title">Lien abîmé</h1>
+          <p class="lead">Ce lien Recensia a été modifié en chemin&nbsp;: une messagerie ou une passerelle de sécurité a remplacé le «&nbsp;#&nbsp;» de l'adresse, et il ne peut pas s'ouvrir tel quel.</p>
+          <p class="muted">Demandez à la personne qui vous l'a envoyé le code brut ou le lien complet, par exemple par copier-coller dans un autre canal.</p>
+        </section>
+
+        <section id="nf-redirect" aria-labelledby="nf-redirect-title" hidden>
+          <h1 id="nf-redirect-title">Ouverture du lien réparé…</h1>
+          <p class="lead">Ce lien avait été abîmé par une messagerie&nbsp;: Recensia s'ouvre à la bonne adresse.</p>
+          <p><a id="nf-repaired" class="btn btn-primary" href="/Recensia/">Continuer vers Recensia</a></p>
+        </section>
+
+        <p id="nf-home-line"><a id="nf-home" class="btn btn-secondary" href="/Recensia/">Ouvrir l'accueil de Recensia</a></p>
+      </div>
+    </div>
+  </main>
+
+  <noscript>
+    <div class="noscript">
+      <p><strong>Recensia a besoin de JavaScript.</strong></p>
+      <p>Activez JavaScript, puis rouvrez le lien complet reçu.</p>
+    </div>
+  </noscript>
+</body>
+</html>

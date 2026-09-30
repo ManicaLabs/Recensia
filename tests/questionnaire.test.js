@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import {
   campaignOptions, fieldOrder, isFieldVisible, isFieldRequired, toggleChoice, orderValues, suggestionsFor,
   emptyUsage, normalizeInitial, visibleValue, errorText, firstErrors, textLength, frenchSpacing, displayQuestionnaire,
-  nextFieldKey,
+  nextFieldKey, displaySections, isAlwaysOptional,
 } from '../src/ui/questionnaire.js';
 import { validateUsage } from '../src/engine/validate.js';
 import { loadQuestionnaire, makeUsage } from './helpers/load-data.js';
@@ -42,11 +42,40 @@ describe('options de campagne et ordre des champs', () => {
     assert.equal(campaignOptions({ mode: 'x' }).mode, 'anonymous');
   });
 
-  test('fieldOrder suit les sections et couvre tous les champs une fois', () => {
+  test('fieldOrder suit les sections affichées et couvre tous les champs une fois', () => {
     const order = fieldOrder(q);
     assert.equal(order[0], 'usage_name');
     assert.equal(order.at(-1), 'comment');
     assert.deepEqual([...order].sort(), Object.keys(q.fields).sort());
+    assert.deepEqual(order, displaySections(q).flatMap((s) => s.fields));
+  });
+
+  test('isAlwaysOptional : ni requis, ni requis sous condition, ni réglé par la campagne', () => {
+    assert.equal(isAlwaysOptional(q.fields.model), true);
+    assert.equal(isAlwaysOptional(q.fields.users_count), true);
+    assert.equal(isAlwaysOptional(q.fields.comment), true);
+    assert.equal(isAlwaysOptional(q.fields.tool_other), false, 'obligatoire pour « Autre »');
+    assert.equal(isAlwaysOptional(q.fields.department), false, 'réglé par la campagne');
+    assert.equal(isAlwaysOptional(q.fields.usage_name), false);
+    assert.equal(isAlwaysOptional(null), false);
+  });
+
+  test('displaySections : facultatifs regroupés dans un dernier bloc, obligatoires à la suite', () => {
+    const sections = displaySections(q);
+    const last = sections.at(-1);
+    assert.equal(last.optional, true);
+    assert.equal(last.id, 'optional');
+    assert.deepEqual(last.fields, ['model', 'users_count', 'comment']);
+    for (const section of sections.slice(0, -1)) {
+      assert.equal(section.optional, false);
+      assert.ok(section.fields.length > 0, section.id);
+      assert.ok(section.fields.every((key) => !isAlwaysOptional(q.fields[key])), section.id);
+      assert.equal(section.title, q.sections.find((s) => s.id === section.id).title);
+    }
+    assert.equal(sections.some((s) => s.id === 'comment'), false, 'section entièrement facultative fondue dans le bloc final');
+    assert.deepEqual(sections.find((s) => s.id === 'usage').fields, ['usage_name', 'department', 'tool', 'tool_other', 'account_type', 'status']);
+    assert.deepEqual(displaySections({ sections: [{ id: 'a', fields: ['x'] }], fields: { x: { type: 'text', required: true } } }).map((s) => s.id), ['a'], 'sans facultatif : pas de bloc final');
+    assert.ok(catalog.optional.title && catalog.optional.intro, 'titre et introduction du bloc dans le catalogue');
   });
 });
 
@@ -66,8 +95,10 @@ describe('visibilité (show_if, service)', () => {
   test('nextFieldKey : Entrée passe à la question suivante affichée', () => {
     assert.equal(nextFieldKey(q, {}, ANON, 'usage_name'), 'department');
     assert.equal(nextFieldKey(q, {}, ANON_NONE, 'usage_name'), 'tool', 'service masqué sauté');
-    assert.equal(nextFieldKey(q, { tool: 'chatgpt' }, ANON, 'tool'), 'model', 'précision masquée sautée');
-    assert.equal(nextFieldKey(q, { tool: 'other' }, ANON, 'tool_other'), 'model');
+    assert.equal(nextFieldKey(q, { tool: 'chatgpt' }, ANON, 'tool'), 'account_type', 'précision masquée sautée, modèle (facultatif) en fin de questionnaire');
+    assert.equal(nextFieldKey(q, { tool: 'other' }, ANON, 'tool_other'), 'account_type');
+    assert.equal(nextFieldKey(q, {}, ANON, 'built_or_customized'), 'model', 'dernière question obligatoire ⇒ bloc facultatif');
+    assert.equal(nextFieldKey(q, {}, ANON, 'model'), 'users_count');
     assert.equal(nextFieldKey(q, {}, ANON, 'comment'), null);
     assert.equal(nextFieldKey(q, {}, ANON, 'inconnu'), null);
   });
@@ -293,5 +324,60 @@ describe('catalogue questionnaire.json', () => {
       assert.ok(Object.hasOwn(q.fields, field), field);
       for (const code of Object.keys(codes)) assert.ok(['required', 'too_long', 'invalid_value', 'exclusive', 'too_few'].includes(code), `${field}.${code}`);
     }
+  });
+});
+
+// Les textes qui citent une réponse (« Autre », « Je ne sais pas », « Non »…) doivent rester justes
+// quand data/questionnaire.json évolue (libellés ou aides d'options réécrits, par exemple).
+describe('renvois des textes vers les réponses du questionnaire', () => {
+  const form = JSON.parse(readFileSync(new URL('../src/i18n/fr/form.json', import.meta.url), 'utf8'));
+  const quotes = (text) => [...String(text).matchAll(/«[\s\u00A0]*([^»{}]+?)[\s\u00A0]*»/gu)].map((m) => m[1]);
+  const labelsOf = (key) => (q.fields[key]?.options ?? []).map((o) => o.label);
+  const allLabels = Object.keys(q.fields).flatMap(labelsOf);
+
+  test('messages d\'erreur propres aux champs : les réponses citées existent dans ce champ', () => {
+    for (const [key, codes] of Object.entries(catalog.field_errors)) {
+      if (labelsOf(key).length === 0) continue; // champ libre : la citation est un exemple
+      for (const [code, text] of Object.entries(codes)) {
+        for (const quoted of quotes(text)) assert.ok(labelsOf(key).includes(quoted), `${key}.${code} cite « ${quoted} »`);
+      }
+    }
+  });
+
+  test('aides et introductions du questionnaire : les réponses citées existent', () => {
+    for (const [key, def] of Object.entries(q.fields)) {
+      if (labelsOf(key).length === 0) continue;
+      for (const quoted of quotes(def.help ?? '')) assert.ok(labelsOf(key).includes(quoted), `${key}.help cite « ${quoted} »`);
+      // Aides d'options (raccourcies au fil des versions) : une réponse citée reste une réponse du même champ.
+      for (const option of def.options ?? []) {
+        for (const quoted of quotes(option.help ?? '')) assert.ok(labelsOf(key).includes(quoted), `${key}.${option.value}.help cite « ${quoted} »`);
+      }
+    }
+    for (const section of q.sections) {
+      const labels = section.fields.flatMap(labelsOf);
+      for (const quoted of quotes(section.intro ?? '')) assert.ok(labels.includes(quoted), `section ${section.id} cite « ${quoted} »`);
+    }
+  });
+
+  test('notice du formulaire : « Je ne sais pas » est proposé, le choix « sans service » est celui de la liste', () => {
+    for (const quoted of quotes(form.intro.no_control)) assert.ok(allLabels.includes(quoted), `form.intro.no_control cite « ${quoted} »`);
+    assert.ok(form.mode.anonymous_department_optional.includes('{option}'), 'libellé repris du catalogue questionnaire, pas recopié');
+    assert.equal(allLabels.includes(catalog.department_unspecified), false, 'pas de collision avec une réponse');
+  });
+
+  test('aides d\'options : texte non vide, distinct du libellé, typographie appliquée à l\'affichage', () => {
+    const d = displayQuestionnaire(q);
+    let count = 0;
+    for (const [key, def] of Object.entries(q.fields)) {
+      (def.options ?? []).forEach((option, i) => {
+        if (option.help === undefined) return;
+        count += 1;
+        assert.equal(typeof option.help, 'string', `${key}.${option.value}`);
+        assert.ok(option.help.trim() !== '' && option.help === option.help.trim(), `${key}.${option.value} : aide vide ou mal bornée`);
+        assert.notEqual(option.help, option.label, `${key}.${option.value} : aide identique au libellé`);
+        assert.equal(d.fields[key].options[i].help, frenchSpacing(option.help));
+      });
+    }
+    assert.ok(count > 0, 'au moins une aide d\'option (rendu choice-help / q-option-help)');
   });
 });

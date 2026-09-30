@@ -1,6 +1,7 @@
 import { test, describe, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseHash, navigate, startRouter, baseUrlFrom, CONSOLE_TABS, ROUTE_NAMES } from '../src/router.js';
+import { repairedHash, looksLikeBrokenLink, MAX_REPAIRED_LENGTH } from '../404.js';
 
 const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 
@@ -193,5 +194,67 @@ describe('navigate / startRouter', () => {
     win.location.hash = '#app';
     assert.deepEqual(seen, ['privacy']);
     stop();
+  });
+});
+
+describe('404.js : liens dont le « # » a été encodé en « %23 »', () => {
+  const BASE = '/Recensia/';
+  const payload = 'TVHLUhsxEPwVlS652Kldx8HEp_-ab~';
+
+  test('« %23 » (une ou deux fois encodé) ⇒ fragment reconstitué, reconnu par le routeur', () => {
+    const cases = [
+      [`/Recensia/%23/c/${payload}`, `#/c/${payload}`],
+      [`/Recensia/%2523/c/${payload}`, `#/c/${payload}`],
+      ['/Recensia/%2523/i/RCN1.a%257ERCN1.b', '#/i/RCN1.a%7ERCN1.b'],
+      [`/Recensia/index.html%23/c/${payload}`, `#/c/${payload}`],
+      [`/Recensia/%23%2Fc%2F${payload}`, `#/c/${payload}`],
+      ['/Recensia/%23/i/RCN1.aaa~RCN1.bbb', '#/i/RCN1.aaa~RCN1.bbb'],
+      ['/Recensia/%23/admin/k3J9xQ2mP0aZ/registre', '#/admin/k3J9xQ2mP0aZ/registre'],
+      ['/Recensia/%23', '#/'],
+      ['/Recensia/%23/', '#/'],
+    ];
+    for (const [path, expected] of cases) {
+      const hash = repairedHash(path, BASE);
+      assert.equal(hash, expected, path);
+      assert.notEqual(parseHash(hash).name, 'not_found', path);
+    }
+    assert.deepEqual(parseHash(repairedHash('/Recensia/%2523/i/RCN1.a%257ERCN1.b', BASE)).params.codes, ['RCN1.a', 'RCN1.b']);
+  });
+
+  test('« # » disparu : seuls les liens de collecte et d\'import sont réparés', () => {
+    assert.equal(repairedHash(`/Recensia/c/${payload}`, BASE), `#/c/${payload}`);
+    assert.equal(repairedHash('/Recensia/i/RCN1.abc', BASE), '#/i/RCN1.abc');
+    for (const path of ['/Recensia/admin', '/Recensia/new', '/Recensia/inconnue.html', '/Recensia/c/', '/Recensia/c/a/b']) {
+      assert.equal(repairedHash(path, BASE), null, path);
+    }
+  });
+
+  test('racine différente (fork, domaine personnalisé) : calculée d\'après l\'adresse de 404.js', () => {
+    assert.equal(repairedHash('/%23/c/abc', '/'), '#/c/abc');
+    assert.equal(repairedHash('/autre/%23/c/abc', '/autre/'), '#/c/abc');
+    assert.equal(repairedHash('/Recensia/%23/c/abc', '/autre/'), null);
+  });
+
+  test('rien à réparer, ou fragment suspect : null', () => {
+    const bad = [
+      '/Recensia/', '/Recensia/foo', '/Recensia/foo%23/c/abc', '/Recensia/%23/c/a b', '/Recensia/%23/c/a"b',
+      '/Recensia/%23/c/a<b', '/Recensia/%23/c/a\\b', `/Recensia/%23/c/${'A'.repeat(MAX_REPAIRED_LENGTH)}`,
+    ];
+    for (const path of bad) assert.equal(repairedHash(path, BASE), null, path.slice(0, 40));
+    for (const args of [[null, BASE], ['/Recensia/%23/c/abc', 'Recensia'], [42, BASE]]) assert.equal(repairedHash(...args), null);
+  });
+
+  test('looksLikeBrokenLink : message « lien abîmé » dès qu\'un « # » encodé apparaît', () => {
+    assert.equal(looksLikeBrokenLink('/Recensia/foo%23/c/abc'), true);
+    assert.equal(looksLikeBrokenLink('/Recensia/%2523/c/abc'), true);
+    assert.equal(looksLikeBrokenLink('/Recensia/inconnue.html'), false);
+    assert.equal(looksLikeBrokenLink(undefined), false);
+  });
+
+  test('chemin très long : traitement linéaire', () => {
+    const long = `/Recensia/%23/c/${'A'.repeat(MAX_REPAIRED_LENGTH - 20)}`;
+    const started = performance.now();
+    assert.ok(repairedHash(long, BASE)?.startsWith('#/c/AAA'));
+    assert.ok(performance.now() - started < 50);
   });
 });

@@ -26,11 +26,19 @@
 .actions-progress-summary { margin-bottom: var(--space-2); font-weight: 600; color: var(--heading); }
 .actions-progress .progress { margin-bottom: var(--space-4); height: 0.625rem; }
 .actions-progress .progress-bar { background: var(--success); }
-/* Grille d'indicateurs compacte (deux colonnes dès 320 px) ; réutilisée par la vue Démo. */
-.kpi-grid-compact { grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.5rem), 1fr)); }
+/* Grille d'indicateurs compacte ; réutilisée par la vue Démo. auto-fit : les pistes vides sont
+   repliées, les indicateurs occupent toute la largeur (pas de colonne vide à droite en 1280 px). */
+.kpi-grid-compact { grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr)); }
 .kpi-grid-compact .kpi { padding: var(--space-3); }
 .kpi-grid-compact .kpi-value { font-size: var(--fs-xl); }
 .actions-kpis { margin: 0; padding: 0; }
+/* Six indicateurs : quand la largeur n'en permet que quatre ou cinq par rangée (4 + 2, 5 + 1),
+   deux rangées de trois. Seuils : 4 × 8,5rem + 3 × 0,75rem (espacement) = 36,25rem ;
+   6 × 8,5rem + 5 × 0,75rem = 54,75rem (six indicateurs sur une rangée). */
+.actions-progress { container: actions-progress / inline-size; }
+@container actions-progress (min-width: 36.25rem) and (max-width: 54.74rem) {
+  .actions-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 
 /* Suggestions */
 .sugg-groups { gap: var(--space-3); }
@@ -143,9 +151,25 @@
   padding-top: var(--space-3);
   border-top: var(--border-width) solid var(--border);
 }
-.action-status-field { display: flex; flex-direction: column; gap: var(--space-1); min-width: 11rem; flex: 1 1 11rem; max-width: 16rem; }
+.action-status-field { display: flex; flex-direction: column; gap: var(--space-1); min-width: 11rem; flex: 1 1 11rem; max-width: 24rem; }
 .action-status-field .field-label { margin: 0; font-size: var(--fs-sm); }
-.action-status-select { min-height: var(--control-height-sm); padding-top: 0.3rem; padding-bottom: 0.3rem; }
+/* Sélecteur + bouton « Appliquer » (affiché seulement quand le statut choisi diffère). */
+.action-status-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.action-status-select { flex: 1 1 10rem; min-width: 0; max-width: 16rem; min-height: var(--control-height-sm); padding-top: 0.3rem; padding-bottom: 0.3rem; }
+.action-status-apply { flex: none; }
+
+/* Action modifiée qui ne correspond plus aux filtres : gardée à l'écran jusqu'au prochain
+   changement de filtre, et signalée par un texte (le cadre en pointillés n'est qu'un renfort). */
+.action-item.is-filtered-out { border-style: dashed; }
+.action-filter-note {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  margin: 0 0 var(--space-3);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+.action-filter-note .icon { flex: none; color: var(--info); margin-top: 0.15em; width: 1.1em; height: 1.1em; }
 .action-buttons { gap: var(--space-2); }
 
 /* Statuts : texte + motif du repère */
@@ -168,6 +192,45 @@
 .btn-ghost-danger:hover:not(:disabled) { background: var(--danger-soft); color: var(--danger); }
 
 .actions-empty { padding-block: var(--space-5); }
+
+/* Encart d'erreur d'enregistrement (persistant, en plus de la notification) : près de l'élément
+   concerné (suggestion, action, dialogue d'édition) ; l'emplacement vide ne prend aucune place. */
+.actions-save-error:empty { display: none; }
+.actions-save-error > .callout { margin: var(--space-3) 0 0; }
+.actions-section-head + .actions-save-error > .callout { margin: 0 0 var(--space-3); }
+.action-form .actions-save-error > .callout { margin: 0 0 var(--space-4); }
+.actions-header + .actions-save-error > .callout { margin: 0; }
+
+/* Vue Démo (#/demo) : aperçu du registre. Tableau à partir de 40rem, liste de cartes en
+   dessous ; un seul des deux est affiché (display: none le retire aussi de l'arbre
+   d'accessibilité). */
+.demo-registry { margin-top: var(--space-4); min-width: 0; }
+.demo-registry h2 { margin-bottom: var(--space-2); }
+.demo-registry-table { display: none; margin: 0; }
+.demo-registry-table tbody th { min-width: 12rem; }
+.demo-registry-table td { white-space: nowrap; }
+.demo-registry-table td:nth-child(2) { white-space: normal; }
+.demo-registry-cards { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
+.demo-registry-card {
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.demo-registry-name { margin: 0 0 var(--space-2); font-weight: 650; color: var(--heading); line-height: var(--lh-snug); overflow-wrap: anywhere; }
+.demo-registry-meta { display: grid; gap: var(--space-1); margin: 0; font-size: var(--fs-sm); }
+.demo-registry-meta > div { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); min-width: 0; }
+.demo-registry-meta dt { color: var(--text-muted); }
+.demo-registry-meta dt::after { content: "\00a0:"; }
+.demo-registry-meta dd { margin: 0; min-width: 0; overflow-wrap: break-word; }
+.demo-registry-link { display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 600; }
+.demo-registry-link .icon { width: 1.1em; height: 1.1em; }
+@media (min-width: 40rem) {
+  .demo-registry-table { display: block; }
+  .demo-registry-cards { display: none; }
+}
 
 /* Dialogue d'édition */
 .action-form .field { margin-bottom: var(--space-4); }

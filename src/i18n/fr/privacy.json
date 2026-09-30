@@ -11,9 +11,10 @@
   "toc_label": "Sur cette page",
   "summary": {
     "title": "En bref",
-    "no_server": "Recensia n'a aucun serveur de stockage : les réponses sont chiffrées dans le navigateur du répondant, transmises par le canal choisi par le responsable (e-mail, messagerie, fichier) et lisibles seulement dans le navigateur du responsable.",
+    "no_server": "Recensia n'a aucun serveur de stockage : les réponses sont chiffrées dans le navigateur du répondant, transmises par le canal choisi par le responsable (e‑mail, messagerie, fichier) et lisibles seulement dans le navigateur du responsable.",
     "audience": "La mesure d'audience (GoatCounter) ne dépose aucun cookie : elle reçoit des chemins fixes et des informations techniques (navigateur, taille d'écran), jamais le contenu d'une campagne.",
-    "hosting": "Le site est hébergé par GitHub Pages, qui peut tenir des journaux techniques de connexion."
+    "hosting": "Le site est hébergé par GitHub Pages, qui peut tenir des journaux techniques de connexion.",
+    "shared_origin": "Recensia partage son origine ({origin}) avec les autres sites publiés à cette adresse : ces sites peuvent techniquement lire et modifier les données que Recensia enregistre dans ce navigateur (voir « Hébergement »)."
   },
   "audience": {
     "title": "Mesure d'audience (GoatCounter)",
@@ -30,7 +31,7 @@
   "campaign": {
     "title": "Données des campagnes",
     "link": "Le lien de collecte contient la configuration de la campagne et sa clé publique, dans la partie de l'adresse située après « # » : les navigateurs ne l'envoient jamais au serveur. Cette configuration (titre, entreprise, liste des services) n'est pas chiffrée : toute personne qui dispose du lien peut la lire.",
-    "encryption": "Chaque usage déclaré est chiffré dans le navigateur du répondant. Le code obtenu est transmis au responsable par le canal que celui-ci a choisi : e-mail, messagerie, copier-coller vers un canal partagé ou fichier, par exemple.",
+    "encryption": "Chaque usage déclaré est chiffré dans le navigateur du répondant. Le code obtenu est transmis au responsable par le canal que celui-ci a choisi : e‑mail, messagerie, copier-coller vers un canal partagé ou fichier, par exemple.",
     "storage": "Une fois reçus, les codes sont déchiffrés et stockés uniquement dans le navigateur du responsable (IndexedDB). L'application ne conserve rien : aucune réponse n'est stockée sur un serveur de Recensia, et il n'en existe pas.",
     "private_key": "La clé privée de la campagne ne quitte le navigateur du responsable que s'il exporte lui-même un fichier de récupération (protégé par un mot de passe s'il en choisit un) ou une sauvegarde chiffrée.",
     "share": "Les boutons de partage vers un service tiers (WhatsApp, Teams, messagerie web) ouvrent ce service à votre demande : le message, lien ou code compris, lui est alors transmis comme tout message que vous y écririez.",
@@ -39,9 +40,9 @@
   },
   "anonymity": {
     "title": "Limites de l'anonymat",
-    "guarantees": "En mode anonyme, le code ne contient aucune identité (ni nom ni adresse e-mail), la date est arrondie au jour et les petits regroupements (moins de cinq réponses par défaut) sont masqués dans le tableau de bord et les exports.",
+    "guarantees": "En mode anonyme, le code ne contient aucune identité (ni nom ni adresse e‑mail), la date est arrondie au jour et les petits regroupements (moins de cinq réponses par défaut) sont masqués dans le tableau de bord et les exports.",
     "channel_intro": "L'anonymat réel dépend toutefois du canal de retour, que Recensia ne contrôle pas :",
-    "channel_email": "par e-mail, l'adresse de l'expéditeur est connue du destinataire ;",
+    "channel_email": "par e‑mail, l'adresse de l'expéditeur est connue du destinataire ;",
     "channel_messaging": "par une messagerie (Teams, WhatsApp…), le nom de l'expéditeur est visible ;",
     "channel_shared": "par un canal partagé ou un dépôt de fichier, tout dépend de la configuration de ce canal.",
     "free_text": "Un commentaire libre peut aussi permettre d'identifier une personne : n'y mettez aucune donnée personnelle.",
@@ -57,11 +58,17 @@
     "title": "Hébergement",
     "provider": "Le site est hébergé par GitHub Pages, un service de GitHub, Inc. (États-Unis).",
     "logs": "Comme tout hébergeur, GitHub peut enregistrer des journaux techniques (adresse IP, date, fichier demandé) pour la sécurité et le bon fonctionnement du service, conformément à sa propre déclaration de confidentialité. Ces journaux ne contiennent pas la partie de l'adresse située après « # », donc ni la configuration des campagnes ni les codes.",
-    "no_third_party": "L'application ne charge aucune autre ressource externe : bibliothèques, textes et données sont servis par le site lui-même."
+    "no_third_party": "L'application ne charge aucune autre ressource externe : bibliothèques, textes et données sont servis par le site lui-même.",
+    "origin_shared_title": "Origine partagée.",
+    "origin_shared": "Recensia est publié à l'adresse {url}. Les navigateurs cloisonnent les données enregistrées (IndexedDB, stockage local, cache hors ligne) par origine, ici {origin}, et non par chemin : tout autre site publié sous {origin} partage ce compartiment.",
+    "origin_shared_risk": "Un tel site, ou un script qu'il charge, peut donc lire et modifier ce que Recensia enregistre dans ce navigateur : campagnes et clés privées, réponses déchiffrées (avec les noms en mode nominatif), brouillons des répondants. Le chiffrement des codes ne protège plus ces données une fois importées. Seul un hébergement sur une origine réservée à Recensia (domaine ou sous-domaine dédié) supprime ce risque.",
+    "origin_shared_advice": "En attendant, n'ouvrez pas d'autre site publié sous {origin} dans le navigateur qui détient vos campagnes : utilisez par exemple un profil de navigateur réservé à Recensia. Côté répondant, « Effacer mes réponses de cet appareil » supprime le brouillon après l'envoi.",
+    "origin_own": "Recensia est publié à la racine de son origine ({origin}) : les données enregistrées dans ce navigateur ne sont accessibles qu'aux pages publiées sous cette origine.",
+    "integrity": "Le cache hors ligne est contrôlé : chaque copie d'un fichier de l'application est comparée à son empreinte SHA-256 avant d'être utilisée ; une copie modifiée est écartée et le fichier est relu sur le site."
   },
   "publisher": {
     "title": "Éditeur et contact",
     "text": "À compléter : éditeur du site et moyen de contact."
   },
-  "updated": "Texte mis à jour le 29 septembre 2026."
+  "updated": "Texte mis à jour le 30 septembre 2026."
 }

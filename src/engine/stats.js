@@ -125,6 +125,8 @@ export function computeStats({ campaign, entries, groups, actions, suggestions, 
     source_url: d.source_url ?? null,
     last_verified: d.last_verified ?? calendar?.last_verified ?? null,
     note: d.note ?? null,
+    // Rôles visés (null : tous). Le décompte ci-dessous suit computed.deadlines, déjà filtré par rôle.
+    applies_to_roles: Array.isArray(d.applies_to_roles) && d.applies_to_roles.length ? [...d.applies_to_roles] : null,
     days: dayDiff(day, d.date),
     usages_count: list.filter((g) => (g.computed?.deadlines ?? []).some((x) => x.id === d.id)).length,
   }));

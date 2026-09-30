@@ -37,8 +37,9 @@ function preview(t) {
           h('th', { scope: 'row' },
             h('span', { class: 'preview-name' }, t(`home.preview.rows.${row.key}.name`)),
             h('span', { class: 'preview-meta muted' }, t(`home.preview.rows.${row.key}.meta`))),
-          h('td', null, levelBadge('ai_act', row.aiAct, t)),
-          h('td', null, levelBadge('data', row.data, t))))))),
+          // L'en-tête de colonne nomme déjà l'axe.
+          h('td', null, levelBadge('ai_act', row.aiAct, t, { axisLabel: 'none' })),
+          h('td', null, levelBadge('data', row.data, t, { axisLabel: 'none' }))))))),
     h('figcaption', { class: 'muted' }, t('home.preview.note')));
 }
 
@@ -102,5 +103,8 @@ export async function render(root, { ctx }) {
     features(t),
     h('div', { class: 'home-disclaimer stack-sm' },
       disclaimer(t),
-      h('p', { class: 'muted' }, t('home.disclaimer_extra')))));
+      h('p', { class: 'muted' }, t('home.disclaimer_extra'))),
+    h('section', { class: 'home-publisher', 'aria-label': t('home.publisher.label') },
+      h('p', { class: 'muted' }, t('home.publisher.text')),
+      h('img', { class: 'logo-manica logo-manica-lg', src: 'src/assets/logo-manica.png', alt: 'Manica', width: '169', height: '64', decoding: 'async' }))));
 }

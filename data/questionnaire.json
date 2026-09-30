@@ -154,10 +154,10 @@
         { "value": "recherche_information", "label": "Recherche d'information" },
         { "value": "generation_media", "label": "Création d'images, d'audio ou de vidéo" },
         { "value": "transcription", "label": "Transcription (audio vers texte)" },
-        { "value": "chatbot_externe", "label": "Chatbot ou assistant pour des personnes extérieures", "help": "Par exemple un chatbot sur le site de l'entreprise." },
-        { "value": "evaluation_tri_personnes", "label": "Évaluation ou tri de personnes", "help": "Tri de CV, évaluation de salariés, notation de clients particuliers…" },
+        { "value": "chatbot_externe", "label": "Chatbot ou assistant pour des personnes extérieures", "help": "Sur le site web, par exemple." },
+        { "value": "evaluation_tri_personnes", "label": "Évaluation ou tri de personnes", "help": "Tri de CV, évaluation de salariés, notation de particuliers…" },
         { "value": "aide_decision", "label": "Aide à la décision" },
-        { "value": "agent_automatisation", "label": "Agent ou automatisation", "help": "L'IA enchaîne des actions : envoi de messages, mise à jour de fichiers…" },
+        { "value": "agent_automatisation", "label": "Agent ou automatisation", "help": "L'IA agit elle-même : messages envoyés, fichiers modifiés…" },
         { "value": "autre", "label": "Autre" }
       ]
     },
@@ -213,16 +213,16 @@
       "required": true,
       "exclusive": ["aucune"],
       "options": [
-        { "value": "aucune", "label": "Aucune donnée de l'entreprise", "help": "Textes généraux, idées, questions sans information sur l'entreprise ni sur des personnes." },
-        { "value": "docs_internes", "label": "Documents internes non confidentiels", "help": "Notes, procédures, comptes rendus sans information sensible." },
+        { "value": "aucune", "label": "Aucune donnée de l'entreprise", "help": "Questions générales : rien sur l'entreprise ni sur des personnes." },
+        { "value": "docs_internes", "label": "Documents internes non confidentiels", "help": "Notes, procédures, comptes rendus." },
         { "value": "donnees_clients", "label": "Données de clients", "help": "Noms, coordonnées, échanges, commandes." },
         { "value": "donnees_collaborateurs", "label": "Données de collègues ou de salariés" },
-        { "value": "donnees_candidats", "label": "Données de candidats", "help": "CV, lettres, comptes rendus d'entretien." },
-        { "value": "donnees_sensibles", "label": "Données sensibles", "help": "Santé, opinions politiques ou religieuses, origine, vie syndicale, orientation sexuelle…" },
-        { "value": "secrets_affaires", "label": "Informations confidentielles", "help": "Contrats, prix, marges, stratégie, projets non publics." },
+        { "value": "donnees_candidats", "label": "Données de candidats", "help": "CV, lettres, notes d'entretien." },
+        { "value": "donnees_sensibles", "label": "Données sensibles", "help": "Santé, origine, opinions, religion, vie syndicale, orientation sexuelle…" },
+        { "value": "secrets_affaires", "label": "Informations confidentielles", "help": "Contrats, prix, marges, stratégie." },
         { "value": "code_source", "label": "Code source" },
-        { "value": "donnees_financieres", "label": "Données financières", "help": "Comptes, factures, paie, situation bancaire." },
-        { "value": "identifiants", "label": "Mots de passe, clés d'accès ou identifiants", "help": "Si c'est arrivé, pensez à les faire changer : c'est rapide et cela limite le risque." }
+        { "value": "donnees_financieres", "label": "Données financières", "help": "Comptabilité, factures, paie, banque." },
+        { "value": "identifiants", "label": "Mots de passe, clés d'accès ou identifiants", "help": "Si c'est arrivé, faites-les changer par précaution." }
       ]
     },
     "output_audience": {

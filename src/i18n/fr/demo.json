@@ -44,8 +44,8 @@
         "other": "usages à haut risque"
       },
       "actions": {
-        "one": "action déjà engagée",
-        "other": "actions déjà engagées"
+        "one": "action au plan",
+        "other": "actions au plan"
       },
       "suggestions": {
         "one": "suggestion à examiner",
@@ -59,12 +59,31 @@
     "link_actions": "Plan d'actions",
     "link_report": "Rapport"
   },
+  "registry": {
+    "title": "Registre des usages",
+    "lead": {
+      "zero": "Aucun usage n'est encore recensé dans la démo.",
+      "one": "L'usage recensé, classé sur deux axes distincts : niveau AI Act et exposition des données.",
+      "other": "Les {count} usages recensés, consolidés et classés sur deux axes distincts : niveau AI Act et exposition des données."
+    },
+    "caption": {
+      "one": "Registre de la démo : {count} usage",
+      "other": "Registre de la démo : {count} usages"
+    },
+    "col_usage": "Cas d'usage",
+    "col_department": "Service(s)",
+    "col_ai_act": "Niveau AI Act",
+    "col_data": "Exposition des données",
+    "no_department": "Non renseigné",
+    "empty": "Le registre de la démo est vide : réinitialisez la démo pour retrouver le jeu de données d'origine.",
+    "link": "Voir le registre complet"
+  },
   "tour": {
     "title": "Suggestion de parcours",
     "lead": "Six étapes pour faire le tour de Recensia, du tableau de bord à l'import d'une réponse.",
     "dashboard": {
       "title": "Tableau de bord",
-      "text": "Vue d'ensemble : niveaux AI Act, exposition des données, part de shadow AI, échéances à venir."
+      "text": "Vue d'ensemble : niveaux AI Act, exposition des données, part d'IA fantôme (shadow AI), échéances à venir."
     },
     "registry": {
       "title": "Registre",
@@ -76,15 +95,15 @@
     },
     "report": {
       "title": "Rapport",
-      "text": "Le rapport de synthèse imprimable, et les exports XLSX et CSV du registre."
+      "text": "Le rapport de synthèse imprimable, et les exports Excel et CSV du registre."
     },
     "form": {
       "title": "Formulaire répondant",
-      "text": "Répondez comme un collaborateur : le formulaire produit un code chiffré (nouvel onglet)."
+      "text": "Répondez comme un collaborateur : le formulaire produit un code chiffré (nouvel onglet)."
     },
     "import": {
       "title": "Import d'un code",
-      "text": "Collez le code obtenu : l'usage est déchiffré, classé et ajouté au registre de la démo."
+      "text": "Collez le code obtenu : l'usage est déchiffré, classé et ajouté au registre de la démo."
     }
   },
   "form": {
@@ -96,7 +115,7 @@
       "copy": "Copiez le code obtenu à la fin du formulaire.",
       "import": "Revenez ici et ouvrez « Importer un code dans la démo » : collez le code, l'usage apparaît dans le registre."
     },
-    "mail_note": "L'adresse de retour proposée par la démo ({email}) est fictive : récupérez plutôt votre code avec le bouton « Copier le code ».",
+    "mail_note": "L'adresse de retour proposée par la démo ({email}) est fictive : récupérez plutôt votre code avec le bouton « Copier le code ».",
     "fingerprint": "Empreinte de la campagne de démonstration :",
     "open": "Ouvrir le formulaire répondant",
     "new_tab": "(s'ouvre dans un nouvel onglet)",
@@ -109,7 +128,7 @@
     "text": "Effacez vos essais (actions, validations, usages saisis ou importés) et retrouvez le jeu de données d'origine. Vos autres campagnes ne sont pas concernées.",
     "button": "Réinitialiser la démo",
     "confirm_title": "Réinitialiser la démo ?",
-    "confirm_message": "Toutes les modifications faites dans la démo seront effacées : actions acceptées ou modifiées, validations, usages saisis ou importés. Le jeu de données fictif d'origine sera rechargé avec une nouvelle clé de campagne : le lien du formulaire de démo change, et les codes produits avant la réinitialisation ne pourront plus être importés.",
+    "confirm_message": "Toutes les modifications faites dans la démo seront effacées : actions acceptées ou modifiées, validations, usages saisis ou importés. Le jeu de données fictif d'origine sera rechargé avec une nouvelle clé de campagne : le lien du formulaire de démo change, et les codes produits avant la réinitialisation ne pourront plus être importés.",
     "confirm": "Réinitialiser",
     "error": "La réinitialisation a échoué. Réessayez ; si le problème persiste, rechargez la page."
   }

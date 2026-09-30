@@ -161,9 +161,9 @@ function canonicalPlain(plain, campaignId) {
 
 /**
  * Déchiffre et valide un code.
- * Contrôles, dans l'ordre : type et longueur totale (≤ CODE_MAX_LENGTH, avant tout décodage), préfixe,
- * alphabet base64url strict, taille minimale, octet de version, déchiffrement authentifié,
- * décompression en flux plafonnée à PLAIN_MAX_BYTES, JSON, structure du clair.
+ * Contrôles, dans l'ordre : ceux de checkCodeFormat (type et longueur totale ≤ CODE_MAX_LENGTH avant
+ * tout décodage, préfixe, alphabet base64url strict, taille minimale, octet de version), puis
+ * déchiffrement authentifié, décompression en flux plafonnée à PLAIN_MAX_BYTES, JSON, structure du clair.
  * La validation fine de `usage` et `respondent` relève de src/engine/validate.js.
  * @param {string} code
  * @param {CryptoKey|object} privateKey clé privée ECDH (CryptoKey avec usage deriveBits) ou JWK
@@ -174,21 +174,9 @@ function canonicalPlain(plain, campaignId) {
  */
 export async function decryptEntry(code, privateKey, campaignId) {
   assertCampaignId(campaignId);
-  if (typeof code !== 'string') throw new CodeError('format', 'Le code doit être une chaîne.');
-  if (code.length > CODE_MAX_LENGTH) throw new CodeError('size');
-  if (!code.startsWith(CODE_PREFIX)) {
-    throw /^RCN\d+\./.test(code) ? new CodeError('version') : new CodeError('format', 'Préfixe RCN1. absent.');
-  }
-  const body = code.slice(CODE_PREFIX.length);
-  if (!B64URL_RE.test(body)) throw new CodeError('format', 'Caractère non autorisé dans le code.');
-  let bytes;
-  try {
-    bytes = b64urlDecode(body);
-  } catch {
-    throw new CodeError('format', 'Encodage du code invalide.');
-  }
-  if (bytes.length < CODE_MIN_BYTES) throw new CodeError('format', 'Code tronqué.');
-  if (bytes[0] !== CODE_VERSION) throw new CodeError('version');
+  const header = parseCode(code);
+  if (!header.ok) throw new CodeError(header.reason, header.message);
+  const { bytes } = header;
 
   const key = await resolvePrivateKey(privateKey);
   const ephemeralRaw = bytes.slice(1, 1 + PUBLIC_KEY_BYTES);
@@ -218,6 +206,41 @@ export async function decryptEntry(code, privateKey, campaignId) {
   const check = validatePlain(parsed, campaignId);
   if (!check.ok) throw new CodeError(check.reason, check.message);
   return check.value;
+}
+
+/**
+ * Contrôles préalables au déchiffrement, sans clé ni campagne (ceux de decryptEntry, dans le même
+ * ordre) : type et longueur totale (≤ CODE_MAX_LENGTH, avant tout décodage), préfixe, alphabet
+ * base64url strict, taille minimale, octet de version. Synchrone, sans cryptographie.
+ * Un code accepté ici peut encore être refusé au déchiffrement ('decrypt', 'campaign', 'schema'…).
+ * @param {unknown} code
+ * @returns {null | 'format' | 'size' | 'version'} null si le code peut être soumis au déchiffrement ;
+ *   sinon la raison que donnerait decryptEntry (CodeError.reason)
+ */
+export function checkCodeFormat(code) {
+  const parsed = parseCode(code);
+  return parsed.ok ? null : parsed.reason;
+}
+
+// → { ok: true, bytes } ou { ok: false, reason, message } (message précis ou celui de la raison).
+function parseCode(code) {
+  const fail = (reason, message) => ({ ok: false, reason, message: message || MESSAGES[reason] });
+  if (typeof code !== 'string') return fail('format', 'Le code doit être une chaîne.');
+  if (code.length > CODE_MAX_LENGTH) return fail('size');
+  if (!code.startsWith(CODE_PREFIX)) {
+    return /^RCN\d+\./.test(code) ? fail('version') : fail('format', 'Préfixe RCN1. absent.');
+  }
+  const body = code.slice(CODE_PREFIX.length);
+  if (!B64URL_RE.test(body)) return fail('format', 'Caractère non autorisé dans le code.');
+  let bytes;
+  try {
+    bytes = b64urlDecode(body);
+  } catch {
+    return fail('format', 'Encodage du code invalide.');
+  }
+  if (bytes.length < CODE_MIN_BYTES) return fail('format', 'Code tronqué.');
+  if (bytes[0] !== CODE_VERSION) return fail('version');
+  return { ok: true, bytes };
 }
 
 /**
@@ -262,26 +285,188 @@ export function validatePlain(obj, campaignId) {
 
 // --- Extraction et empreinte -----------------------------------------------
 
+// Codes recoupés par une messagerie. Un client de messagerie en texte brut recoupe les lignes (72 à 80 colonnes), éventuellement après
+// une marque de citation (« > », « >> »). Un code qui se termine en fin de ligne peut donc se
+// poursuivre sur les lignes suivantes. Sans déchiffrer, on ne peut pas savoir où il s'arrête : on
+// produit une chaîne de candidats recollés, dont un « préféré » d'après la géométrie des lignes
+// (seul le recollage exact se déchiffre : le tag AES-GCM écarte les autres).
+
+/** Au-delà de cette longueur, une ligne n'a pas été recoupée par une messagerie. */
+const WRAP_LINE_MAX = 200;
+/** Tolérance (caractères) pour juger qu'une ligne recoupée est « pleine ». */
+const WRAP_TOLERANCE = 2;
+/** Au moins autant de caractères de code d'affilée sur une ligne : c'est une suite de code, pas du texte. */
+const WRAP_DENSE_MIN = 40;
+/** Nombre maximal de lignes recollées à un même code. */
+const WRAP_MAX_LINES = 400;
+/** Plus court que ce texte, un code est forcément incomplet (en-tête + 1 octet + tag). */
+const CODE_MIN_TEXT = CODE_PREFIX.length + Math.ceil((CODE_MIN_BYTES * 4) / 3);
+// Retrait de la marque de citation et de l'indentation (une seule classe de caractères, ancrée).
+const QUOTE_PREFIX_RE = /^[>\s]+/;
+const B64URL_RUN_RE = /^[A-Za-z0-9_-]+/;
+// Une ligne qui commence par un autre code ou une adresse n'est pas la suite du code précédent.
+const NOT_CONTINUATION_RE = /^(?:RCN[1-9][0-9]{0,2}\.|[A-Za-z][A-Za-z0-9+.-]{0,30}:\/\/)/;
+// Préfixe « RCNn. » coupé en fin de ligne (lien d'import à plusieurs codes : « …~RC⏎N1.… »).
+// Testé sur les 8 derniers caractères seulement ; le point n'appartenant pas à l'alphabet des
+// codes, un « RCNn. » à cheval sur deux lignes est toujours un début de code.
+const PREFIX_TAIL_RE = /(?:RCN[1-9][0-9]{0,2}\.?|RCN|RC|R)$/;
+const CODE_START_RE = /^RCN[1-9][0-9]{0,2}\.[A-Za-z0-9_-]+/;
+const LETTER_OR_DIGIT_RE = /[\p{L}\p{N}]/u;
+
+function continuationOf(line) {
+  return line.trimEnd().replace(QUOTE_PREFIX_RE, '');
+}
+
+/**
+ * Candidats d'un code dont le texte `code` finit en fin de la ligne `lines[next - 1]` (longueur
+ * `firstLen`) : le code seul, puis recollé ligne après ligne (chaîne arrêtée au premier obstacle :
+ * ligne vide, autre code, adresse, mot). Le recollage préféré suit la géométrie des lignes
+ * (preferredJoin) ; les autres restent candidats.
+ * → candidats sans doublon, le préféré en tête, puis une ligne de plus, une de moins, le code non
+ *   recollé et le recollage complet.
+ */
+function wrapCandidates(lines, next, code, firstLen) {
+  const parts = [code];
+  const items = [];
+  let length = code.length;
+  for (let j = next; j < lines.length && parts.length <= WRAP_MAX_LINES && length < CODE_MAX_LENGTH; j += 1) {
+    const raw = lines[j].trimEnd();
+    const rest = raw.replace(QUOTE_PREFIX_RE, '');
+    if (NOT_CONTINUATION_RE.test(rest)) break;
+    const run = B64URL_RUN_RE.exec(rest)?.[0];
+    if (!run) break;
+    // Suivie d'une lettre ou d'un chiffre hors alphabet (« Réponses »…), la suite est un mot, pas une fin de code.
+    if (run.length < rest.length && LETTER_OR_DIGIT_RE.test(rest[run.length])) break;
+    const consumed = run.length === rest.length;
+    parts.push(run);
+    items.push({ len: raw.length, run: run.length, consumed });
+    length += run.length;
+    if (!consumed) break; // la suite s'arrête sur cette ligne (espace, ponctuation…)
+  }
+  const preferred = firstLen <= WRAP_LINE_MAX || code.length < CODE_MIN_TEXT ? preferredJoin(items, firstLen) : 0;
+  const last = parts.length - 1;
+  const joined = (n) => parts.slice(0, n + 1).join('');
+  return [...new Set([preferred, preferred + 1, preferred - 1, 0, last])]
+    .filter((n) => n >= 0 && n <= last)
+    .map(joined);
+}
+
+/**
+ * Nombre de suites à recoller (géométrie des lignes recoupées). Une ligne est retenue :
+ * - après une ligne « pleine » (même largeur que les précédentes, à WRAP_TOLERANCE près) : la
+ *   ligne suivante, plus courte, est la fin du code ;
+ * - recoupage « en peigne » d'une citation recoupée à nouveau (72 colonnes, puis 4, puis 72…) :
+ *   reconnu quand une ligne faite uniquement de caractères de code sur au moins WRAP_DENSE_MIN
+ *   caractères (un texte a des espaces) suit une ou deux lignes courtes (les « dents »). Les dents
+ *   suivantes doivent avoir la même longueur que les premières ; une dent plus courte, ou une ligne
+ *   longue incomplète, termine le code.
+ */
+function preferredJoin(items, firstLen) {
+  let width = firstLen;
+  let prevFull = true; // la ligne du code est pleine par hypothèse
+  let teeth = []; // longueurs des lignes courtes depuis la dernière ligne pleine
+  let comb = null; // longueurs des dents du peigne reconnu
+  let preferred = 0;
+  const denseWithin = (k, max) => {
+    for (let m = k; m < items.length && m <= k + max; m += 1) {
+      if (items[m].run >= WRAP_DENSE_MIN) return true;
+      if (!items[m].consumed) return false;
+    }
+    return false;
+  };
+  for (let k = 0; k < items.length; k += 1) {
+    const item = items[k];
+    width = Math.max(width, item.len);
+    const full = item.len >= width - WRAP_TOLERANCE;
+    const tooth = comb !== null && teeth.length < comb.length && (prevFull || teeth.length > 0);
+    let end = !item.consumed; // la suite s'arrête sur cette ligne
+    if (tooth) {
+      // Dent du peigne : jamais plus longue que la dent de référence ; plus courte, c'est la fin du code.
+      if (item.len > comb[teeth.length]) break;
+      if (item.len < comb[teeth.length]) end = true;
+    } else if (comb !== null) {
+      if (!full) end = true; // ligne longue incomplète : fin du code
+    } else if (!prevFull) {
+      // Après une ou deux lignes courtes : peigne si une ligne dense arrive aussitôt.
+      if (teeth.length > 2 || !denseWithin(k, 2 - teeth.length)) break;
+      if (item.run >= WRAP_DENSE_MIN) comb = teeth.slice();
+    }
+    preferred = k + 1;
+    if (end) break;
+    if (full) teeth = [];
+    else teeth.push(item.len);
+    prevFull = full;
+  }
+  return preferred;
+}
+
+/** Code dont le préfixe « RCNn. » est coupé entre `lines[i]` et `lines[i + 1]` ; null sinon. */
+function splitPrefixCandidates(lines, i) {
+  if (i + 1 >= lines.length) return null;
+  const line = lines[i].trimEnd();
+  const tail = PREFIX_TAIL_RE.exec(line.slice(-8))?.[0];
+  if (!tail) return null;
+  const rest = continuationOf(lines[i + 1]);
+  const m = CODE_START_RE.exec(tail + rest.slice(0, CODE_MAX_LENGTH));
+  if (!m) return null; // le point de « RCNn. » est à cheval : m[0] déborde toujours sur la ligne suivante
+  const code = m[0];
+  if (code.length - tail.length !== rest.length) return [code];
+  return wrapCandidates(lines, i + 2, code, Math.max(line.length, lines[i + 1].trimEnd().length));
+}
+
+/**
+ * Codes d'un texte avec leurs variantes recollées (ligne coupée par une messagerie).
+ * → [{ code, candidates }] : `code` est le candidat préféré, `candidates` commence par lui, puis
+ *   les autres recollages plausibles (une ligne de plus ou de moins, code non recollé, recollage
+ *   complet), sans doublon. Une seule entrée par code du texte : au pipeline d'import de retenir le
+ *   premier candidat qui se déchiffre et de ne compter qu'une réponse.
+ * Parcours linéaire, ligne par ligne, sans expression à retour arrière.
+ * @param {string} text
+ * @returns {{ code: string, candidates: string[] }[]}
+ */
+export function extractCodeCandidates(text) {
+  if (typeof text !== 'string' || text.length === 0) return [];
+  const lines = text.split('\n');
+  const found = [];
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    // « ~ » et « % » (de %7E) ne font pas partie de l'alphabet : ils séparent naturellement les codes.
+    for (const match of line.matchAll(CODE_IN_TEXT_RE)) {
+      const end = match.index + match[0].length;
+      found.push(line.slice(end).trim() === '' ? wrapCandidates(lines, i + 1, match[0], line.trimEnd().length) : [match[0]]);
+    }
+    const split = splitPrefixCandidates(lines, i);
+    if (split) found.push(split);
+  }
+  // Un même code peut figurer deux fois (lien d'import et code brut en secours) : si le préféré
+  // d'une occurrence n'est confirmé par aucune autre mais que l'un de ses autres candidats est le
+  // préféré d'une autre occurrence, c'est ce code-là (une seule réponse, recollage confirmé).
+  const count = new Map();
+  for (const candidates of found) count.set(candidates[0], (count.get(candidates[0]) ?? 0) + 1);
+  const seen = new Set();
+  const out = [];
+  for (const candidates of found) {
+    let code = candidates[0];
+    if (count.get(code) === 1) code = candidates.find((c, k) => k > 0 && count.has(c)) ?? code;
+    if (seen.has(code)) continue;
+    seen.add(code);
+    out.push({ code, candidates: code === candidates[0] ? candidates : [code, ...candidates.filter((c) => c !== code)] });
+  }
+  return out;
+}
+
 /**
  * Trouve les codes dans un texte arbitraire (e-mail collé, fichier .rcn, liens d'import
  * '#/i/<code>~<code>', y compris avec « ~ » encodé en %7E). Dédoublonnés, ordre d'apparition conservé.
+ * Un code recoupé sur plusieurs lignes (texte brut à 76 colonnes, citation « > ») est recollé
+ * (candidat préféré de extractCodeCandidates).
  * Les codes d'une autre version du format (« RCN2. »…) sont aussi renvoyés : decryptEntry les refuse
  * avec la raison 'version'. Aucun contrôle cryptographique : decryptEntry s'en charge.
  * @param {string} text
  * @returns {string[]}
  */
 export function extractCodes(text) {
-  if (typeof text !== 'string' || text.length === 0) return [];
-  // « ~ » et « % » (de %7E) ne font pas partie de l'alphabet : ils séparent naturellement les codes.
-  const seen = new Set();
-  const out = [];
-  for (const match of text.matchAll(CODE_IN_TEXT_RE)) {
-    const code = match[0];
-    if (seen.has(code)) continue;
-    seen.add(code);
-    out.push(code);
-  }
-  return out;
+  return extractCodeCandidates(text).map((c) => c.code);
 }
 
 /**

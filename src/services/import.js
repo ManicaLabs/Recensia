@@ -8,7 +8,10 @@
 // openStore({ forceMemory: true }). Seule dépendance au navigateur : le rapport transmis d'une vue à
 // l'autre passe par la session (src/ui/safe-storage.js, repli mémoire sous Node).
 
-import { CodeError, codeHash, decryptEntry, extractCodes } from '../crypto/codes.js';
+import { B64URL_RE, b64urlDecode } from '../crypto/b64url.js';
+import {
+  CODE_MAX_LENGTH, CODE_MIN_BYTES, CODE_PREFIX, CODE_VERSION, CodeError, codeHash, decryptEntry, extractCodes,
+} from '../crypto/codes.js';
 import { importPrivateKey } from '../crypto/keys.js';
 import { validateRespondent, validateUsage } from '../engine/validate.js';
 import { session } from '../ui/safe-storage.js';
@@ -53,6 +56,55 @@ export function previewCode(code) {
   const s = String(code ?? '');
   if (s.length <= PREVIEW_HEAD + PREVIEW_TAIL + 1) return s;
   return `${s.slice(0, PREVIEW_HEAD)}…${s.slice(-PREVIEW_TAIL)}`;
+}
+
+const FUTURE_PREFIX_RE = /^RCN\d+\./;
+
+/**
+ * Contrôle de forme d'un code, SANS clé : longueur, préfixe, alphabet base64url strict, taille minimale,
+ * octet de version (les contrôles que decryptEntry fait avant tout déchiffrement, dans le même ordre).
+ * Un code qui échoue ici ne sera lisible par aucune clé : typiquement un lien coupé par la messagerie.
+ * @param {unknown} code
+ * @returns {null | 'format' | 'size' | 'version'} null : forme valide (le déchiffrement reste à tenter)
+ */
+export function codeFormatIssue(code) {
+  if (typeof code !== 'string') return 'format';
+  if (code.length > CODE_MAX_LENGTH) return 'size';
+  if (!code.startsWith(CODE_PREFIX)) return FUTURE_PREFIX_RE.test(code) ? 'version' : 'format';
+  const body = code.slice(CODE_PREFIX.length);
+  if (!B64URL_RE.test(body)) return 'format';
+  let bytes;
+  try {
+    bytes = b64urlDecode(body);
+  } catch {
+    return 'format';
+  }
+  if (bytes.length < CODE_MIN_BYTES) return 'format';
+  return bytes[0] === CODE_VERSION ? null : 'version';
+}
+
+/**
+ * Vrai si le code mérite d'être gardé en attente : forme valide, ou version plus récente du format
+ * (lisible après une mise à jour). Un code tronqué ou mal formé ne le sera jamais : il n'est pas gardé.
+ */
+export function isKeepableCode(code) {
+  const issue = codeFormatIssue(code);
+  return issue === null || issue === 'version';
+}
+
+/**
+ * Diagnostic de codes qu'aucune campagne de ce navigateur ne déchiffre (lien d'import, codes en attente) :
+ * - 'version' : tous produits par une version plus récente du format (mettre l'application à jour) ;
+ * - 'unreadable' : au moins une campagne locale a sa clé, ou aucun code n'a une forme valide : le lien a
+ *   probablement été coupé par la messagerie (la clé n'est pas en cause) ;
+ * - 'no_key' : codes bien formés et aucune clé de campagne dans ce navigateur.
+ * @returns {'version' | 'unreadable' | 'no_key'}
+ */
+export function diagnoseUnmatched(codes, campaigns) {
+  const issues = (Array.isArray(codes) ? codes : []).map(codeFormatIssue);
+  if (issues.length > 0 && issues.every((issue) => issue === 'version')) return 'version';
+  if ((campaigns ?? []).some(hasKey) || !issues.includes(null)) return 'unreadable';
+  return 'no_key';
 }
 
 /**

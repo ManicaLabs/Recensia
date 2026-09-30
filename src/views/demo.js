@@ -1,9 +1,10 @@
 // Démo (#/demo, CDC §4 « Parcours démo », annexe A) : PME fictive chargée dans ce navigateur,
 // sans compte ni réseau. La démo est chargée automatiquement si elle n'existe pas encore ;
 // aucune redirection : l'utilisateur choisit où aller (tableau de bord, formulaire…).
+// La page montre directement le registre de l'annexe A (10 usages et leurs deux niveaux).
 
 import { h, mount, loadCss } from '../ui/dom.js';
-import { button, icon, callout, confirmDialog, toast, disclaimer, copyButton } from '../ui/components.js';
+import { button, icon, callout, confirmDialog, toast, disclaimer, copyButton, levelBadge } from '../ui/components.js';
 import { buildCollectUrl } from '../crypto/link.js';
 import { formatFingerprint } from '../crypto/keys.js';
 import { buildCampaignModel } from '../services/model.js';
@@ -67,15 +68,86 @@ function companyCard(t, company, stats) {
     callout('info', h('p', null, t('demo.company.fictitious'))));
 }
 
+/**
+ * Lignes de l'aperçu du registre (CDC §14, phase 1 : « #/demo affiche le registre de l'annexe A
+ * avec les niveaux attendus ») : une par usage consolidé, dans l'ordre du registre (gravité
+ * décroissante), avec les niveaux retenus sur chacun des deux axes.
+ * → [{ id, name, departments[], ai_act_level, data_level }]
+ */
+export function registryPreviewRows(groups) {
+  return (groups ?? []).filter(Boolean).map((g) => ({
+    id: g.id,
+    name: g.name || g.id,
+    departments: Array.isArray(g.departments) ? g.departments : [],
+    ai_act_level: g.effective?.ai_act_level ?? null,
+    data_level: g.effective?.data_level ?? null,
+  }));
+}
+
+/**
+ * Aperçu compact du registre de la démo : tableau à partir de 40rem, liste de cartes en dessous
+ * (un seul des deux est affiché, par la feuille de style). Les en-têtes nomment chaque axe.
+ */
+export function registryPreview(t, groups, { href } = {}) {
+  const rows = registryPreviewRows(groups);
+  const count = rows.length;
+  const cols = {
+    usage: t('demo.registry.col_usage'),
+    department: t('demo.registry.col_department'),
+    ai_act: t('demo.registry.col_ai_act'),
+    data: t('demo.registry.col_data'),
+  };
+  const departments = (row) => (row.departments.length ? row.departments.join(', ') : t('demo.registry.no_department'));
+  // L'axe est déjà nommé par l'en-tête de colonne (tableau) ou par le libellé (cartes).
+  const badge = (axis, level) => levelBadge(axis, level, t, { axisLabel: 'none' });
+  const caption = t('demo.registry.caption', { count });
+
+  const content = count
+    ? [
+      h('div', { class: 'table-wrap demo-registry-table', role: 'region', 'aria-label': caption, tabindex: '0' },
+        h('table', { class: 'table table-compact' },
+          h('caption', { class: 'visually-hidden' }, caption),
+          h('thead', null, h('tr', null,
+            h('th', { scope: 'col' }, cols.usage),
+            h('th', { scope: 'col' }, cols.department),
+            h('th', { scope: 'col' }, cols.ai_act),
+            h('th', { scope: 'col' }, cols.data))),
+          h('tbody', null, rows.map((row) => h('tr', null,
+            h('th', { scope: 'row' }, row.name),
+            h('td', null, departments(row)),
+            h('td', null, badge('ai_act', row.ai_act_level)),
+            h('td', null, badge('data', row.data_level))))))),
+      h('ul', { class: 'demo-registry-cards', role: 'list', 'aria-label': caption }, rows.map((row) => h('li', { class: 'demo-registry-card' },
+        h('p', { class: 'demo-registry-name' }, row.name),
+        // Une paire libellé / valeur par ligne (div autorisé dans dl), qui passe à la ligne si besoin.
+        h('dl', { class: 'demo-registry-meta' },
+          h('div', null, h('dt', null, cols.department), h('dd', null, departments(row))),
+          h('div', null, h('dt', null, cols.ai_act), h('dd', null, badge('ai_act', row.ai_act_level))),
+          h('div', null, h('dt', null, cols.data), h('dd', null, badge('data', row.data_level))))))),
+    ]
+    : h('p', null, t('demo.registry.empty'));
+
+  return h('section', { class: 'card stack demo-registry', 'aria-labelledby': 'demo-registry-title' },
+    h('div', null,
+      h('h2', { id: 'demo-registry-title' }, t('demo.registry.title')),
+      h('p', { class: 'muted' }, t('demo.registry.lead', { count }))),
+    content,
+    disclaimer(t),
+    href
+      ? h('p', null, h('a', { class: 'demo-registry-link', href }, h('span', null, t('demo.registry.link')), icon('arrow-right')))
+      : null);
+}
+
 function contentCard(t, model) {
   const { stats } = model;
-  const engaged = model.actions.filter((a) => a.status !== 'rejected').length;
+  // Actions retenues au plan (toutes sauf rejetées), quel que soit leur avancement.
+  const planned = model.actions.filter((a) => a.status !== 'rejected').length;
   const kpis = [
     { key: 'usages', value: stats.usages },
     { key: 'responses', value: stats.responses },
     { key: 'prohibited', value: stats.by_ai_act.prohibited_suspected ?? 0, cls: 'kpi-danger' },
     { key: 'high', value: stats.by_ai_act.high ?? 0, cls: 'kpi-danger' },
-    { key: 'actions', value: engaged, cls: 'kpi-success' },
+    { key: 'actions', value: planned, cls: 'kpi-success' },
     { key: 'suggestions', value: model.suggestions.length, cls: 'kpi-warn' },
   ];
   return h('section', { class: 'card stack', 'aria-labelledby': 'demo-content-title' },
@@ -138,8 +210,9 @@ function formSection(t, campaign, link) {
 export async function render(root, { ctx }) {
   const { t, store } = ctx;
   ctx.setTitle(t('demo.meta.title'));
-  // Grille d'indicateurs compacte partagée avec le plan d'actions.
-  loadCss('src/styles/actions.css');
+  // Grille d'indicateurs compacte partagée avec le plan d'actions, et styles de l'aperçu du
+  // registre (tableau ou cartes selon la largeur : attendus avant le premier affichage).
+  await loadCss('src/styles/actions.css');
 
   if (!store) {
     mount(root, emptyState(t, { iconName: 'alert', title: t('demo.no_store.title'), text: t('demo.no_store.text') }));
@@ -191,6 +264,7 @@ export async function render(root, { ctx }) {
       h('div', { class: 'grid grid-2' },
         companyCard(t, company, model.stats),
         contentCard(t, model)),
+      registryPreview(t, model.groups, { href: consoleHref('registre') }),
       tourSection(t, link),
       h('div', { class: 'grid grid-2' },
         formSection(t, campaign, link),

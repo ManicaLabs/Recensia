@@ -6,13 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="referrer" content="strict-origin">
   <title>Recensia — registre des usages IA</title>
-  <meta name="description" content="Recensez les usages de l'IA dans votre entreprise, classez-les (AI Act, exposition des données) et pilotez un plan d'actions. Gratuit, sans compte ni serveur : les réponses sont chiffrées dans le navigateur.">
+  <meta name="description" content="Recensez les usages de l'IA dans votre entreprise, classez-les (AI Act, exposition des données) et pilotez un plan d'actions. Gratuit, sans compte ni serveur de stockage&nbsp;: les réponses sont chiffrées dans le navigateur.">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#17324d" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0b1622" media="(prefers-color-scheme: dark)">
   <meta name="apple-mobile-web-app-title" content="Recensia">
   <meta property="og:title" content="Recensia — registre des usages IA">
-  <meta property="og:description" content="Recensez les usages de l'IA dans votre entreprise, sans compte ni serveur.">
+  <meta property="og:description" content="Recensez les usages de l'IA dans votre entreprise, sans compte ni serveur de stockage.">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -54,6 +54,7 @@
       <p class="footer-brand"><strong>Recensia</strong> <span id="app-version" class="app-version"></span></p>
       <p class="footer-disclaimer" data-i18n="common.app.footer_disclaimer">Outil d'organisation, pas un avis juridique.</p>
       <p><a href="#/privacy" data-i18n="common.nav.privacy">Confidentialité</a></p>
+      <p class="footer-publisher"><span data-i18n="common.app.published_by">Un outil proposé par</span> <img class="logo-manica" src="src/assets/logo-manica.png" alt="Manica" width="95" height="36" decoding="async"></p>
     </div>
   </footer>
 
@@ -64,11 +65,12 @@
 
   <div id="toasts" class="toasts" aria-live="polite"></div>
   <div id="live-region" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+  <div id="live-region-assertive" class="visually-hidden" aria-live="assertive" aria-atomic="true"></div>
 
   <noscript>
     <div class="noscript">
       <p><strong>Recensia a besoin de JavaScript.</strong></p>
-      <p>Activez JavaScript pour utiliser l'application. Aucune donnée de campagne n'est envoyée à un serveur : tout le traitement a lieu dans votre navigateur.</p>
+      <p>Activez JavaScript pour utiliser l'application. Recensia n'a aucun serveur de stockage&nbsp;: tout le traitement a lieu dans votre navigateur.</p>
     </div>
   </noscript>
 </body>

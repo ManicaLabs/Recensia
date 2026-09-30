@@ -141,6 +141,21 @@ test('sanitizeText : contrôles C0/C1, bidi, invisibles, normalisation, troncatu
   assert.equal(sanitizeText('« titre » d\u00A0: x'), '« titre » d\u00A0: x', 'insécables conservées');
 });
 
+test('sanitizeText : tous les invisibles de mise en forme (Cf) et les remplisseurs hangûl retirés, liants conservés', () => {
+  const cp = (...codes) => String.fromCodePoint(...codes);
+  const tags = cp(0xe0001) + [...'secret'].map((l) => cp(0xe0000 + l.charCodeAt(0))).join('') + cp(0xe007f);
+  assert.equal(sanitizeText(`Recensement${tags} IA`), 'Recensement IA', 'étiquettes Unicode (texte caché)');
+  assert.equal(sanitizeText(`a${cp(0x180e, 0x2061, 0x2064, 0x206a, 0x206f, 0xfff9)}b${cp(0xfffb)}`), 'ab');
+  assert.equal(sanitizeText(`a${cp(0x115f, 0x1160, 0x3164, 0xffa0)}b`), 'ab', 'remplisseurs hangûl');
+  assert.equal(sanitizeText(`l1${tags}\nl2${cp(0x3164)}`, Infinity, { multiline: true }), 'l1\nl2');
+  const emoji = cp(0x1f469, 0x200d, 0x1f4bb);
+  assert.equal(sanitizeText(`${emoji} ${cp(0x2764, 0xfe0f)}`), `${emoji} ${cp(0x2764, 0xfe0f)}`, 'liant et sélecteur de variante conservés');
+  assert.equal(sanitizeText(`a${cp(0x200c)}b`), `a${cp(0x200c)}b`, 'antiliant conservé');
+  assert.equal(sanitizeText(`Cafe${cp(0x200b, 0x301)}`), 'Caf\u00e9', 'NFC après le retrait');
+  const url = mailtoUrl({ to: 'ia@exemple.fr', subject: `Objet${tags}`, body: `Corps${tags}${cp(0x3164)}` });
+  assert.ok(!/%F3%A0/i.test(url) && !/%E3%85%A4/i.test(url), 'aucune étiquette ni remplisseur dans le mailto');
+});
+
 test('isValidEmail : stricte', () => {
   for (const ok of ['ia@exemple.fr', 'prenom.nom+ia@sous.domaine.exemple.com', 'a_b-c@xn--exemple-9ua.fr', 'x1@a-b.io']) {
     assert.equal(isValidEmail(ok), true, ok);
@@ -256,7 +271,7 @@ test('planMailto : un seul message quand tout tient', () => {
   checkPlanItem(plan[0]);
   const body = plan[0].body.split('\n');
   for (const code of codes) assert.ok(body.includes(code), 'code brut en secours');
-  assert.ok(plan[0].body.includes("Réponses anonymes ; l'envoi par e-mail, lui, n'est pas anonyme."));
+  assert.ok(plan[0].body.includes("Réponses anonymes\u00A0; l'envoi par e-mail, lui, n'est pas anonyme."));
 });
 
 test('planMailto : au-delà de 1 800 caractères, un message par code', () => {
@@ -302,7 +317,8 @@ test('planMailto : mode ouvert ; données de canaux obligatoires', () => {
 test('planMailto : codes de taille réelle et titre long accentué tiennent dans un mailto compact', () => {
   const title = 'Recensement général des usages de l\u2019IA générative au sein des équipes – été 2026';
   for (const mode of ['anonymous', 'open']) {
-    for (const length of [650, 800]) {
+    // Codes réels : 650 à 900 caractères (CDC §17), y compris avec les espaces insécables des gabarits.
+    for (const length of [650, 800, 900]) {
       const [item] = planMailto({ to: 'recensement.ia@menuiserie-alpine-concept.fr', codes: [fakeCode(length, 7)], baseUrl: BASE_URL, templates, ctx: { ...CTX, title, mode }, channelsData });
       assert.equal(item.tooLong, undefined, `${mode} / ${length}`);
       assert.equal(item.compact, true);

@@ -20,7 +20,8 @@ import {
   findItem, codeState, checkItems,
 } from './form/draft.js';
 import { generateCodes, isClosed, localDay } from './form/codes.js';
-import { sendPlan, distinctWarnings } from './form/send-plan.js';
+import { sendPlan } from './form/send-plan.js';
+import { anonymousLimits } from './form/notice.js';
 import { renderSendStage } from './form/send.js';
 
 const SAVE_DELAY_MS = 400;
@@ -134,8 +135,15 @@ function startForm(root, { ctx, config, questionnaire, channelsData, templates, 
 
   // --- Structure de la page ------------------------------------------------------------
 
-  const stepItems = STEPS.map((step) => h('li', { class: 'stepper-item' }, h('span', null, t(`form.steps.${step}`))));
-  const stepper = h('ol', { class: 'stepper stepper-inline form-steps', 'aria-label': t('form.steps.label') }, stepItems);
+  // Chaque étape porte son état en texte (masqué) et par un repère non coloré : numéro,
+  // pastille pleine pour l'étape en cours, coche pour une étape terminée (WCAG 1.4.1).
+  const stepItems = STEPS.map((step, index) => {
+    const mark = h('span', { class: 'form-step-mark', 'aria-hidden': 'true' }, String(index + 1));
+    const state = h('span', { class: 'visually-hidden' });
+    const node = h('li', { class: 'stepper-item' }, mark, h('span', null, t(`form.steps.${step}`)), state);
+    return { node, mark, state, number: String(index + 1) };
+  });
+  const stepper = h('ol', { class: 'stepper stepper-inline form-steps', 'aria-label': t('form.steps.label') }, stepItems.map((item) => item.node));
   const stageRoot = h('div', { class: 'form-stage' });
   const clearButton = button(t('form.clear.button'), () => clearAll(), { variant: 'ghost', icon: 'trash', attrs: { class: 'form-clear' } });
   const footer = h('footer', { class: 'form-footer' },
@@ -163,9 +171,12 @@ function startForm(root, { ctx, config, questionnaire, channelsData, templates, 
   function updateStepper() {
     const current = STAGE_STEP[stage] ?? 0;
     stepItems.forEach((item, index) => {
-      item.classList.toggle('is-done', index < current);
-      if (index === current) item.setAttribute('aria-current', 'step');
-      else item.removeAttribute('aria-current');
+      const status = index < current ? 'done' : index === current ? 'current' : 'todo';
+      item.node.classList.toggle('is-done', status === 'done');
+      if (status === 'current') item.node.setAttribute('aria-current', 'step');
+      else item.node.removeAttribute('aria-current');
+      item.state.textContent = ` ${t(`form.steps.${status}`)}`;
+      item.mark.replaceChildren(status === 'done' ? icon('check') : item.number);
     });
   }
 
@@ -265,7 +276,8 @@ function startForm(root, { ctx, config, questionnaire, channelsData, templates, 
 
   function renderIntro() {
     const returnText = frenchSpacing(returnChannelText(config.channels ?? [], templates, channelsData));
-    const warnings = distinctWarnings(plan).map(frenchSpacing);
+    const limits = anonymousLimits({ mode: config.mode, depts: config.depts, dreq: config.dreq, plan, channelsData, t })
+      .map((limit) => ({ ...limit, text: frenchSpacing(limit.text) }));
     const identity = open ? identityCard({ onSubmit: () => onStart() }) : null;
     const resumeCount = draft.items.length;
     const resume = resumeCount > 0 || Boolean(draft.current);
@@ -288,16 +300,19 @@ function startForm(root, { ctx, config, questionnaire, channelsData, templates, 
         h('h3', { id: 'form-mode-title' }, icon('users'), h('span', null, t('form.mode.open_title'))),
         h('p', null, t('form.mode.open_text')),
         h('p', null, t('form.mode.open_encrypted')))
+      // Garanties résumées en une phrase (détail replié) ; limites toujours visibles (CDC §7.4, §15).
       : h('section', { class: 'card form-mode', 'aria-labelledby': 'form-mode-title' },
         h('h3', { id: 'form-mode-title' }, icon('shield'), h('span', null, t('form.mode.anonymous_title'))),
-        h('ul', { class: 'check-list', role: 'list' },
-          h('li', null, icon('check'), h('span', null, t('form.mode.anonymous_no_identity'))),
-          h('li', null, icon('check'), h('span', null, t('form.mode.anonymous_day'))),
-          h('li', null, icon('check'), h('span', null, t('form.mode.anonymous_unlinkable')))),
+        h('p', { class: 'form-mode-summary' }, t('form.mode.anonymous_summary')),
+        h('details', { class: 'form-mode-details' },
+          h('summary', null, t('form.mode.guarantees_title')),
+          h('ul', { class: 'check-list', role: 'list' },
+            h('li', null, icon('check'), h('span', null, t('form.mode.anonymous_no_identity'))),
+            h('li', null, icon('check'), h('span', null, t('form.mode.anonymous_day'))),
+            h('li', null, icon('check'), h('span', null, t('form.mode.anonymous_unlinkable'))))),
         h('h4', { class: 'form-mode-limits' }, t('form.mode.limits_title')),
         h('ul', { class: 'form-limits' },
-          warnings.map((text) => h('li', null, text)),
-          h('li', null, t('form.mode.anonymous_free_text'))));
+          limits.map((limit) => h('li', { 'data-limit': limit.id }, limit.text))));
 
     mount(stageRoot, h('section', { class: 'form-intro stack', 'aria-labelledby': 'form-stage-title' },
       h('div', null,

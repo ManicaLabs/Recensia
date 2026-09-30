@@ -1,7 +1,8 @@
 // Onglets Registre et Tableau de bord : filtres et tri purs, calculs d'affichage (masquage,
 // mentions « surchargé » / « à qualifier »), évaluation tracée, regroupements, demandes
-// d'ouverture entre onglets, textes dynamiques présents dans les catalogues.
-import { test, describe } from 'node:test';
+// d'ouverture entre onglets, textes dynamiques présents dans les catalogues, axe des badges de
+// niveau et encart d'erreur persistant (faux document).
+import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { consolidate, groupId, usageKey } from '../src/engine/consolidate.js';
@@ -19,12 +20,16 @@ import {
   historyNewestFirst, JUSTIFICATION_MIN, HISTORY_MAX, TRACKED_FIELDS, OWNER_MAX,
 } from '../src/views/console/registry/assessment.js';
 import { requestRegistryDetail, takeRegistryDetail, requestRegistryFilters, takeRegistryFilters } from '../src/views/console/registry/focus.js';
-import { ANSWER_FIELDS, SOURCES, historyValue } from '../src/views/console/registry/detail.js';
+import { ANSWER_FIELDS, SOURCES, historyValue, createDetailDialog } from '../src/views/console/registry/detail.js';
+import { levelCell, alertSlot, setAlert } from '../src/views/console/registry/cells.js';
 import {
   aiActItems, dataItems, toolItems, departmentItems, actionItems, actionsSummary, shadowSummary, shadowItems,
   maskedItem, priorityReason, verificationSourceKey, ACTION_STATUSES, TOP_TOOLS_LIMIT,
 } from '../src/views/console/dashboard.js';
 import { loadRules, loadCalendar, loadActions, loadQuestionnaire, loadDemo, makeEntry, readJson } from './helpers/load-data.js';
+import { t as i18nT, register as i18nRegister } from '../src/i18n.js';
+import { installFakeDocument } from './helpers/fake-dom.js';
+import { listFiles, readSource } from './helpers/source-scan.js';
 
 const rules = loadRules();
 const calendar = loadCalendar();
@@ -35,6 +40,7 @@ const catalogs = {
   common: readJson('src/i18n/fr/common.json'),
   registry: readJson('src/i18n/fr/registry.json'),
   dashboard: readJson('src/i18n/fr/dashboard.json'),
+  report: readJson('src/i18n/fr/report.json'),
 };
 
 function lookup(key) {
@@ -581,5 +587,149 @@ describe('textes : clés construites dynamiquement présentes dans les catalogue
     visit(catalogs.registry, 'registry');
     visit(catalogs.dashboard, 'dashboard');
     assert.deepEqual(problems, []);
+  });
+
+  test('avancement du plan : accord correct quel que soit le total (règles de pluriel réelles)', () => {
+    i18nRegister('dashboard', catalogs.dashboard);
+    const cases = [
+      [0, 5, '0 action faite sur 5 au plan'],
+      [1, 5, '1 action faite sur 5 au plan'],
+      [1, 1, '1 action faite sur 1 au plan'],
+      [2, 5, '2 actions faites sur 5 au plan'],
+      [5, 5, '5 actions faites sur 5 au plan'],
+    ];
+    for (const [count, total, expected] of cases) {
+      assert.equal(i18nT('dashboard.actions.progress', { count, total }), expected);
+    }
+  });
+
+  test('IA fantôme : note prudente, légende alignée sur l’indicateur clé', () => {
+    const note = lookup('dashboard.shadow.note');
+    assert.doesNotMatch(note, /sortent du cadre/);
+    assert.match(note, /n'en maîtrise ni le contrat ni la conservation/);
+    assert.match(note, /à vérifier pour les comptes de type inconnu/);
+    assert.equal(lookup('dashboard.shadow.shadow'), lookup('dashboard.kpi.shadow'));
+    assert.equal(shadowItems({ usages: 3, shadow_ai: { count: 1 } }, t)[0].label, t('dashboard.kpi.shadow'));
+  });
+});
+
+describe('affichage : axe des niveaux, encart d’erreur, libellés d’export', () => {
+  const NB = '\u00a0';
+  let fake;
+  before(() => {
+    fake = installFakeDocument();
+    // Le faux document n'a pas de classList (utilisée par le message d'état du détail) : ajout minimal.
+    const create = fake.document.createElement;
+    fake.document.createElement = (tag) => {
+      const el = create(tag);
+      const names = () => (el.getAttribute('class') ?? '').split(' ').filter(Boolean);
+      el.classList = {
+        contains: (name) => names().includes(name),
+        toggle: (name, force) => {
+          const on = force === undefined ? !names().includes(name) : Boolean(force);
+          el.setAttribute('class', [...names().filter((n) => n !== name), ...(on ? [name] : [])].join(' '));
+          return on;
+        },
+      };
+      return el;
+    };
+  });
+  after(() => fake.restore());
+
+  const byClass = (node, cls, out = []) => {
+    for (const child of node.childNodes ?? []) {
+      if ((child.getAttribute?.('class') ?? '').split(' ').includes(cls)) out.push(child);
+      byClass(child, cls, out);
+    }
+    return out;
+  };
+
+  test('niveau d’une ligne : axe écrit sur les cartes, absent sous un en-tête de colonne', () => {
+    const group = fakeGroup({
+      computed: { ai_act_level: 'minimal', data_level: 1, data_to_qualify: true, triggers: [], questions_to_confirm: [], signals: [], deadlines: [] },
+      assessment: { override_ai_act_level: 'high' },
+      effective: { ai_act_level: 'high', data_level: 1, overridden: true },
+    });
+    const card = levelCell('ai_act', group, t, { axisLabel: 'visible' });
+    assert.equal(byClass(card, 'badge-axis')[0]?.textContent, `AI Act${NB}: `);
+    assert.equal(card.textContent, `AI Act${NB}: Haut risquesurchargé`);
+    const cell = levelCell('ai_act', group, t, { axisLabel: 'none' });
+    assert.equal(cell.textContent, 'Haut risquesurchargé');
+    assert.equal(byClass(cell, 'visually-hidden').length, 0);
+
+    const data = levelCell('data', group, t, { axisLabel: 'visible' });
+    assert.equal(data.textContent, `Exposition des données${NB}: Modéréà qualifier`);
+    assert.equal(byClass(data, 'is-warn').length, 1);
+    // Par défaut : axe lu par les lecteurs d'écran seulement.
+    assert.equal(byClass(levelCell('data', group, t), 'visually-hidden')[0]?.textContent, `Exposition des données${NB}: `);
+  });
+
+  test('chaque badge de niveau du registre et du tableau de bord choisit explicitement l’affichage de l’axe', () => {
+    const files = ['src/views/console/dashboard.js', 'src/views/console/registry.js', ...listFiles('src/views/console/registry')];
+    const calls = [];
+    for (const file of files) {
+      readSource(file).split('\n').forEach((line, i) => {
+        if (/\blevelBadge\(/.test(line) && !/^\s*(import|\/\/|\*)/.test(line)) calls.push({ where: `${file}:${i + 1}`, line });
+      });
+    }
+    assert.ok(calls.length >= 6, 'appels de levelBadge attendus');
+    assert.deepEqual(calls.filter((c) => !/axisLabel/.test(c.line)).map((c) => c.where), []);
+    // Tableau de bord (usages prioritaires) : aucun en-tête ne nomme l'axe.
+    assert.equal((readSource('src/views/console/dashboard.js').match(/axisLabel: 'visible'/g) ?? []).length, 2);
+  });
+
+  test('encart d’erreur : persistant, annoncé, effacé par null', () => {
+    const slot = alertSlot('registry-alert');
+    assert.equal(slot.hidden, true);
+    const node = setAlert(slot, t('registry.errors.save'));
+    assert.equal(slot.hidden, false);
+    assert.equal(node.getAttribute('role'), 'alert');
+    assert.match(node.getAttribute('class'), /\bcallout-danger\b/);
+    assert.equal(slot.textContent, lookup('registry.errors.save'));
+    // Même erreur une seconde fois : nouvel encart (annoncé de nouveau), jamais empilé.
+    assert.notEqual(setAlert(slot, t('registry.errors.save')), node);
+    assert.equal(slot.childNodes.length, 1);
+    assert.equal(setAlert(slot, null), null);
+    assert.equal(slot.hidden, true);
+    assert.equal(slot.childNodes.length, 0);
+    assert.equal(setAlert(null, 'x'), null);
+  });
+
+  test('détail : l’erreur s’affiche dans un encart de la boîte de dialogue, pas dans le message de réussite', () => {
+    const controller = createDetailDialog({ t, onClose: () => {} });
+    const [alert] = byClass(controller.dialog, 'registry-detail-alert');
+    const [status] = byClass(controller.dialog, 'registry-detail-status');
+    assert.ok(alert && status);
+    // Hors de la zone qui défile : voisin du message d'état, avant le corps.
+    assert.equal(alert.parentNode, status.parentNode);
+    assert.equal(alert.hidden, true);
+
+    controller.setError(t('registry.errors.save'));
+    assert.equal(alert.hidden, false);
+    assert.equal(alert.textContent, lookup('registry.errors.save'));
+    assert.equal(byClass(alert, 'callout-danger').length, 1);
+    assert.equal(status.textContent, '');
+
+    // Un message de réussite ultérieur efface l'erreur.
+    controller.setStatus(t('registry.assessment.saved'));
+    assert.equal(alert.hidden, true);
+    controller.setError(t('registry.errors.save'));
+    controller.setError(null);
+    assert.equal(alert.hidden, true);
+    controller.setStatus(null);
+  });
+
+  test('tableau de bord : indicateurs en auto-fit (aucune piste vide à 1280 px)', () => {
+    const css = readSource('src/styles/dashboard.css').replace(/\/\*[\s\S]*?\*\//g, '');
+    const rule = css.match(/(?:^|\n)\.dashboard-kpis\s*\{([^}]*)\}/)?.[1] ?? '';
+    assert.match(rule, /grid-template-columns:\s*repeat\(auto-fit,/);
+    assert.doesNotMatch(css, /auto-fill/);
+  });
+
+  test('exports : mêmes libellés que la barre d’outils du Rapport', () => {
+    assert.equal(lookup('registry.export.csv'), lookup('report.toolbar.csv'));
+    assert.equal(lookup('registry.export.xlsx'), lookup('report.toolbar.xlsx'));
+    assert.equal(lookup('registry.export.csv'), 'Exporter le registre en CSV');
+    assert.equal(lookup('registry.export.xlsx'), 'Exporter en Excel (.xlsx)');
   });
 });

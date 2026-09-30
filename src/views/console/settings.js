@@ -2,18 +2,22 @@
 // Informations de la campagne (la clé privée n'est JAMAIS affichée), réglages locaux, fichier de
 // récupération, sauvegarde et restauration, stockage persistant, zone de danger.
 // Toute écriture relit la campagne depuis le store et enregistre l'objet complet.
+// Après une action suivie d'un rafraîchissement, le focus revient sur le contrôle d'origine (ou sur le
+// texte d'état de la section) et la confirmation n'est annoncée qu'une fois, par la notification.
 
 import { h, mount, announce } from '../../ui/dom.js';
 import { icon, button, callout, field, setFieldError, confirmDialog, modal, toast } from '../../ui/components.js';
 import { downloadBlob, downloadText } from '../../ui/download.js';
 import { formatFingerprint } from '../../crypto/keys.js';
 import { formatDate, formatDateTime } from '../../i18n.js';
-import { exportJson, backupFilename } from '../../export/json.js';
+import { frenchSpacing as fr } from '../../ui/questionnaire.js';
+import { exportJson } from '../../export/json.js';
 import { daysSince, localDay } from '../../services/model.js';
 import { recomputeAfterClose } from '../../services/import.js';
-import { buildRecoveryFile, markRecoverySaved } from '../../services/recovery.js';
+import { backupDownloadFilename, buildRecoveryFile, markRecoverySaved } from '../../services/recovery.js';
 import {
   prepareAdmin, pickFiles, backupRestoreFlow, recoveryImportFlow, storageCard, errorMessage, showFeedback, logFailure,
+  restoreFocus,
 } from '../admin.js';
 
 export const MIN_GROUP_SIZE = 2;
@@ -84,6 +88,15 @@ export function checkNewPassword(password, confirmation, min = MIN_PASSWORD) {
 let uid = 0;
 const nextId = (prefix) => `${prefix}-${(uid += 1)}`;
 
+// Contrôle à refocaliser au prochain affichage de l'onglet (refresh() reconstruit tout le contenu).
+// Clés : settings-save (ou l'identifiant du champ d'où le formulaire a été validé), settings-recovery,
+// settings-recovery-open, settings-backup, settings-restore, settings-purge.
+let pendingFocus = null;
+
+function activeElement() {
+  return globalThis.document?.activeElement ?? null;
+}
+
 function checkbox(id, label, help, checked) {
   const input = h('input', { type: 'checkbox', id, checked, 'aria-describedby': help ? `${id}-help` : null });
   const node = h('label', { class: 'choice', for: id },
@@ -140,9 +153,10 @@ function infoSection(t, campaign, channelsData) {
         : t('settings.info.departments_none')),
       h('dt', null, t('settings.info.channels')),
       h('dd', null, channels.length
+        // Libellés de data/ et consignes saisies : typographie française à l'affichage (comme le formulaire).
         ? h('ul', null, channels.map((c) => h('li', null,
-          channelsData?.types?.[c.type]?.label ?? c.type,
-          c.target ? h('span', { class: 'muted' }, ` — ${c.target}`) : null)))
+          fr(channelsData?.types?.[c.type]?.label ?? c.type),
+          c.target ? h('span', { class: 'muted' }, ` — ${fr(c.target)}`) : null)))
         : t('settings.info.channels_none')),
       h('dt', null, t('settings.info.key')),
       h('dd', null, campaign.private_key_jwk
@@ -167,6 +181,30 @@ export async function render(root, { campaign, model, ctx, refresh }) {
     buttons.forEach((b) => { b.disabled = Boolean(text); });
     mount(statusNode, text ? [h('span', { class: 'spinner', 'aria-hidden': 'true' }), h('span', null, text)] : null);
   };
+  // Cibles du focus après rafraîchissement : contrôle de même clé, sinon texte d'état de la section.
+  const focusTargets = new Map();
+  const focusFallbacks = new Map();
+
+  /**
+   * Fin d'une action réussie : rafraîchit l'onglet, replace le focus (clé `key`) puis confirme par une
+   * notification, seul canal d'annonce (émise après le focus, pour ne pas être interrompue).
+   */
+  // kind : 'success', ou 'warning' pour un rappel qui reste affiché jusqu'à sa fermeture (fichier en clair).
+  async function settle(key, message, kind = 'success') {
+    if (!disposed) {
+      pendingFocus = { campaignId: campaign.id, key };
+      try {
+        await refresh();
+      } catch (err) {
+        // L'action a abouti : seul l'affichage n'a pas pu être rafraîchi.
+        console.error('[Recensia] Paramètres : rafraîchissement impossible.', err);
+      }
+      // Consommé par le nouvel affichage ; sinon (campagne disparue, autre onglet), ne pas le garder.
+      pendingFocus = null;
+    }
+    toast(message, kind);
+  }
+
   async function reread() {
     const fresh = await store.getCampaign(campaign.id);
     if (!fresh) {
@@ -196,7 +234,11 @@ export async function render(root, { campaign, model, ctx, refresh }) {
   const localStatus = h('p', { class: 'small muted', role: 'status' });
   const localZone = h('div');
 
+  const localControls = () => [kInput, comments.input, byDept.input, closesInput];
   async function saveLocal() {
+    // Entrée dans un champ : le focus y revient ; bouton « Enregistrer » : sur le bouton.
+    const origin = localControls().find((c) => c === activeElement());
+    const focusKey = origin?.id || 'settings-save';
     const res = validateLocalSettings({
       min_group_size: kInput.value,
       comments_exportable: comments.input.checked,
@@ -226,15 +268,16 @@ export async function render(root, { campaign, model, ctx, refresh }) {
         reclassified = moved.length;
       }
       const message = reclassified ? t('settings.local.saved_after_close', { count: reclassified }) : t('settings.local.saved');
-      toast(message, 'success');
-      announce(message);
-      if (!disposed) await refresh();
+      await settle(focusKey, message);
     } catch (err) {
       fail(err, localZone);
     } finally {
       if (saveBtn.isConnected) saveBtn.disabled = false;
+      if (!disposed) restoreFocus(origin ?? saveBtn);
     }
   }
+  focusTargets.set('settings-save', saveBtn);
+  for (const control of localControls()) focusTargets.set(control.id, control);
 
   const localSection = h('section', { class: 'card settings-section', 'aria-labelledby': 'settings-local-title' },
     h('h3', { id: 'settings-local-title' }, t('settings.local.title')),
@@ -272,6 +315,8 @@ export async function render(root, { campaign, model, ctx, refresh }) {
     const zone = h('div');
     const protectedBtn = button(t('settings.recovery.download'), () => downloadRecovery(true), { variant: 'primary', icon: 'download' });
     const openBtn = button(t('settings.recovery.download_unprotected'), () => downloadRecovery(false), { variant: 'ghost' });
+    focusTargets.set('settings-recovery', protectedBtn);
+    focusTargets.set('settings-recovery-open', openBtn);
 
     async function downloadRecovery(isProtected) {
       let password = null;
@@ -287,20 +332,24 @@ export async function render(root, { campaign, model, ctx, refresh }) {
         });
         if (!ok) return;
       }
+      const origin = isProtected ? protectedBtn : openBtn;
       busy([protectedBtn, openBtn], status, t('settings.recovery.working'));
       try {
         const fresh = await reread();
         const file = await buildRecoveryFile(fresh, password, { today: localDay() });
-        downloadText(file.text, file.filename, 'application/json');
+        downloadText(file.text, file.filename, file.mime);
         await markRecoverySaved(store, campaign.id);
         pair.reset();
-        toast(t('settings.recovery.done'), 'success');
-        announce(t('settings.recovery.done'));
-        if (!disposed) await refresh();
+        // Le nom du fichier porte son mode de protection (…-NON-PROTEGEE.recensia-key) ; le message le rappelle.
+        if (file.protected) await settle('settings-recovery', t('settings.recovery.done', { filename: file.filename }));
+        else await settle('settings-recovery-open', t('settings.recovery.done_unprotected', { filename: file.filename }), 'warning');
       } catch (err) {
         fail(err, zone);
       } finally {
-        if (!disposed) busy([protectedBtn, openBtn], status, null);
+        if (!disposed) {
+          busy([protectedBtn, openBtn], status, null);
+          restoreFocus(origin);
+        }
       }
     }
 
@@ -349,6 +398,7 @@ export async function render(root, { campaign, model, ctx, refresh }) {
   const backupStatus = h('p', { class: 'import-working', role: 'status' });
   const backupZone = h('div');
   const backupBtn = button(t('settings.backup.download'), () => downloadBackup(), { variant: 'primary', icon: 'download' });
+  focusTargets.set('settings-backup', backupBtn);
 
   async function downloadBackup() {
     const encrypted = encRadio.checked;
@@ -361,16 +411,19 @@ export async function render(root, { campaign, model, ctx, refresh }) {
     try {
       const fresh = await reread();
       const blob = await exportJson(store, campaign.id, encrypted ? { password } : {});
-      const filename = backupFilename(fresh, localDay());
+      // Le nom distingue la sauvegarde en clair (…-EN-CLAIR.json) de la sauvegarde chiffrée du même jour.
+      const filename = backupDownloadFilename(fresh, localDay(), { encrypted });
       downloadBlob(blob, filename);
       backupPair.reset();
-      toast(t('settings.backup.done', { filename }), 'success');
-      announce(t('settings.backup.done', { filename }));
-      if (!disposed) await refresh();
+      if (encrypted) await settle('settings-backup', t('settings.backup.done', { filename }));
+      else await settle('settings-backup', t('settings.backup.done_plain', { filename }), 'warning');
     } catch (err) {
       fail(err, backupZone);
     } finally {
-      if (!disposed) busy([backupBtn], backupStatus, null);
+      if (!disposed) {
+        busy([backupBtn], backupStatus, null);
+        restoreFocus(backupBtn);
+      }
     }
   }
 
@@ -387,9 +440,7 @@ export async function render(root, { campaign, model, ctx, refresh }) {
         const message = res.status
           ? t(`admin.recovery.${res.status}`, { title: res.campaign.title })
           : t('admin.backup.restored', { count: res.entries, title: res.campaign?.title ?? campaign.title });
-        toast(message, 'success');
-        announce(message);
-        await refresh();
+        await settle('settings-restore', message);
         return;
       }
       const title = res.campaign?.title ?? restoredId;
@@ -399,8 +450,10 @@ export async function render(root, { campaign, model, ctx, refresh }) {
       fail(err, backupZone);
     } finally {
       if (restoreBtn.isConnected) restoreBtn.disabled = false;
+      if (!disposed) restoreFocus(restoreBtn);
     }
   }, { icon: 'upload' });
+  focusTargets.set('settings-restore', restoreBtn);
 
   const backupSection = h('section', { class: 'card settings-section', 'aria-labelledby': 'settings-backup-title' },
     h('h3', { id: 'settings-backup-title' }, t('settings.backup.title')),
@@ -438,16 +491,19 @@ export async function render(root, { campaign, model, ctx, refresh }) {
         // eslint-disable-next-line no-await-in-loop
         await store.deleteEntry(campaign.id, entry.entry_id);
       }
-      const message = t('settings.danger.entries_done', { count: entries.length });
-      toast(message, 'success');
-      announce(message);
-      if (!disposed) await refresh();
+      await settle('settings-purge', t('settings.danger.entries_done', { count: entries.length }));
     } catch (err) {
       fail(err);
     } finally {
       if (deleteEntriesBtn.isConnected) deleteEntriesBtn.disabled = false;
+      if (!disposed) restoreFocus(deleteEntriesBtn);
     }
   }, { variant: 'danger', icon: 'trash', attrs: { disabled: entriesCount === 0 } });
+  // Après la suppression, le bouton est désactivé (plus rien à supprimer) : le focus va au texte d'état.
+  const entriesStatus = h('p', { class: 'muted small', id: 'settings-entries-status', tabindex: '-1' },
+    t('settings.danger.entries_text', { count: entriesCount }));
+  focusTargets.set('settings-purge', deleteEntriesBtn);
+  focusFallbacks.set('settings-purge', entriesStatus);
 
   const deleteCampaignBtn = button(t('settings.danger.campaign'), async () => {
     const id = nextId('confirm-title');
@@ -459,12 +515,15 @@ export async function render(root, { campaign, model, ctx, refresh }) {
       event.preventDefault();
       input.closest('dialog')?.querySelector('.modal-actions .btn-danger')?.click();
     });
+    // Avertissements reliés au dialogue (aria-describedby) : lus à l'ouverture, avant le champ.
+    const warning = h('div', { class: 'stack-sm' },
+      h('p', null, t('settings.danger.campaign_text')),
+      h('p', null, t('settings.danger.campaign_confirm_text', { title: campaign.title })));
     const ok = await modal({
       title: t('settings.danger.campaign_confirm_title'),
-      content: h('div', { class: 'stack-sm' },
-        h('p', null, t('settings.danger.campaign_text')),
-        h('p', null, t('settings.danger.campaign_confirm_text', { title: campaign.title })),
-        fieldNode),
+      content: h('div', { class: 'stack-sm' }, warning, fieldNode),
+      describe: warning,
+      alert: true,
       actions: [
         { label: t('common.actions.cancel'), value: false },
         {
@@ -498,7 +557,7 @@ export async function render(root, { campaign, model, ctx, refresh }) {
     h('div', { class: 'danger-item' },
       h('div', null,
         h('h4', null, t('settings.danger.entries')),
-        h('p', { class: 'muted small' }, t('settings.danger.entries_text', { count: entriesCount }))),
+        entriesStatus),
       deleteEntriesBtn),
     h('div', { class: 'danger-item' },
       h('div', null,
@@ -516,6 +575,19 @@ export async function render(root, { campaign, model, ctx, refresh }) {
     storageCard(ctx, { headingLevel: 3 }),
     dangerSection,
     filesHost));
+
+  // Focus replacé après le rafraîchissement qui suit une action (WCAG 2.4.3).
+  if (pendingFocus?.campaignId === campaign.id) {
+    const { key } = pendingFocus;
+    pendingFocus = null;
+    const usable = (el) => el?.isConnected && !el.disabled && !el.hidden;
+    const target = [focusTargets.get(key), focusFallbacks.get(key)].find(usable)
+      ?? root.querySelector('#console-tab-title');
+    if (target) {
+      if (!target.hasAttribute('tabindex') && !/^(BUTTON|INPUT|SELECT|TEXTAREA|A)$/.test(target.tagName)) target.setAttribute('tabindex', '-1');
+      target.focus();
+    }
+  }
 
   return () => { disposed = true; };
 }

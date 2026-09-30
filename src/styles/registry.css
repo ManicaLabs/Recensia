@@ -26,7 +26,8 @@
   gap: var(--space-2);
   align-items: center;
   justify-content: flex-end;
-  flex: 0 1 26rem;
+  /* Les deux boutons (libellés du Rapport) tiennent sur une ligne. */
+  flex: 0 1 29rem;
 }
 .registry-export-note { flex-basis: 100%; margin: 0; font-size: var(--fs-xs); text-align: right; }
 @media (max-width: 39.99rem) {
@@ -106,6 +107,9 @@
 .registry-check input { margin-top: 0.2rem; }
 
 .registry-count { margin: 0; font-weight: 650; color: var(--heading); font-size: var(--fs-sm); }
+/* Erreur d'enregistrement : encart persistant en haut de l'onglet (hors détail). */
+.registry-alert { scroll-margin-top: var(--space-4); }
+.registry-alert .callout { margin: 0; }
 .registry-mask-note { margin: 0; }
 .registry-no-result { text-align: center; }
 .registry-no-result p { margin-bottom: var(--space-2); }
@@ -225,6 +229,9 @@
   background: var(--success-soft);
   border-bottom: var(--border-width) solid var(--success-border);
 }
+/* Erreur d'enregistrement : hors de la zone qui défile, visible tant qu'une autre opération n'a pas eu lieu. */
+.registry-detail-alert { padding: var(--space-3) var(--space-5) 0; }
+.registry-detail-alert .callout { margin: 0; }
 
 @media (max-width: 39.99rem) {
   .registry-detail.modal-lg {
@@ -239,7 +246,7 @@
   .registry-detail .modal-inner { height: 100%; max-height: 100dvh; }
   .registry-detail-header { padding: var(--space-3) var(--space-3) var(--space-2) var(--gutter); }
   .registry-detail-body { padding-inline: var(--gutter); }
-  .registry-detail-status, .registry-detail-status:not(:empty) { padding-inline: var(--gutter); }
+  .registry-detail-status, .registry-detail-status:not(:empty), .registry-detail-alert { padding-inline: var(--gutter); }
 }
 
 .registry-detail-body { display: flex; flex-direction: column; gap: var(--space-5); padding-top: var(--space-4); padding-bottom: var(--space-6); }

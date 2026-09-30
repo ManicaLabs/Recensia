@@ -17,4 +17,18 @@
 /* Les onglets défilent horizontalement sur mobile (app.css) : on garde la page sans débordement. */
 .console-tabs { min-width: 0; max-width: 100%; }
 
+/* Compteur « à examiner » (suggestions en attente) : badge d'attention, distinct du simple
+   décompte du registre par la couleur, le filet (conservé en couleurs forcées) et la graisse.
+   Le compteur neutre compense le filet par sa marge interne : même hauteur pour les deux.
+   Le texte masqué (lecteurs d'écran) est positionné par rapport au compteur : sinon il échappe
+   au défilement des onglets et élargit la page sur mobile. */
+.console-tabs .tab-count { position: relative; padding-block: var(--border-width); }
+.console-tabs .tab-count-attention {
+  padding-block: 0;
+  border: var(--border-width) solid var(--warn-border);
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-weight: 750;
+}
+
 .console-content { min-width: 0; }

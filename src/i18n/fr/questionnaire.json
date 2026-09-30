@@ -11,6 +11,10 @@
   "exclusive_checked": "« {option} » est cochée : les autres cases ont été décochées.",
   "exclusive_unchecked": "« {option} » a été décochée.",
   "section_count": "Partie {n} sur {total}",
+  "optional": {
+    "title": "Précisions facultatives",
+    "intro": "Ces questions sont facultatives : répondez si vous le pouvez, sinon enregistrez directement l'usage."
+  },
   "summary": {
     "title": {
       "one": "Une réponse est à vérifier :",

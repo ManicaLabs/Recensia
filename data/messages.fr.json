@@ -1,48 +1,48 @@
 {
   "version": 1,
   "locale": "fr",
-  "syntax": "Jetons {nom}. Une ligne dont un jeton est vide disparaît. [[A||B]] : A si tous ses jetons ont une valeur, sinon B (B facultatif).",
+  "syntax": "Jetons {nom}. Une ligne dont un jeton est vide disparaît. [[A||B]] : A si tous ses jetons ont une valeur, sinon B (B facultatif).",
   "templates": {
     "invitation_email": {
       "label": "Invitation (e-mail)",
       "audience": "respondents",
       "kind": "email",
       "requires": ["title", "link"],
-      "subject": "{title} : partagez vos usages de l'IA",
-      "body": "Bonjour,\n\n[[{org} lance||Nous lançons]] un recensement des usages de l'intelligence artificielle au travail : « {title} ».\n\nL'objectif est simple : savoir quels outils d'IA sont utilisés, pour quelles tâches et avec quelles données, afin de mieux vous accompagner (outils adaptés, bonnes pratiques, formation). Il ne s'agit ni de contrôler ni de sanctionner : toutes les réponses sont utiles, y compris « je ne sais pas ».\n\nPour répondre[[ (environ {duration})]], ouvrez ce lien :\n{link}\n\nMerci de répondre au plus tard le {closes_on}.\n\nÀ la fin du questionnaire, vous obtiendrez un code chiffré par usage décrit, à transmettre[[ {return_channel}|| selon les indications du formulaire]]. Seul le responsable de la campagne peut lire ce code.\n\n{anonymity_block}\n\nPour vérifier que le lien est authentique, assurez-vous que le formulaire affiche l'empreinte {fingerprint}.\n\nMerci pour votre participation !"
+      "subject": "{title} : partagez vos usages de l'IA",
+      "body": "Bonjour,\n\n[[{org} lance||Nous lançons]] un recensement des usages de l'intelligence artificielle au travail : « {title} ».\n\nL'objectif est simple : savoir quels outils d'IA sont utilisés, pour quelles tâches et avec quelles données, afin de mieux vous accompagner (outils adaptés, bonnes pratiques, formation). Il ne s'agit ni de contrôler ni de sanctionner : toutes les réponses sont utiles, y compris « je ne sais pas ».\n\nPour répondre[[ (environ {duration})]], ouvrez ce lien :\n{link}\n\nMerci de répondre au plus tard le {closes_on}.\n\nÀ la fin du questionnaire, vous obtiendrez un code chiffré par usage décrit, à transmettre[[ {return_channel}|| selon les indications du formulaire]]. Seul le responsable de la campagne peut lire ce code.\n\n{anonymity_block}\n\nPour vérifier que le lien est authentique, assurez-vous que le formulaire affiche l'empreinte {fingerprint}.\n\nMerci pour votre participation !"
     },
     "invitation_short": {
       "label": "Invitation courte (messagerie)",
       "audience": "respondents",
       "kind": "short",
       "requires": ["title", "link"],
-      "body": "Bonjour ! [[{org} lance||Nous lançons]] un recensement des usages de l'IA au travail : « {title} ». [[Comptez environ {duration}||Quelques minutes suffisent]] ; il ne s'agit ni de contrôler ni de sanctionner.\n{link}\nRéponses attendues au plus tard le {closes_on}.\nÀ la fin, vous obtiendrez un code par usage, à transmettre {return_channel}.\n{anonymity_block}\nEmpreinte à vérifier sur le formulaire : {fingerprint}"
+      "body": "Bonjour ! [[{org} lance||Nous lançons]] un recensement des usages de l'IA au travail : « {title} ». [[Comptez environ {duration}||Quelques minutes suffisent]] ; il ne s'agit ni de contrôler ni de sanctionner.\n{link}\nRéponses attendues au plus tard le {closes_on}.\nÀ la fin, vous obtiendrez un code par usage, à transmettre {return_channel}.\n{anonymity_block}\nEmpreinte à vérifier sur le formulaire : {fingerprint}"
     },
     "reminder_j3": {
       "label": "Relance (J-3)",
       "audience": "respondents",
       "kind": "email",
       "requires": ["title", "link"],
-      "subject": "Rappel : {title}",
-      "body": "Bonjour,\n\nPetit rappel : le recensement des usages de l'IA « {title} »[[ lancé par {org}]] [[se termine le {closes_on}||se termine bientôt]]. Si vous n'avez pas encore répondu, il est encore temps[[ : comptez environ {duration}]].\n\nPour répondre, ouvrez ce lien :\n{link}\n\nÀ la fin du questionnaire, vous obtiendrez un code par usage : transmettez-le {return_channel}.\n\nCe rappel est envoyé à tout le monde : si vous avez déjà répondu, merci, et ignorez simplement ce message. Il ne s'agit ni de contrôler ni de sanctionner, mais de mieux connaître les usages pour mieux vous accompagner.\n\n{anonymity_block}\n\nEmpreinte du formulaire : {fingerprint}\n\nMerci !",
-      "body_compact": "Bonjour,\n\nPetit rappel : le recensement des usages de l'IA « {title} » [[se termine le {closes_on}||se termine bientôt]]. Si vous n'avez pas encore répondu, il est encore temps[[ (environ {duration})]] :\n{link}\n\nSi vous avez déjà répondu, merci : ignorez ce message.\n\n{anonymity_block}\n\nEmpreinte du formulaire : {fingerprint}"
+      "subject": "Rappel : {title}",
+      "body": "Bonjour,\n\nPetit rappel : le recensement des usages de l'IA « {title} »[[ lancé par {org}]] [[se termine le {closes_on}||se termine bientôt]]. Si vous n'avez pas encore répondu, il est encore temps[[ : comptez environ {duration}]].\n\nPour répondre, ouvrez ce lien :\n{link}\n\nÀ la fin du questionnaire, vous obtiendrez un code par usage : transmettez-le {return_channel}.\n\nCe rappel est envoyé à tout le monde : si vous avez déjà répondu, merci, et ignorez simplement ce message. Il ne s'agit ni de contrôler ni de sanctionner, mais de mieux connaître les usages pour mieux vous accompagner.\n\n{anonymity_block}\n\nEmpreinte du formulaire : {fingerprint}\n\nMerci !",
+      "body_compact": "Bonjour,\n\nPetit rappel : le recensement des usages de l'IA « {title} » [[se termine le {closes_on}||se termine bientôt]]. Si vous n'avez pas encore répondu, il est encore temps[[ (environ {duration})]] :\n{link}\n\nSi vous avez déjà répondu, merci : ignorez ce message.\n\n{anonymity_block}\n\nEmpreinte du formulaire : {fingerprint}"
     },
     "reminder_j1": {
       "label": "Dernière relance (J-1)",
       "audience": "respondents",
       "kind": "email",
       "requires": ["title", "link"],
-      "subject": "Dernier rappel : {title}",
-      "body": "Bonjour,\n\nDernier rappel : le recensement des usages de l'IA « {title} »[[ lancé par {org}]] [[se termine le {closes_on}||touche à sa fin]]. Chaque réponse compte, même courte : décrire un seul usage est déjà utile.\n\nPour répondre[[ (environ {duration})]], ouvrez ce lien :\n{link}\n\nÀ la fin du questionnaire, vous obtiendrez un code par usage : transmettez-le {return_channel}.\n\nCe rappel est envoyé à tout le monde : si vous avez déjà répondu, merci, et ignorez simplement ce message.\n\n{anonymity_block}\n\nEmpreinte du formulaire : {fingerprint}\n\nMerci !",
-      "body_compact": "Bonjour,\n\nDernier rappel : le recensement des usages de l'IA « {title} » [[se termine le {closes_on}||touche à sa fin]]. Décrire un seul usage est déjà utile :\n{link}\n\nSi vous avez déjà répondu, merci : ignorez ce message.\n\n{anonymity_block}\n\nEmpreinte du formulaire : {fingerprint}"
+      "subject": "Dernier rappel : {title}",
+      "body": "Bonjour,\n\nDernier rappel : le recensement des usages de l'IA « {title} »[[ lancé par {org}]] [[se termine le {closes_on}||touche à sa fin]]. Chaque réponse compte, même courte : décrire un seul usage est déjà utile.\n\nPour répondre[[ (environ {duration})]], ouvrez ce lien :\n{link}\n\nÀ la fin du questionnaire, vous obtiendrez un code par usage : transmettez-le {return_channel}.\n\nCe rappel est envoyé à tout le monde : si vous avez déjà répondu, merci, et ignorez simplement ce message.\n\n{anonymity_block}\n\nEmpreinte du formulaire : {fingerprint}\n\nMerci !",
+      "body_compact": "Bonjour,\n\nDernier rappel : le recensement des usages de l'IA « {title} » [[se termine le {closes_on}||touche à sa fin]]. Décrire un seul usage est déjà utile :\n{link}\n\nSi vous avez déjà répondu, merci : ignorez ce message.\n\n{anonymity_block}\n\nEmpreinte du formulaire : {fingerprint}"
     },
     "closing_thanks": {
       "label": "Clôture et remerciements",
       "audience": "respondents",
       "kind": "email",
       "requires": ["title"],
-      "subject": "Merci pour votre participation : {title}",
-      "body": "Bonjour,\n\nLe recensement des usages de l'IA « {title} » est désormais clos. Merci à toutes celles et à tous ceux qui ont pris le temps de répondre.\n\nLes réponses vont maintenant être regroupées pour dresser un état des lieux et proposer des actions concrètes : outils adaptés, bonnes pratiques, formation. Encore une fois, il ne s'agit ni de contrôler ni de sanctionner.\n\n{anonymity_block}\n\nMerci pour votre confiance.\n{org}"
+      "subject": "Merci pour votre participation : {title}",
+      "body": "Bonjour,\n\nLe recensement des usages de l'IA « {title} » est désormais clos. Merci à toutes celles et à tous ceux qui ont pris le temps de répondre.\n\nLes réponses vont maintenant être regroupées pour dresser un état des lieux et proposer des actions concrètes : outils adaptés, bonnes pratiques, formation. Encore une fois, il ne s'agit ni de contrôler ni de sanctionner.\n\n{anonymity_block}\n\nMerci pour votre confiance.\n{org}"
     },
     "code_email": {
       "label": "Envoi des codes par e-mail (répondant vers responsable)",
@@ -50,26 +50,26 @@
       "kind": "email",
       "requires": ["title", "codes", "import_link"],
       "anonymity_scope": ["mailto"],
-      "subject": "Réponse chiffrée : {title}",
-      "body": "Bonjour,\n\nVoici ma réponse chiffrée au recensement « {title} » ({count}).\n\nPour l'importer, ouvrez ce lien dans le navigateur où la campagne est enregistrée :\n{import_link}\n\nEn secours, copiez le texte ci-dessous dans l'onglet « Importer » :\n{codes}\n\nEmpreinte : {fingerprint}\n{anonymity_block}",
-      "body_compact": "Bonjour,\n\nVoici ma réponse chiffrée ({count}). Pour l'importer, ouvrez ce lien ou collez-le dans l'onglet « Importer » :\n{import_link}\n\nEmpreinte : {fingerprint}\n{anonymity_block}"
+      "subject": "Réponse chiffrée : {title}",
+      "body": "Bonjour,\n\nVoici ma réponse chiffrée au recensement « {title} » ({count}).\n\nPour l'importer, ouvrez ce lien dans le navigateur où la campagne est enregistrée :\n{import_link}\n\nEn secours, copiez le texte ci-dessous dans l'onglet « Importer des codes » de la campagne :\n{codes}\n\nEmpreinte : {fingerprint}\n{anonymity_block}",
+      "body_compact": "Bonjour,\n\nVoici ma réponse chiffrée ({count}). Ouvrez ce lien ou collez-le dans l'onglet « Importer des codes » :\n{import_link}\n\nEmpreinte : {fingerprint}\n{anonymity_block}"
     },
     "code_share": {
       "label": "Partage des codes (copie, partage, messagerie)",
       "audience": "manager",
       "kind": "short",
       "requires": ["title", "codes", "import_link"],
-      "body": "Réponse chiffrée au recensement « {title} » ({count}).\nLien d'import pour le responsable :\n{import_link}\nEn secours, texte à coller dans l'onglet « Importer » :\n{codes}\n{anonymity_block}"
+      "body": "Réponse chiffrée au recensement « {title} » ({count}).\nLien d'import pour le responsable :\n{import_link}\nEn secours, texte à coller dans l'onglet « Importer des codes » de la campagne :\n{codes}\n{anonymity_block}"
     }
   },
   "anonymity_blocks": {
-    "open": "Réponses nominatives : chaque réponse porte le prénom et le nom de la personne qui répond (et son e-mail, s'il est indiqué) ; elle est chiffrée et lisible uniquement par le responsable de la campagne.",
+    "open": "Réponses nominatives : chaque réponse porte le prénom et le nom de la personne qui répond (et son e-mail, s'il est indiqué) ; elle est chiffrée et lisible uniquement par le responsable de la campagne.",
     "anonymous": {
       "lead": "Réponses anonymes",
       "yes": "l'envoi {via}, lui, n'est pas anonyme",
       "depends": "{via}, l'anonymat dépend du canal de dépôt",
       "unknown": "l'anonymat dépend aussi du canal par lequel vous transmettez votre code",
-      "joiner": " ; ",
+      "joiner": " ; ",
       "end": "."
     }
   },
@@ -79,15 +79,15 @@
       "without_target": "par e-mail"
     },
     "copy": {
-      "with_target": "par copier-coller (consigne : {target})",
+      "with_target": "par copier-coller (consigne : {target})",
       "without_target": "par copier-coller"
     },
     "file": {
-      "with_target": "sous forme de fichier .rcn (consigne : {target})",
+      "with_target": "sous forme de fichier .rcn (consigne : {target})",
       "without_target": "sous forme de fichier .rcn"
     },
     "share": {
-      "without_target": "avec le bouton « Partager » de votre appareil"
+      "without_target": "avec le bouton « Partager » de votre appareil"
     },
     "teams": {
       "without_target": "par Teams"
@@ -116,25 +116,25 @@
   },
   "sheet": {
     "label": "Fiche d'invitation imprimable",
-    "lead": "Recensement des usages de l'IA au travail : quelques minutes, sans contrôle ni sanction.",
-    "steps_title": "Comment participer ?",
+    "lead": "Recensement des usages de l'IA au travail : quelques minutes, sans contrôle ni sanction.",
+    "steps_title": "Comment participer ?",
     "steps": [
       "Scannez ce QR code avec l'appareil photo de votre téléphone, ou ouvrez le lien indiqué en bas de page.",
-      "Décrivez les usages de l'IA que vous faites au travail : environ trois minutes pour le premier.",
+      "Décrivez les usages de l'IA que vous faites au travail : environ trois minutes pour le premier.",
       "Transmettez le code chiffré obtenu par le canal indiqué ci-dessous."
     ],
     "steps_slide": [
       "Scannez ce QR code avec l'appareil photo de votre téléphone.",
-      "Décrivez les usages de l'IA que vous faites au travail : environ trois minutes pour le premier.",
+      "Décrivez les usages de l'IA que vous faites au travail : environ trois minutes pour le premier.",
       "Transmettez le code chiffré obtenu par le canal indiqué ci-dessous."
     ],
     "channel_title": "Canal de retour",
     "channel_none": "Selon les indications du formulaire.",
     "closes": "Réponses attendues au plus tard le {closes_on}.",
-    "fingerprint": "Empreinte de la campagne :",
+    "fingerprint": "Empreinte de la campagne :",
     "fingerprint_help": "Vérifiez que le formulaire affiche la même empreinte avant de répondre.",
-    "link_title": "Lien du formulaire :",
-    "qr_label": "QR code du formulaire « {title} »"
+    "link_title": "Lien du formulaire :",
+    "qr_label": "QR code du formulaire « {title} »"
   },
   "limits": {
     "subject_max": 180,
@@ -142,6 +142,6 @@
     "short_max": 1400,
     "title_max": 80,
     "org_max": 80,
-    "measure": "Longueurs de corps mesurées hors lignes de lien et de code : un lien de collecte peut dépasser 1 500 caractères et l'URL mailto complète est limitée à part (MAILTO_MAX). Les plafonds couvrent le pire cas : titre et organisation de 80 caractères, trois canaux avec des consignes de 200 caractères."
+    "measure": "Longueurs de corps mesurées hors lignes de lien et de code : un lien de collecte peut dépasser 1 500 caractères et l'URL mailto complète est limitée à part (MAILTO_MAX). Les plafonds couvrent le pire cas : titre et organisation de 80 caractères, trois canaux avec des consignes de 200 caractères."
   }
 }

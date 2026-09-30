@@ -28,8 +28,22 @@ function signalLabel(rules, id, rule) {
   return rule.label ?? id;
 }
 
-/** Échéances résolues depuis le calendrier, sans doublon, triées par date puis identifiant. */
-export function resolveDeadlines(ids, calendar) {
+/**
+ * Une échéance du calendrier vaut-elle pour ce rôle ? Une échéance sans `applies_to_roles` vaut
+ * pour tous ; sinon seulement pour les rôles listés (ex. délai de grâce de l'art. 50, § 2,
+ * réservé aux fournisseurs). Sans rôle connu, le rôle par défaut s'applique.
+ */
+export function deadlineAppliesToRole(deadline, role = DEFAULT_ROLE) {
+  const roles = deadline?.applies_to_roles;
+  if (!Array.isArray(roles) || roles.length === 0) return true;
+  return roles.includes(role ?? DEFAULT_ROLE);
+}
+
+/**
+ * Échéances résolues depuis le calendrier, sans doublon, triées par date puis identifiant.
+ * `role` : les échéances réservées à d'autres rôles (applies_to_roles) sont écartées.
+ */
+export function resolveDeadlines(ids, calendar, { role = DEFAULT_ROLE } = {}) {
   const byId = new Map((calendar?.deadlines ?? []).map((d) => [d.id, d]));
   const seen = new Set();
   const out = [];
@@ -37,6 +51,7 @@ export function resolveDeadlines(ids, calendar) {
     if (seen.has(id) || !byId.has(id)) continue;
     seen.add(id);
     const d = byId.get(id);
+    if (!deadlineAppliesToRole(d, role)) continue;
     out.push({
       id: d.id,
       date: d.date ?? null,
@@ -62,7 +77,8 @@ function clampData(n) {
  * 3. données : base = maximum du barème data_base sur les catégories envoyées (et des règles
  *    « level » de l'axe data), puis modificateurs (delta, plafond cap, seulement si base ≥ min_base) ;
  *    une règle « question » de l'axe data rend l'exposition « à qualifier » ;
- * 4. rôle, échéances, actions, questions et signaux : union des règles retenues.
+ * 4. rôle, échéances, actions, questions et signaux : union des règles retenues ; une échéance
+ *    réservée à un rôle (applies_to_roles du calendrier) n'est retenue que pour ce rôle.
  */
 export function classifyUsage(usage, rules, calendar) {
   const list = Array.isArray(rules?.rules) ? rules.rules : [];
@@ -140,7 +156,7 @@ export function classifyUsage(usage, rules, calendar) {
     data_to_qualify,
     role,
     triggers: retained.map(toTrigger),
-    deadlines: resolveDeadlines(deadlineIds, calendar),
+    deadlines: resolveDeadlines(deadlineIds, calendar, { role }),
     action_ids,
     questions_to_confirm,
     signals,

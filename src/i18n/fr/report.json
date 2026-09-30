@@ -3,17 +3,18 @@
   "toolbar": {
     "text": "Aperçu du rapport de synthèse. Pour obtenir un PDF, choisissez « Imprimer / PDF » puis « Enregistrer au format PDF » comme imprimante.",
     "print": "Imprimer / PDF",
-    "xlsx": "Export XLSX",
-    "csv": "CSV du registre",
+    "xlsx": "Exporter en Excel (.xlsx)",
+    "csv": "Exporter le registre en CSV",
     "json": "Sauvegarde JSON (Paramètres)",
-    "note": "Les exports ne contiennent ni identité de répondant ni commentaire libre. La sauvegarde complète de la campagne (JSON, chiffrable par mot de passe) se fait depuis les paramètres."
+    "note": "Les exports ne contiennent ni identité de répondant ni commentaire libre. La sauvegarde complète de la campagne (JSON, chiffrable par mot de passe) se fait depuis les paramètres.",
+    "note_comments": "Les exports ne contiennent aucune identité de répondant ; les commentaires libres y sont inclus (colonne « Commentaires ») et peuvent permettre d'identifier leur auteur : relisez-les avant de diffuser. La sauvegarde complète de la campagne (JSON, chiffrable par mot de passe) se fait depuis les paramètres."
   },
   "export": {
-    "xlsx_preparing": "Préparation du classeur XLSX…",
-    "xlsx_done": "Classeur XLSX téléchargé (feuilles Registre, Plan d'actions, Synthèse et Référentiel).",
-    "xlsx_error": "Le classeur XLSX n'a pas pu être créé. Réessayez ; si le problème persiste, utilisez l'export CSV.",
-    "csv_done": "Registre téléchargé au format CSV (séparateur point-virgule, lisible par Excel et LibreOffice).",
-    "csv_error": "Le fichier CSV n'a pas pu être créé. Réessayez."
+    "xlsx_preparing": "Préparation de l'export Excel…",
+    "xlsx_done": "Registre exporté au format Excel (feuilles Registre, Plan d'actions, Synthèse et Référentiel).",
+    "xlsx_error": "L'export Excel n'a pas pu être produit. Réessayez ; si le problème persiste, utilisez l'export CSV.",
+    "csv_done": "Registre exporté au format CSV.",
+    "csv_error": "L'export CSV n'a pas pu être produit. Réessayez ; si le problème persiste, rechargez la page."
   },
   "header": {
     "eyebrow": "Recensement des usages de l'IA",
@@ -54,7 +55,7 @@
       "one": "exposition critique des données",
       "other": "expositions critiques des données"
     },
-    "shadow": "des usages en shadow AI",
+    "shadow": "des usages relèvent de l'IA fantôme (shadow AI)",
     "shadow_detail": {
       "one": "{count} usage sur {total}",
       "other": "{count} usages sur {total}"
@@ -101,8 +102,8 @@
       "other": "usages impliquant des données sensibles : une analyse d'impact (AIPD) est probablement nécessaire."
     },
     "shadow_ai": {
-      "one": "usage sur un compte personnel ou non maîtrisé (shadow AI) : proposer une solution validée, sans reproche.",
-      "other": "usages sur des comptes personnels ou non maîtrisés (shadow AI) : proposer une solution validée, sans reproche."
+      "one": "usage sur un compte personnel ou non maîtrisé (IA fantôme) : proposer une solution validée, sans reproche.",
+      "other": "usages sur des comptes personnels ou non maîtrisés (IA fantôme) : proposer une solution validée, sans reproche."
     },
     "no_review_external": {
       "one": "usage dont les résultats partent à l'extérieur sans relecture humaine.",
@@ -116,17 +117,17 @@
   "distribution": {
     "title": "Répartition AI Act et exposition des données",
     "lead": "Deux axes distincts : le niveau AI Act (obligations liées au système d'IA) et l'exposition des données (confidentialité, RGPD). Chaque usage est compté une fois par axe, à son niveau le plus élevé.",
-    "shadow_title": "Part de shadow AI",
+    "shadow_title": "Part d'IA fantôme",
     "shadow_text": {
       "zero": "Aucun usage ne repose sur un compte personnel ou non maîtrisé.",
-      "one": "{count} usage sur {total} ({percent}) repose sur un compte personnel ou non maîtrisé (shadow AI).",
-      "other": "{count} usages sur {total} ({percent}) reposent sur des comptes personnels ou non maîtrisés (shadow AI)."
+      "one": "{count} usage sur {total} ({percent}) repose sur un compte personnel ou non maîtrisé.",
+      "other": "{count} usages sur {total} ({percent}) reposent sur des comptes personnels ou non maîtrisés."
     }
   },
   "charts": {
     "ai_act": "Usages par niveau AI Act",
     "data": "Usages par niveau d'exposition des données",
-    "shadow": "Part des usages en shadow AI",
+    "shadow": "Part des usages en IA fantôme",
     "shadow_yes": "Comptes personnels ou non maîtrisés",
     "shadow_no": "Autres usages",
     "tools": "Déclarations par outil",
@@ -145,7 +146,7 @@
     "lead": "Nombre de déclarations par outil et par service (une même personne peut déclarer plusieurs usages).",
     "no_tools": "Aucun outil déclaré.",
     "no_departments": "Aucun service renseigné.",
-    "masked": "Mode anonyme : les effectifs inférieurs à {k} sont masqués (« < {k} ») ; leur barre, en pointillés, s'arrête au seuil de {k} et ne reflète pas leur valeur réelle.",
+    "masked": "Mode anonyme : les effectifs inférieurs à {k} sont masqués (« < {k} ») ; leur barre, en pointillés, s'arrête au seuil de {k} et ne reflète pas leur valeur réelle.",
     "mask_rule": "Mode anonyme : tout effectif inférieur à {k} serait masqué (« < {k} »)."
   },
   "priority": {
@@ -219,8 +220,8 @@
       "other": "{count} déclarations ont été saisies directement par le responsable de la campagne, sans passer par un code de réponse."
     },
     "demo": {
-      "one": "{count} déclaration provient du jeu de démonstration : elle est entièrement fictive.",
-      "other": "{count} déclarations proviennent du jeu de démonstration : elles sont entièrement fictives."
+      "one": "{count} déclaration provient du jeu de démonstration : elle est entièrement fictive.",
+      "other": "{count} déclarations proviennent du jeu de démonstration : elles sont entièrement fictives."
     },
     "consolidation": "Consolidation : les déclarations semblables (même outil, mêmes tâches, même domaine) forment une ligne du registre ; le niveau d'une ligne est le plus élevé de ses déclarations (approche prudente).",
     "engine": "Classification : moteur de règles déterministe et public (règles version {version}), sur deux axes séparés, AI Act et exposition des données ; chaque niveau est justifié par les règles déclenchées.",

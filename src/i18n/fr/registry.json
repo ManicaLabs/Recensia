@@ -6,14 +6,16 @@
   },
   "export": {
     "label": "Exporter le registre",
-    "csv": "Exporter en CSV",
-    "xlsx": "Exporter en Excel",
+    "csv": "Exporter le registre en CSV",
+    "xlsx": "Exporter en Excel (.xlsx)",
     "preparing": "Préparation…",
     "done_csv": "Registre exporté au format CSV.",
     "done_xlsx": "Registre exporté au format Excel (feuilles Registre, Plan d'actions, Synthèse et Référentiel).",
     "failed": "L'export n'a pas pu être produit. Réessayez ; si le problème persiste, rechargez la page.",
     "note_anonymous": "Registre complet, sans commentaire libre ni identité ; effectifs inférieurs à {k} masqués.",
-    "note_open": "Registre complet, sans commentaire libre ni identité des répondants."
+    "note_open": "Registre complet, sans commentaire libre ni identité des répondants.",
+    "note_anonymous_comments": "Registre complet, sans identité ; effectifs inférieurs à {k} masqués. Les commentaires libres sont inclus (colonne « Commentaires ») : même en mode anonyme, ils peuvent permettre d'identifier leur auteur. Relisez-les avant de diffuser le registre.",
+    "note_open_comments": "Registre complet, sans identité des répondants ; les commentaires libres sont inclus (colonne « Commentaires »). Relisez-les avant de diffuser le registre."
   },
   "empty": {
     "title": "Aucun usage dans le registre",

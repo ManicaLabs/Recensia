@@ -2,6 +2,8 @@
 // sections (titre, introduction), types text (suggestions), textarea (compteur, avertissement),
 // select, radio, multi (valeurs exclusives), department (services de la campagne).
 // show_if / required_if évalués par engine/evaluate.js ; validation par engine/validate.js.
+// Les champs toujours facultatifs sont regroupés dans un dernier bloc « Précisions facultatives »
+// (displaySections) : les questions obligatoires se suivent.
 //
 // Contrat (ARCHITECTURE §5.4) :
 //   renderQuestionnaire(root, { questionnaire, campaign: { mode, departments, department_required },
@@ -59,15 +61,44 @@ export function campaignOptions(campaign) {
   };
 }
 
-/** Clés des champs dans l'ordre des sections (chaque clé une seule fois). */
+/**
+ * Champ toujours facultatif : ni obligatoire, ni obligatoire sous condition (required_if),
+ * ni réglé par la campagne (service).
+ */
+export function isAlwaysOptional(def) {
+  if (!def || typeof def !== 'object' || def.type === 'department') return false;
+  return (def.required === false || def.required === undefined) && !def.required_if;
+}
+
+/**
+ * Sections telles qu'affichées : les champs toujours facultatifs (modèle, nombre de personnes,
+ * commentaire…) sont regroupés dans un dernier bloc « Précisions facultatives », pour que les
+ * questions obligatoires se suivent (premier usage en moins de 3 minutes, CDC §4 et §14).
+ * Une section qui ne contient que des champs facultatifs est fondue dans ce bloc.
+ * → [{ id, title, intro, fields: [], optional: false } …, { id: 'optional', title: null, intro: null, fields, optional: true }]
+ */
+export function displaySections(questionnaire) {
+  const fields = questionnaire?.fields ?? {};
+  const seen = new Set();
+  const out = [];
+  const optional = [];
+  for (const section of questionnaire?.sections ?? []) {
+    const keys = [];
+    for (const key of section.fields ?? []) {
+      if (!Object.hasOwn(fields, key) || seen.has(key)) continue;
+      seen.add(key);
+      (isAlwaysOptional(fields[key]) ? optional : keys).push(key);
+    }
+    if (keys.length) out.push({ id: section.id ?? null, title: section.title ?? '', intro: section.intro ?? null, fields: keys, optional: false });
+  }
+  if (optional.length) out.push({ id: 'optional', title: null, intro: null, fields: optional, optional: true });
+  return out;
+}
+
+/** Clés des champs dans l'ordre d'affichage (displaySections), puis les champs hors section ; chaque clé une fois. */
 export function fieldOrder(questionnaire) {
   const fields = questionnaire?.fields ?? {};
-  const out = [];
-  for (const section of questionnaire?.sections ?? []) {
-    for (const key of section.fields ?? []) {
-      if (Object.hasOwn(fields, key) && !out.includes(key)) out.push(key);
-    }
-  }
+  const out = displaySections(questionnaire).flatMap((section) => section.fields);
   for (const key of Object.keys(fields)) if (!out.includes(key)) out.push(key);
   return out;
 }
@@ -563,23 +594,26 @@ export function renderQuestionnaire(root, options = {}) {
     }
   }
 
-  const sectionCount = questionnaire.sections.length;
-  const sections = questionnaire.sections.map((section, index) => {
+  const layout = displaySections(questionnaire);
+  const sectionCount = layout.length;
+  const sections = layout.map((section, index) => {
     const titleId = `${idPrefix}-section-${section.id ?? index}`;
     const nodes = [];
     const keys = [];
-    for (const key of section.fields ?? []) {
-      if (!Object.hasOwn(fields, key) || entries.has(key)) continue;
+    for (const key of section.fields) {
+      if (entries.has(key)) continue;
       const entry = buildField(key);
       if (!entry) continue;
       entries.set(key, entry);
       keys.push(key);
       nodes.push(entry.node);
     }
-    const node = h('section', { class: 'q-section', 'aria-labelledby': titleId },
+    const title = section.optional ? t('questionnaire.optional.title') : section.title;
+    const intro = section.optional ? t('questionnaire.optional.intro') : section.intro;
+    const node = h('section', { class: ['q-section', section.optional ? 'q-section-optional' : null], 'aria-labelledby': titleId },
       h('p', { class: 'q-section-count' }, t('questionnaire.section_count', { n: index + 1, total: sectionCount })),
-      h(headingTag, { class: 'q-section-title', id: titleId }, section.title),
-      section.intro ? h('p', { class: 'q-section-intro' }, section.intro) : null,
+      h(headingTag, { class: 'q-section-title', id: titleId }, title),
+      intro ? h('p', { class: 'q-section-intro' }, intro) : null,
       nodes);
     sectionNodes.push({ node, keys });
     return node;

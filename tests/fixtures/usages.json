@@ -363,8 +363,7 @@
         ],
         "deadlines": [
           "literacy_art4",
-          "transparency_art50",
-          "marking_grace_art50_2"
+          "transparency_art50"
         ]
       }
     },
@@ -806,6 +805,64 @@
         "deadlines": [
           "literacy_art4",
           "transparency_art50",
+          "high_risk_annex_iii"
+        ]
+      }
+    },
+    {
+      "id": "edge-built-own-media",
+      "description": "Cas limite : générateur de visuels développé en interne et publié sous le nom de l'entreprise : fournisseur possible ; le délai de grâce du marquage (art. 50, § 2), réservé aux fournisseurs, figure parmi les échéances.",
+      "usage": {
+        "usage_name": "Générateur de visuels maison",
+        "department": "Marketing",
+        "tool": "internal_system",
+        "tool_other": null,
+        "model": null,
+        "account_type": "internal_system",
+        "task_types": [
+          "generation_media"
+        ],
+        "business_domain": "marketing_com",
+        "data_types": [
+          "aucune"
+        ],
+        "frequency": "weekly",
+        "users_count": null,
+        "output_audience": "public",
+        "output_review": "partial",
+        "affects_people": "no",
+        "direct_interaction": "no",
+        "biometric_emotion": "no",
+        "built_or_customized": "built_own",
+        "status": "in_use",
+        "comment": null
+      },
+      "expected": {
+        "ai_act_level": "to_qualify",
+        "data_level": 0,
+        "role": "potential_provider",
+        "triggers_include": [
+          "R-AIA-PRV-01",
+          "R-AIA-LIM-02"
+        ],
+        "triggers_exclude": [
+          "R-AIA-MIN"
+        ],
+        "actions_include": [
+          "ACT-QUAL-01",
+          "ACT-TRANS-02"
+        ],
+        "triggers": [
+          "R-AIA-PRV-01",
+          "R-AIA-LIM-02",
+          "R-AIA-LIT",
+          "R-GOV-01",
+          "R-DAT-LOW"
+        ],
+        "deadlines": [
+          "literacy_art4",
+          "transparency_art50",
+          "marking_grace_art50_2",
           "high_risk_annex_iii"
         ]
       }
@@ -1727,8 +1784,7 @@
         ],
         "deadlines": [
           "literacy_art4",
-          "transparency_art50",
-          "marking_grace_art50_2"
+          "transparency_art50"
         ]
       }
     },
@@ -1777,8 +1833,7 @@
         ],
         "deadlines": [
           "literacy_art4",
-          "transparency_art50",
-          "marking_grace_art50_2"
+          "transparency_art50"
         ]
       }
     },
@@ -1824,8 +1879,7 @@
         ],
         "deadlines": [
           "literacy_art4",
-          "transparency_art50",
-          "marking_grace_art50_2"
+          "transparency_art50"
         ]
       }
     },

@@ -17,7 +17,7 @@ import {
   MAX_RECOVERY_CHARS, importRecovery, inspectRecoveryFile, listPendingCodes, removePendingCodes, clearPendingCodes,
 } from '../services/recovery.js';
 import {
-  codesForCampaign, findCampaignForCodes, importCodes, resolvedCodes, stashReport,
+  codesForCampaign, diagnoseUnmatched, findCampaignForCodes, importCodes, resolvedCodes, stashReport,
 } from '../services/import.js';
 
 export const ADMIN_CSS = 'src/styles/admin.css';
@@ -50,6 +50,16 @@ export function logFailure(context, err) {
   const code = typeof err?.code === 'string' ? err.code : null;
   if (code && has(`admin.errors.${code}`)) console.info(`[Recensia] ${context} (${code}).`);
   else console.error(`[Recensia] ${context}`, err);
+}
+
+/**
+ * Un bouton désactivé pendant une opération perd le focus clavier (il retombe sur <body>) : on le lui
+ * rend une fois réactivé, sauf si le focus est allé ailleurs entre-temps (WCAG 2.4.3).
+ */
+export function restoreFocus(control) {
+  const d = globalThis.document;
+  const lost = !d?.activeElement || d.activeElement === d.body;
+  if (lost && control?.isConnected && !control.disabled && typeof control.focus === 'function') control.focus();
 }
 
 /** Message lisible pour une erreur des services (RecoveryError, StoreError, ImportError, ViewError). */
@@ -273,6 +283,9 @@ export async function importPendingFor(ctx, campaign, { fromLink = false } = {})
 /**
  * Carte « Stockage de ce navigateur » : IndexedDB persistant ou non, repli mémoire, demande de
  * stockage persistant (navigator.storage.persist).
+ * Les nœuds sont créés une fois et mis à jour sur place : le bouton activé au clavier n'est jamais
+ * remplacé (WCAG 2.4.3). Demande refusée : le focus reste sur le bouton et le message est annoncé ;
+ * accordée : le bouton disparaît et le focus passe au message (lu une seule fois, à la prise de focus).
  */
 export function storageCard(ctx, { headingLevel = 2 } = {}) {
   const { t, store } = ctx;
@@ -280,53 +293,70 @@ export function storageCard(ctx, { headingLevel = 2 } = {}) {
   const body = h('div', { class: 'stack-sm' });
   const storage = globalThis.navigator?.storage;
   const canPersist = typeof storage?.persist === 'function';
+  const section = h('section', { class: 'card storage-card', 'aria-labelledby': titleId },
+    h(`h${headingLevel}`, { id: titleId, class: 'card-title' }, t('admin.storage.title')),
+    body);
 
-  const state = (ok, text) => h('p', { class: ['storage-state', ok ? 'is-ok' : 'is-warn'] },
-    icon(ok ? 'check' : 'alert'), h('span', null, text));
-
-  const draw = (persisted, message = null) => {
-    if (!store) {
-      mount(body, state(false, t('admin.errors.no_store')));
-      return;
-    }
-    if (store.kind === 'memory') {
-      mount(body, state(false, t('admin.storage.memory')));
-      return;
-    }
-    mount(body,
-      state(persisted, persisted ? t('admin.storage.persisted') : t('admin.storage.not_persisted')),
-      !persisted && canPersist ? h('div', null, button(t('admin.storage.request'), onRequest, { icon: 'shield', size: 'sm' })) : null,
-      !persisted && !canPersist ? h('p', { class: 'muted small' }, t('admin.storage.unsupported')) : null,
-      message ? h('p', { class: 'small', role: 'status' }, message) : null,
-      h('p', { class: 'muted small' }, t('admin.storage.idb')));
+  const stateNode = h('p', { class: 'storage-state' });
+  const setState = (ok, text) => {
+    stateNode.classList.toggle('is-ok', ok);
+    stateNode.classList.toggle('is-warn', !ok);
+    mount(stateNode, icon(ok ? 'check' : 'alert'), h('span', null, text));
   };
 
+  if (!store || store.kind === 'memory') {
+    setState(false, store ? t('admin.storage.memory') : t('admin.errors.no_store'));
+    mount(body, stateNode);
+    return section;
+  }
+
+  const requestBtn = canPersist ? button(t('admin.storage.request'), onRequest, { icon: 'shield', size: 'sm' }) : null;
+  const requestRow = requestBtn ? h('div', null, requestBtn) : null;
+  const unsupported = canPersist ? null : h('p', { class: 'muted small' }, t('admin.storage.unsupported'));
+  const messageNode = h('p', { class: 'small storage-message', tabindex: '-1', hidden: true });
+  const update = (persisted) => {
+    setState(persisted, persisted ? t('admin.storage.persisted') : t('admin.storage.not_persisted'));
+    if (requestRow) requestRow.hidden = persisted;
+    if (unsupported) unsupported.hidden = persisted;
+  };
+  mount(body, stateNode, requestRow, unsupported, messageNode, h('p', { class: 'muted small' }, t('admin.storage.idb')));
+
+  let asking = false;
   async function onRequest() {
+    if (asking) return;
+    asking = true;
     let ok = false;
     try {
       ok = (await storage.persist()) === true;
     } catch {
       ok = false;
+    } finally {
+      asking = false;
     }
-    if (store) store.persisted = ok;
+    store.persisted = ok;
     const message = ok ? t('admin.storage.granted') : t('admin.storage.denied');
-    draw(ok, message);
-    announce(message);
+    const d = globalThis.document;
+    const hadFocus = d?.activeElement === requestBtn || !d?.activeElement || d.activeElement === d.body;
+    messageNode.textContent = message;
+    messageNode.hidden = false;
+    update(ok);
+    // Accordé : le bouton a disparu, le focus passe au message, lu à la prise de focus (pas d'autre annonce).
+    // Refusé : le bouton reste, avec le focus ; le message est annoncé.
+    if (ok && hadFocus) messageNode.focus();
+    else announce(message);
   }
 
-  draw(store?.persisted === true);
-  if (store?.kind === 'indexeddb' && typeof storage?.persisted === 'function') {
+  update(store.persisted === true);
+  if (store.kind === 'indexeddb' && typeof storage?.persisted === 'function') {
     Promise.resolve().then(() => storage.persisted()).then((value) => {
       const actual = value === true;
       if (actual !== store.persisted) {
         store.persisted = actual;
-        draw(actual);
+        update(actual);
       }
     }).catch(() => {});
   }
-  return h('section', { class: 'card storage-card', 'aria-labelledby': titleId },
-    h(`h${headingLevel}`, { id: titleId, class: 'card-title' }, t('admin.storage.title')),
-    body);
+  return section;
 }
 
 /** Encart de retour (succès, erreur…) affiché dans une zone de la page et annoncé. */
@@ -444,10 +474,16 @@ export async function render(root, { ctx }) {
     announce(t('admin.pending.working'));
     try {
       const pending = listPendingCodes();
-      const found = await findCampaignForCodes(pending, await store.listCampaigns());
+      const campaigns = await store.listCampaigns();
+      const found = await findCampaignForCodes(pending, campaigns);
       if (disposed) return;
       if (!found) {
-        showFeedback(feedbackZone, 'warn', t('admin.pending.no_match'));
+        // Une clé est là mais ne lit pas ces codes : le lien a probablement été coupé, la clé n'est pas en cause.
+        const diagnosis = diagnoseUnmatched(pending, campaigns);
+        let message = t('admin.pending.no_match');
+        if (diagnosis === 'unreadable') message = t('admin.pending.unreadable', { count: pending.length });
+        else if (diagnosis === 'version') message = t('admin.pending.version');
+        showFeedback(feedbackZone, 'warn', message);
         return;
       }
       const report = await importPendingFor(ctx, found.campaign);
@@ -458,6 +494,7 @@ export async function render(root, { ctx }) {
       showFeedback(feedbackZone, 'danger', errorMessage(t, err));
     } finally {
       if (btn?.isConnected) btn.disabled = false;
+      if (!disposed) restoreFocus(btn);
     }
   }
 
@@ -528,6 +565,7 @@ export async function render(root, { ctx }) {
       if (!disposed) showFeedback(feedbackZone, 'danger', errorMessage(t, err));
     } finally {
       if (btn?.isConnected) btn.disabled = false;
+      if (!disposed) restoreFocus(btn);
     }
   };
 

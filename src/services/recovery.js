@@ -4,8 +4,12 @@
 //   navigateur, ou ajout de la clé privée à la campagne existante de même identifiant ET de même clé
 //   publique. Jamais d'écrasement : une campagne de même identifiant mais d'une autre clé est refusée.
 // - Écriture : fichier protégé par mot de passe (ou non protégé, sur demande explicite).
+// - Noms des fichiers téléchargés : la version non protégée d'un fichier de récupération et la sauvegarde
+//   non chiffrée portent un marqueur en capitales (NON-PROTEGEE, EN-CLAIR). Elles ne remplacent jamais
+//   la version protégée du même jour dans le dossier de téléchargement et ne se confondent pas avec elle.
 // - Codes en attente : codes reçus par un lien d'import alors que la clé n'était pas là, gardés le
-//   temps de la session (sessionStorage via src/ui/safe-storage.js), toujours chiffrés.
+//   temps de la session (sessionStorage via src/ui/safe-storage.js), toujours chiffrés. Un code mal
+//   formé (lien coupé par la messagerie) n'est jamais gardé : aucune clé ne pourrait le lire.
 //
 // Module sans DOM, exécutable sous node --test avec openStore({ forceMemory: true }).
 
@@ -14,11 +18,15 @@ import {
 } from '../crypto/backup.js';
 import { extractCodes } from '../crypto/codes.js';
 import { cleanLine } from '../engine/validate.js';
-import { exportFilename } from '../export/registry.js';
+import { backupFilename } from '../export/json.js';
+import { slugify, toDay } from '../export/registry.js';
 import { BACKUP_FORMAT, BACKUP_VERSION, validateBackup } from '../storage/backup-format.js';
 import { session } from '../ui/safe-storage.js';
+import { isKeepableCode } from './import.js';
 
 export const RECOVERY_EXTENSION = 'recensia-key';
+/** Type MIME unique du fichier de récupération (son contenu est du JSON). */
+export const RECOVERY_MIME = 'application/json';
 /** Taille maximale d'un fichier de récupération (caractères). */
 export const MAX_RECOVERY_CHARS = 1_000_000;
 export const PENDING_KEY = 'pending_codes';
@@ -227,16 +235,46 @@ export async function importRecovery({ store, file, passphrase = null, now = new
 
 // --- Écriture ----------------------------------------------------------------
 
-/** recensia-cle-<slug du titre>-<AAAA-MM-JJ>.recensia-key */
-export function recoveryFilename(campaign, today) {
-  return exportFilename('cle', campaign, today, RECOVERY_EXTENSION);
+const FINGERPRINT_RE = /^[0-9A-F]{8}$/;
+
+/** Marqueur du nom d'un fichier de récupération non protégé (la clé privée y est en clair). */
+export const UNPROTECTED_RECOVERY_MARK = 'NON-PROTEGEE';
+/** Marqueur du nom d'une sauvegarde non chiffrée (les réponses y sont en clair). */
+export const PLAIN_BACKUP_MARK = 'EN-CLAIR';
+
+/**
+ * Nom canonique du fichier de récupération (création de campagne comme paramètres) :
+ * recensia-cle-<slug du titre>-<EMPREINTE>-<AAAA-MM-JJ>.recensia-key pour le fichier protégé,
+ * recensia-cle-<slug du titre>-<EMPREINTE>-<AAAA-MM-JJ>-NON-PROTEGEE.recensia-key sinon.
+ * L'empreinte distingue deux campagnes aux titres proches ; elle est omise si elle manque ou est invalide.
+ * Par sécurité, seul protected: true donne le nom sans marqueur.
+ * @param {{ protected?: boolean }} [options]
+ */
+export function recoveryFilename(campaign, today, { protected: isProtected = false } = {}) {
+  const slug = slugify(campaign?.title || campaign?.org_name || campaign?.id);
+  const fp = String(campaign?.fingerprint ?? '').toUpperCase();
+  const parts = ['recensia-cle', slug, FINGERPRINT_RE.test(fp) ? fp : null, toDay(today),
+    isProtected === true ? null : UNPROTECTED_RECOVERY_MARK];
+  return `${parts.filter(Boolean).join('-')}.${RECOVERY_EXTENSION}`;
+}
+
+/**
+ * Nom du fichier de sauvegarde téléchargé depuis l'onglet Paramètres :
+ * recensia-sauvegarde-<slug>-<AAAA-MM-JJ>.json pour la sauvegarde chiffrée,
+ * recensia-sauvegarde-<slug>-<AAAA-MM-JJ>-EN-CLAIR.json sinon (seul encrypted: true donne le nom sans marqueur).
+ * @param {{ encrypted?: boolean }} [options]
+ */
+export function backupDownloadFilename(campaign, today, { encrypted = false } = {}) {
+  const name = backupFilename(campaign, today);
+  return encrypted === true ? name : name.replace(/\.json$/, `-${PLAIN_BACKUP_MARK}.json`);
 }
 
 /**
  * Construit le fichier de récupération d'une campagne.
  * @param {object} campaign campagne relue depuis le store (avec private_key_jwk)
  * @param {string|null} passphrase mot de passe, ou null EXPLICITE pour un fichier non protégé
- * @returns {Promise<{ text: string, filename: string, protected: boolean }>}
+ * @returns {Promise<{ text: string, filename: string, mime: string, protected: boolean }>}
+ *   à télécharger tel quel : downloadText(file.text, file.filename, file.mime)
  */
 export async function buildRecoveryFile(campaign, passphrase, { today, iterations } = {}) {
   if (!campaign?.private_key_jwk) throw new RecoveryError('no_key');
@@ -244,7 +282,12 @@ export async function buildRecoveryFile(campaign, passphrase, { today, iteration
     throw new TypeError('buildRecoveryFile : mot de passe non vide, ou null explicite.');
   }
   const file = await wrapPrivateKey(campaign, passphrase, iterations ? { iterations } : {});
-  return { text: JSON.stringify(file, null, 2), filename: recoveryFilename(campaign, today), protected: passphrase !== null };
+  return {
+    text: `${JSON.stringify(file, null, 2)}\n`,
+    filename: recoveryFilename(campaign, today, { protected: passphrase !== null }),
+    mime: RECOVERY_MIME,
+    protected: passphrase !== null,
+  };
 }
 
 /** Inscrit la date d'enregistrement du fichier de récupération (campagne relue avant écriture). */
@@ -260,13 +303,15 @@ export async function markRecoverySaved(store, campaignId, { now = new Date() } 
 
 /**
  * Codes en attente dans une zone de stockage (par défaut la session du navigateur).
- * Les valeurs relues sont revalidées (format RCNn.…) : une valeur altérée est ignorée.
+ * Seuls les codes de forme valide (ou d'une version plus récente du format) sont gardés : un code tronqué
+ * ou mal formé est écarté à l'ajout comme à la relecture (isKeepableCode, src/services/import.js).
  */
 export function createPendingCodes(area = session) {
+  const keepable = (list) => extractCodes(list.filter((c) => typeof c === 'string').join('\n')).filter(isKeepableCode);
   const read = () => {
     const raw = area.get(PENDING_KEY, []);
     if (!Array.isArray(raw)) return [];
-    return extractCodes(raw.filter((c) => typeof c === 'string').join('\n')).slice(0, PENDING_MAX);
+    return keepable(raw).slice(0, PENDING_MAX);
   };
   const write = (codes) => {
     if (codes.length === 0) area.remove(PENDING_KEY);
@@ -275,9 +320,9 @@ export function createPendingCodes(area = session) {
   return Object.freeze({
     /** Codes en attente (ordre d'arrivée). */
     list: read,
-    /** Ajoute des codes (ou du texte qui en contient) ; renvoie le nombre de codes nouveaux. */
+    /** Ajoute des codes (ou du texte qui en contient) ; renvoie le nombre de codes nouveaux gardés. */
     add(input) {
-      const incoming = extractCodes((Array.isArray(input) ? input : [input]).filter((c) => typeof c === 'string').join('\n'));
+      const incoming = keepable(Array.isArray(input) ? input : [input]);
       const current = read();
       const known = new Set(current);
       const fresh = incoming.filter((c) => !known.has(c));

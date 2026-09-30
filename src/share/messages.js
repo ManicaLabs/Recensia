@@ -57,6 +57,28 @@ function templateOf(templateId, templates) {
   return all[templateId];
 }
 
+const NBSP = '\u00A0';
+// Espaces (ordinaires) avant « : ; ? ! » et avant « », après « : remplacées par une insécable.
+const SPACE_BEFORE_PUNCT_RE = / +([:;?!\u00BB])/g;
+const SPACE_AFTER_QUOTE_RE = /\u00AB +/g;
+// Lignes recopiées telles quelles : lien seul sur sa ligne (CDC §7.7) et codes de réponse.
+const VERBATIM_LINE_RE = /^(?:https?:\/\/|RCN[1-9])/;
+
+/**
+ * Typographie française : espace insécable (U+00A0, comme dans les catalogues de l'interface)
+ * avant « : ; ? ! » et à l'intérieur des guillemets, pour qu'aucune ponctuation ni aucun guillemet
+ * ne se retrouve seul en début ou en fin de ligne chez le destinataire. Les gabarits de
+ * data/messages.fr.json portent déjà ces insécables ; cette fonction traite les valeurs insérées
+ * (titre, organisation, consignes) et les textes de la fiche. Les lignes de lien et de code ne sont
+ * jamais modifiées. Idempotente. Module pur (équivalent de frenchSpacing de src/ui/questionnaire.js).
+ */
+export function frenchSpacing(text) {
+  if (typeof text !== 'string') return text;
+  return text.split('\n').map((line) => (VERBATIM_LINE_RE.test(line)
+    ? line
+    : line.replace(SPACE_BEFORE_PUNCT_RE, `${NBSP}$1`).replace(SPACE_AFTER_QUOTE_RE, `\u00AB${NBSP}`))).join('\n');
+}
+
 /** Échappe & < > " ' pour un fragment HTML (presse-papiers riche). */
 export function escapeHtml(s) {
   return String(s)
@@ -190,7 +212,9 @@ export function returnChannelItems(channels, templates, channelsData) {
   return publicChannels(channels, channelsData).map(({ type, target }) => {
     const p = Object.hasOwn(phrases, type) ? phrases[type] : null;
     if (!p) return '';
-    const shown = channelInfo(type, channelsData).target === 'phone' ? `+${target}` : target;
+    let shown = channelInfo(type, channelsData).target === 'phone' ? `+${target}` : target;
+    // Consigne placée entre parenthèses : son point final doublerait la ponctuation (« ….). »).
+    if (/\{target\}\)/.test(p.with_target || '') && !/\.\.\s*$/u.test(shown)) shown = shown.replace(/\.\s*$/u, '');
     if (target && p.with_target) return fill(p.with_target, { target: shown });
     return p.without_target || '';
   }).filter(Boolean);
@@ -317,13 +341,15 @@ export function renderMessage(templateId, ctx, templates, channelsData, { compac
   if (!pc.mode) throw new MessageError('invalid_mode', String(ctx && ctx.mode));
   const scope = Array.isArray(tpl.anonymity_scope) ? tpl.anonymity_scope.map((type) => ({ type })) : pc.channels;
   const locked = anonymityBlock(pc.mode, scope, templates, channelsData);
+  // Les gabarits portent déjà les espaces insécables ; les valeurs saisies (titre, organisation,
+  // consignes de canal) suivent la même typographie. Le lien, les codes et l'empreinte restent intacts.
   const values = {
-    title: pc.title,
-    org: pc.org,
+    title: frenchSpacing(pc.title),
+    org: frenchSpacing(pc.org),
     link: pc.link,
     closes_on: pc.closes_on ? formatDay(pc.closes_on, templates) : '',
     duration: pc.duration_min ? formatDuration(pc.duration_min, templates) : '',
-    return_channel: returnChannelText(pc.channels, templates, channelsData),
+    return_channel: frenchSpacing(returnChannelText(pc.channels, templates, channelsData)),
     anonymity_block: locked,
     fingerprint: displayFingerprint(pc.fingerprint ?? ''),
     import_link: pc.import_link,
@@ -363,24 +389,27 @@ export function sheetContent({ campaign, link, fingerprint, templates, channelsD
   const block = anonymityBlock(pc.mode, pc.channels, templates, channelsData);
   const variable = [pc.title, pc.org, ...channels, closes, block].join('').length;
   const density = variable > SHEET_DENSITY.compact ? 'compact' : variable > SHEET_DENSITY.dense ? 'dense' : 'normal';
+  // Textes affichés : typographie française (le lien et l'empreinte restent tels quels).
+  const fr = (value) => frenchSpacing(typeof value === 'string' ? value : '');
+  const steps = Array.isArray(s.steps) ? s.steps.slice(0, 3) : [];
   return {
     locale: templates.locale || 'fr',
-    title: pc.title,
-    org: pc.org,
-    lead: s.lead,
-    steps_title: s.steps_title,
-    steps: Array.isArray(s.steps) ? s.steps.slice(0, 3) : [],
-    steps_slide: Array.isArray(s.steps_slide) ? s.steps_slide.slice(0, 3) : Array.isArray(s.steps) ? s.steps.slice(0, 3) : [],
-    channel_title: s.channel_title,
-    channels: channels.length ? channels : [s.channel_none],
-    closes: closes ? fill(s.closes, { closes_on: closes }) : '',
-    anonymity_block: block,
-    fingerprint_label: s.fingerprint,
+    title: fr(pc.title),
+    org: fr(pc.org),
+    lead: fr(s.lead),
+    steps_title: fr(s.steps_title),
+    steps: steps.map(fr),
+    steps_slide: (Array.isArray(s.steps_slide) ? s.steps_slide.slice(0, 3) : steps).map(fr),
+    channel_title: fr(s.channel_title),
+    channels: (channels.length ? channels : [s.channel_none]).map(fr),
+    closes: closes ? fr(fill(s.closes, { closes_on: closes })) : '',
+    anonymity_block: fr(block),
+    fingerprint_label: fr(s.fingerprint),
     fingerprint: displayFingerprint(pc.fingerprint ?? ''),
-    fingerprint_help: s.fingerprint_help,
-    link_title: s.link_title,
+    fingerprint_help: fr(s.fingerprint_help),
+    link_title: fr(s.link_title),
     link: pc.link,
-    qr_label: fill(s.qr_label, { title: pc.title }),
+    qr_label: fr(fill(s.qr_label, { title: pc.title })),
     density,
   };
 }

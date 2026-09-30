@@ -104,3 +104,19 @@ test('toCSV : aucune ligne ⇒ en-tête seul ; colonnes absentes ⇒ vide', () =
   assert.equal(toCSV([], COLUMNS), '\uFEFFID;Texte;Nombre\r\n');
   assert.equal(toCSV([{}], COLUMNS), '\uFEFFID;Texte;Nombre\r\n;;\r\n');
 });
+
+test('registre en CSV : commentaires libres exportés seulement si la campagne l’autorise, neutralisés', async () => {
+  const { registryRows, registryColumns, REGISTRY_COLUMNS } = await import('../src/export/registry.js');
+  const group = {
+    usage_key: 'k', id: 'U-000001', name: 'Usage', count: 1, departments: [], computed: { triggers: [], deadlines: [] },
+    members: [{ entry_id: 'e1', usage: { comment: '=1+1 commentaire test' } }],
+  };
+  const campaign = (comments_exportable) => ({ id: 'c', mode: 'anonymous', settings: { min_group_size: 5, comments_exportable } });
+  const off = toCSV(registryRows([group], { campaign: campaign(false) }), registryColumns(campaign(false)));
+  assert.ok(!off.includes('commentaire test'), 'option inactive : aucun commentaire');
+  assert.equal(parseCSV(off)[0].length, REGISTRY_COLUMNS.length);
+  const on = parseCSV(toCSV(registryRows([group], { campaign: campaign(true) }), registryColumns(campaign(true))));
+  assert.equal(on[0].at(-1), 'Commentaires');
+  assert.equal(on[1].at(-1), "'=1+1 commentaire test", 'formule neutralisée par une apostrophe');
+  assert.equal(on[1].length, REGISTRY_COLUMNS.length + 1);
+});

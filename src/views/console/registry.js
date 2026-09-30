@@ -8,16 +8,17 @@ import { icon, button, field, levelBadge, disclaimer } from '../../ui/components
 import { downloadBlob } from '../../ui/download.js';
 import { groupId } from '../../engine/consolidate.js';
 import { AI_ACT_ORDER, DATA_LEVELS } from '../../engine/levels.js';
-import { registryRows, REGISTRY_COLUMNS, exportFilename } from '../../export/registry.js';
+import { registryRows, registryColumns, commentsExportable, exportFilename } from '../../export/registry.js';
 import { toCSV } from '../../export/csv.js';
 import {
   defaultFilters, sanitizeFilters, applyFilters, filterOptions, activeFilterCount, isFiltering,
-  aiActDisplay, dataDisplay, countDisplay, isCountMasked, toolLabel, excludedEntries, excludedForGroup,
+  countDisplay, isCountMasked, toolLabel, excludedEntries, excludedForGroup,
   splitKey, usedGroupKeys, reconcileFilters, minGroupSize, campaignMode, NO_DEPARTMENT, SORTS, VALIDATION_STATUSES,
 } from './registry/filters.js';
 import { updateAssessment, revertOverrides } from './registry/assessment.js';
 import { createDetailDialog, detailContent, excludedCard, confirmDelete, confirmMerge, confirmRevert } from './registry/detail.js';
 import { takeRegistryDetail, takeRegistryFilters } from './registry/focus.js';
+import { levelCell, alertSlot, setAlert } from './registry/cells.js';
 
 const CSS = 'src/styles/registry.css';
 const SEARCH_DELAY_MS = 200;
@@ -75,21 +76,35 @@ export async function render(root, { campaign, model, ctx, refresh }) {
   let disposed = false;
   let searchTimer = null;
   let busy = false;
+  // Erreur d'enregistrement hors du détail (déclarations écartées) : encart persistant en haut de
+  // l'onglet. Dans le détail, l'encart est celui de la boîte de dialogue (une notification resterait
+  // sous la fenêtre modale).
+  const pageAlert = alertSlot('registry-alert');
 
   // -------------------------------------------------------------------------------------------
   // Écritures dans le store (toujours relues avant modification), puis rafraîchissement.
   // -------------------------------------------------------------------------------------------
 
+  function clearError() {
+    setAlert(pageAlert, null);
+    detail.controller?.setError(null);
+  }
+
   function reportError(err) {
     console.error('[Recensia] Modification du registre impossible.', err);
     const message = t('registry.errors.save');
-    if (detail.controller) detail.controller.setStatus(message);
+    if (detail.controller?.isOpen()) {
+      detail.controller.setError(message);
+      return;
+    }
+    if (setAlert(pageAlert, message) && pageAlert.isConnected) pageAlert.scrollIntoView?.({ block: 'nearest' });
     else ctx.toast(message, 'danger');
   }
 
   async function guard(fn) {
     if (busy) return null;
     busy = true;
+    clearError();
     try {
       return await fn();
     } catch (err) {
@@ -284,7 +299,7 @@ export async function render(root, { campaign, model, ctx, refresh }) {
   async function exportCsv() {
     try {
       const rows = registryRows(groups, exportArgs());
-      downloadBlob(new Blob([toCSV(rows, REGISTRY_COLUMNS)], { type: 'text/csv;charset=utf-8' }), exportFilename('registre', campaign, model.today, 'csv'));
+      downloadBlob(new Blob([toCSV(rows, registryColumns(campaign))], { type: 'text/csv;charset=utf-8' }), exportFilename('registre', campaign, model.today, 'csv'));
       ctx.track.event('event/export_csv');
       ctx.toast(t('registry.export.done_csv'), 'success');
     } catch (err) {
@@ -330,21 +345,6 @@ export async function render(root, { campaign, model, ctx, refresh }) {
     return extra > 0 ? h('span', { class: 'registry-variants muted' }, t('registry.table.variants', { count: extra })) : null;
   }
 
-  function aiCell(group) {
-    const ai = aiActDisplay(group);
-    return h('span', { class: 'registry-level' },
-      levelBadge('ai_act', ai.level, t),
-      ai.overridden ? h('span', { class: 'registry-flag' }, t('registry.table.overridden')) : null);
-  }
-
-  function dataCell(group) {
-    const data = dataDisplay(group);
-    return h('span', { class: 'registry-level' },
-      levelBadge('data', data.level, t),
-      data.overridden ? h('span', { class: 'registry-flag' }, t('registry.table.overridden')) : null,
-      data.toQualify ? h('span', { class: 'registry-flag is-warn' }, t('registry.table.to_qualify')) : null);
-  }
-
   function validationCell(group) {
     const status = VALIDATION_STATUSES.includes(group.validation_status) ? group.validation_status : 'to_review';
     return h('span', { class: ['tag', 'registry-validation', `is-${status}`] }, t(`common.validation.${status}`));
@@ -376,8 +376,9 @@ export async function render(root, { campaign, model, ctx, refresh }) {
           h('th', { scope: 'row', class: 'col-usage' }, openButton(g), variants(g)),
           h('td', { class: 'col-departments' }, departmentsText(g)),
           h('td', { class: 'col-tool' }, toolLabel(g, model.questionnaire)),
-          h('td', { class: 'col-ai_act' }, aiCell(g)),
-          h('td', { class: 'col-data' }, dataCell(g)),
+          // Axe nommé par l'en-tête de colonne (annoncé avec la cellule).
+          h('td', { class: 'col-ai_act' }, levelCell('ai_act', g, t, { axisLabel: 'none' })),
+          h('td', { class: 'col-data' }, levelCell('data', g, t, { axisLabel: 'none' })),
           h('td', { class: 'col-count num' }, countCell(g)),
           h('td', { class: 'col-validation' }, validationCell(g)))))));
   }
@@ -388,7 +389,10 @@ export async function render(root, { campaign, model, ctx, refresh }) {
         h('h3', { class: 'registry-card-title' }, openButton(g)),
         h('span', { class: 'registry-id' }, g.id)),
       variants(g),
-      h('div', { class: 'registry-card-levels' }, aiCell(g), dataCell(g)),
+      // Pas d'en-tête sur une carte : l'axe est écrit (« AI Act : », « Exposition des données : »).
+      h('div', { class: 'registry-card-levels' },
+        levelCell('ai_act', g, t, { axisLabel: 'visible' }),
+        levelCell('data', g, t, { axisLabel: 'visible' })),
       h('dl', { class: 'registry-card-meta' },
         h('dt', null, t('registry.table.departments')), h('dd', null, departmentsText(g)),
         h('dt', null, t('registry.table.tool')), h('dd', null, toolLabel(g, model.questionnaire)),
@@ -519,7 +523,7 @@ export async function render(root, { campaign, model, ctx, refresh }) {
         label: t('registry.filters.ai_act'),
         group: true,
         control: h('ul', { class: 'registry-chips', role: 'list' }, AI_ACT_ORDER.map((level, i) => h('li', null,
-          h('label', { class: 'registry-chip' }, aiBoxes[i], levelBadge('ai_act', level, t))))),
+          h('label', { class: 'registry-chip' }, aiBoxes[i], levelBadge('ai_act', level, t, { axisLabel: 'none' }))))),
       }),
       h('div', { class: 'registry-selects' },
         select('reg-data', t('registry.filters.data'), filters.data,
@@ -583,9 +587,10 @@ export async function render(root, { campaign, model, ctx, refresh }) {
       h('h2', { id: 'console-tab-title' }, t('registry.title')),
       h('p', { class: 'muted registry-lead' }, t('registry.lead'))),
     groups.length ? h('div', { class: 'registry-exports', role: 'group', 'aria-label': t('registry.export.label') },
-      button(t('registry.export.csv'), () => exportCsv(), { icon: 'download', size: 'sm', attrs: { 'aria-describedby': 'registry-export-note' } }),
+      // Mêmes libellés et même ordre que la barre d'outils du Rapport.
       button(t('registry.export.xlsx'), (event) => exportXlsx(event), { icon: 'download', size: 'sm', attrs: { 'aria-describedby': 'registry-export-note' } }),
-      h('p', { class: 'registry-export-note muted', id: 'registry-export-note' }, t(anonymous ? 'registry.export.note_anonymous' : 'registry.export.note_open', { k }))) : null);
+      button(t('registry.export.csv'), () => exportCsv(), { icon: 'download', size: 'sm', attrs: { 'aria-describedby': 'registry-export-note' } }),
+      h('p', { class: 'registry-export-note muted', id: 'registry-export-note' }, t(`registry.export.${anonymous ? 'note_anonymous' : 'note_open'}${commentsExportable(campaign) ? '_comments' : ''}`, { k }))) : null);
 
   // Liste initiale calculée avant l'insertion : la région « status » n'annonce pas l'état initial.
   if (groups.length > 0) update();
@@ -593,6 +598,7 @@ export async function render(root, { campaign, model, ctx, refresh }) {
   if (groups.length === 0) {
     mount(root, h('div', { class: 'registry stack' },
       headerNode,
+      pageAlert,
       h('div', { class: 'empty-state card registry-empty' },
         h('span', { class: 'empty-state-icon' }, icon('list')),
         h('h3', null, t('registry.empty.title')),
@@ -605,6 +611,7 @@ export async function render(root, { campaign, model, ctx, refresh }) {
   } else {
     mount(root, h('div', { class: 'registry stack' },
       headerNode,
+      pageAlert,
       disclaimer(t),
       filtersForm(),
       countLine,

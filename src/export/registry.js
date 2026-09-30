@@ -1,10 +1,13 @@
 // Lignes du registre prêt à l'emploi (CDC §8.2), communes aux exports CSV et XLSX.
-// Module pur. Une ligne = un groupe consolidé (usage) ; jamais d'identité de répondant ni
-// de commentaire libre. En mode anonyme, les effectifs inférieurs à min_group_size sont masqués.
+// Module pur. Une ligne = un groupe consolidé (usage) ; jamais d'identité de répondant. Les
+// commentaires libres n'y figurent que si la campagne l'autorise (settings.comments_exportable,
+// CDC §7.4) : colonne « Commentaires » ajoutée après les 20 colonnes du §8.2 (registryColumns).
+// En mode anonyme, les effectifs inférieurs à min_group_size sont masqués.
 
 import { formatUsageValue, optionLabel } from '../engine/labels.js';
 import { maskCount } from '../engine/stats.js';
 import { isAiActLevel, isDataLevel } from '../engine/levels.js';
+import { sanitizeText } from '../share/channels.js';
 
 export const REGISTRY_COLUMNS = Object.freeze([
   { key: 'id', label: 'ID' },
@@ -28,6 +31,25 @@ export const REGISTRY_COLUMNS = Object.freeze([
   { key: 'actions', label: 'Actions liées' },
   { key: 'last_review', label: 'Date de dernière revue' },
 ].map((c) => Object.freeze(c)));
+
+/** Colonne facultative : commentaires libres des déclarations (campagne qui l'autorise seulement). */
+export const COMMENTS_COLUMN = Object.freeze({ key: 'comments', label: 'Commentaires' });
+const COLUMNS_WITH_COMMENTS = Object.freeze([...REGISTRY_COLUMNS, COMMENTS_COLUMN]);
+/** Longueur maximale de la cellule « Commentaires » (chaque commentaire fait 500 caractères au plus). */
+export const COMMENTS_MAX_CHARS = 2000;
+
+/** La campagne autorise-t-elle les commentaires libres dans les exports ? (défaut : non) */
+export function commentsExportable(campaign) {
+  return campaign?.settings?.comments_exportable === true;
+}
+
+/**
+ * Colonnes du registre exporté : les 20 colonnes du CDC §8.2, dans l'ordre, puis « Commentaires »
+ * si la campagne l'autorise. À passer à toCSV avec les lignes de registryRows.
+ */
+export function registryColumns(campaign) {
+  return commentsExportable(campaign) ? COLUMNS_WITH_COMMENTS : REGISTRY_COLUMNS;
+}
 
 // Libellés de repli, utilisés quand `t` est absent ou ne connaît pas la clé.
 export const FALLBACK_LABELS = Object.freeze({
@@ -243,10 +265,40 @@ function actionsText(group, actions, campaign, t) {
 }
 
 /**
+ * Commentaires libres des déclarations retenues (membres non exclus), nettoyés (contrôles, retours
+ * à la ligne, caractères invisibles), sans doublon, joints par « ; » et bornés à COMMENTS_MAX_CHARS.
+ * La neutralisation des formules est faite par csv.js / xlsx.js, comme pour toute cellule.
+ */
+export function commentsText(group) {
+  const seen = new Set();
+  const list = [];
+  for (const m of group?.members ?? []) {
+    if (!m || m.excluded === true) continue;
+    const comment = sanitizeText(m.usage?.comment ?? '', 500);
+    if (comment === '' || seen.has(comment)) continue;
+    seen.add(comment);
+    list.push(comment);
+  }
+  let text = '';
+  let kept = 0;
+  for (const comment of list) {
+    const next = text === '' ? comment : `${text}${SEP}${comment}`;
+    if (next.length > COMMENTS_MAX_CHARS) break;
+    text = next;
+    kept += 1;
+  }
+  const rest = list.length - kept;
+  if (rest > 0) text += `${SEP}… (${rest} ${rest > 1 ? 'commentaires non repris' : 'commentaire non repris'})`;
+  return text;
+}
+
+/**
  * Lignes du registre, une par groupe issu de consolidate() (ARCHITECTURE §4.1).
- * → [{ id, department, usage_name, …, last_review }] (clés de REGISTRY_COLUMNS, valeurs texte)
+ * → [{ id, department, usage_name, …, last_review[, comments] }] (clés de registryColumns(campaign),
+ *   valeurs texte ; `comments` seulement si la campagne autorise les commentaires dans les exports)
  */
 export function registryRows(groups, { campaign, actions, questionnaire, rules, calendar, t, today } = {}) {
+  const withComments = commentsExportable(campaign);
   return (groups ?? []).map((g) => ({
     id: g.id ?? '',
     department: (g.departments ?? []).filter((d) => typeof d === 'string' && d !== '').join(', '),
@@ -268,5 +320,6 @@ export function registryRows(groups, { campaign, actions, questionnaire, rules, 
     owner: typeof g.assessment?.owner === 'string' ? g.assessment.owner : '',
     actions: actionsText(g, actions, campaign, t),
     last_review: formatDateFr(g.last_review ?? ''),
+    ...(withComments ? { comments: commentsText(g) } : {}),
   }));
 }

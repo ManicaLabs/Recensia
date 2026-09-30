@@ -16,9 +16,11 @@ const DEPARTMENT_MAX = 80;
 // Caractères de contrôle C0/C1 (hors saut de ligne, traité à part).
 const CONTROL = /[\u0000-\u0009\u000B-\u001F\u007F-\u009F]/g;
 // Caractères de mise en forme invisibles (catégorie Unicode Cf) : bidi, espaces sans chasse, trait d'union
-// conditionnel, opérateurs invisibles, étiquettes Unicode (texte caché)… Seuls les liants U+200C et U+200D,
-// nécessaires à certaines écritures et aux émojis composés, sont conservés.
-const FORMAT = /(?![\u200C\u200D])\p{Cf}/gu;
+// conditionnel, opérateurs invisibles, étiquettes Unicode (texte caché)… et remplisseurs hangûl (lettres sans
+// glyphe : U+115F, U+1160, U+3164, U+FFA0). Seuls les liants U+200C et U+200D, nécessaires à certaines
+// écritures et aux émojis composés, sont conservés. Même définition dans src/crypto/link.js (textes du lien)
+// et src/share/channels.js (sanitizeText) : tests/validate.test.js vérifie que les trois chemins concordent.
+const FORMAT = /(?![\u200C\u200D])[\p{Cf}\u115F\u1160\u3164\uFFA0]/gu;
 const MODES = ['anonymous', 'open'];
 const EMAIL = /^[^\s@<>()[\]\\,;:"]+@[^\s@<>()[\]\\,;:".]+(\.[^\s@<>()[\]\\,;:".]+)+$/;
 
@@ -43,13 +45,17 @@ function dropLoneSurrogates(s) {
   return out;
 }
 
-/** Texte d'une ligne : contrôles, bidi et invisibles retirés, espaces normalisés, rogné. */
+/**
+ * Texte d'une ligne : contrôles, bidi et invisibles retirés, espaces normalisés, rogné.
+ * La normalisation NFC suit les retraits (« e », U+200B, U+0301 donne « é ») : le résultat est stable,
+ * cleanLine(cleanLine(x)) === cleanLine(x).
+ */
 export function cleanLine(s) {
   return dropLoneSurrogates(String(s))
-    .normalize('NFC')
     .replace(/[\r\n\t\u2028\u2029]+/g, ' ')
     .replace(CONTROL, '')
     .replace(FORMAT, '')
+    .normalize('NFC')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -57,11 +63,11 @@ export function cleanLine(s) {
 /** Texte multiligne : idem, en conservant les sauts de ligne (au plus une ligne vide). */
 export function cleanMultiline(s) {
   return dropLoneSurrogates(String(s))
-    .normalize('NFC')
     .replace(/\r\n?|\u2028|\u2029/g, '\n')
     .replace(/\t/g, ' ')
     .replace(CONTROL, '')
     .replace(FORMAT, '')
+    .normalize('NFC')
     .split('\n')
     .map((line) => line.replace(/\s+/g, ' ').trimEnd())
     .join('\n')

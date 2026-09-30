@@ -7,7 +7,8 @@
 //
 // Le décodage est strict : longueur plafonnée avant tout décodage, alphabet base64url seul,
 // décompression en flux plafonnée, aucun octet après la fin du flux DEFLATE, JSON objet,
-// clés connues seulement, valeurs bornées, caractères de contrôle et de contrôle bidirectionnel refusés.
+// clés connues seulement, valeurs bornées, caractères de contrôle et de contrôle bidirectionnel refusés,
+// autres caractères invisibles (catégorie Unicode Cf, remplisseurs hangûl) retirés des textes.
 //
 // decodeCampaignLink est synchrone et ne vérifie que la forme de la clé publique (65 octets, 0x04).
 // L'appartenance du point à la courbe P-256 exige WebCrypto (asynchrone) : le formulaire répondant
@@ -56,6 +57,11 @@ const EMAIL_LOCAL_RE = /^[A-Za-z0-9_+-]+(?:\.[A-Za-z0-9_+-]+)*$/;
 const EMAIL_DOMAIN_RE = /^(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+(?:[A-Za-z]{2,63}|xn--[A-Za-z0-9-]{1,59})$/;
 // Contrôles C0, DEL, C1, séparateurs de ligne/paragraphe Unicode, marques et contrôles bidirectionnels.
 const FORBIDDEN_CHARS_RE = /[\u0000-\u001F\u007F-\u009F\u061C\u200E\u200F\u2028\u2029\u202A-\u202E\u2066-\u2069]/;
+// Autres caractères de mise en forme invisibles (catégorie Unicode Cf : espaces sans chasse, BOM, trait d'union
+// conditionnel, étiquettes Unicode U+E0000–U+E007F…) et remplisseurs hangûl (lettres sans glyphe : U+115F, U+1160,
+// U+3164, U+FFA0) : retirés des textes, hors liants U+200C et U+200D (écritures, émojis composés). Même
+// définition que src/engine/validate.js (chemin des codes) et src/share/channels.js (messages générés).
+const INVISIBLE_RE = /(?![\u200C\u200D])[\p{Cf}\u115F\u1160\u3164\uFFA0]/gu;
 
 /**
  * Erreur de lien. code : 'format' (encodage, compression ou JSON illisible) · 'version' (v non pris en charge) ·
@@ -162,8 +168,8 @@ export async function decodeAndVerifyCampaignLink(payload) {
  * Valide une configuration de lien.
  * errors : [{ field, code }] avec code ∈ required · type · unknown · version · pattern · enum · chars ·
  * too_short · too_long · too_many · duplicate · invalid_date · invalid_key · invalid_email · forbidden.
- * value : configuration normalisée (textes NFC sans espaces de bord, clés dans l'ordre canonique,
- * champs facultatifs nuls ou vides omis).
+ * value : configuration normalisée (textes sans caractères invisibles, NFC, sans espaces de bord ; clés dans
+ * l'ordre canonique ; champs facultatifs nuls ou vides omis). Contrôles et bidi : refusés (code 'chars').
  * @param {unknown} obj
  * @returns {{ ok: boolean, errors: { field: string, code: string }[], value: object|null }}
  */
@@ -345,11 +351,15 @@ export function hasForbiddenChars(s) {
   return false;
 }
 
+/**
+ * Texte issu du lien : refusé s'il contient un caractère interdit (hasForbiddenChars), sinon débarrassé des
+ * autres invisibles (INVISIBLE_RE), normalisé NFC après ce retrait et rogné. Longueur en points de code.
+ */
 function checkText(v, min, max) {
   if (v === undefined) return { error: 'required' };
   if (typeof v !== 'string') return { error: 'type' };
   if (hasForbiddenChars(v)) return { error: 'chars' };
-  const value = v.normalize('NFC').trim();
+  const value = v.replace(INVISIBLE_RE, '').normalize('NFC').trim();
   const n = codePointLength(value);
   if (n < min) return { error: min === 1 && n === 0 ? 'required' : 'too_short' };
   if (n > max) return { error: 'too_long' };

@@ -5,12 +5,15 @@
 
 import { h, mount, loadCss } from '../../ui/dom.js';
 import {
-  button, icon, field, setFieldError, levelBadge, modal, confirmDialog, toast, disclaimer,
+  button, icon, field, setFieldError, levelBadge, modal, confirmDialog, toast, disclaimer, callout,
 } from '../../ui/components.js';
 import { actionFromSuggestion } from '../../engine/actions.js';
 import { cleanLine, cleanMultiline } from '../../engine/validate.js';
 import { randomId } from '../../crypto/random.js';
 import { formatDate, formatDateTime } from '../../i18n.js';
+// Typographie française à l'affichage des textes venus de data/ (actions, règles) et des saisies :
+// les valeurs enregistrées ne sont jamais modifiées.
+import { frenchSpacing as fr } from '../../ui/questionnaire.js';
 
 // ---------------------------------------------------------------------------------------------
 // Logique pure
@@ -175,6 +178,30 @@ export function sortActions(actions, sort = 'priority') {
   return [...(actions ?? [])].filter(Boolean).sort(cmp);
 }
 
+/**
+ * Actions affichées : celles qui correspondent aux filtres, plus celles de `keep` (identifiants
+ * des actions que l'on vient de modifier) même si elles n'y correspondent plus. Une action dont
+ * on change le statut ne disparaît donc pas sous le focus : elle reste affichée, signalée, jusqu'au
+ * prochain changement de filtre. → [{ action, matches }] dans l'ordre du tri de la vue.
+ */
+export function visibleActions(actions, view = DEFAULT_VIEW, keep = new Set()) {
+  const list = (actions ?? []).filter(Boolean);
+  const matching = new Set(filterActions(list, view));
+  const kept = keep instanceof Set ? keep : new Set(keep ?? []);
+  const shown = list.filter((a) => matching.has(a) || kept.has(a.id));
+  return sortActions(shown, view?.sort).map((a) => ({ action: a, matches: matching.has(a) }));
+}
+
+/**
+ * Mention du dialogue d'édition pour une action issue d'une suggestion, dont l'usage est figé :
+ * action transverse (usage_key nul, toute la campagne) ou rattachée à une ligne du registre.
+ */
+export function usageLockedKey(action) {
+  return action?.usage_key === null || action?.usage_key === undefined
+    ? 'actions.form.usage_locked_transverse'
+    : 'actions.form.usage_locked';
+}
+
 /** Options du filtre et du champ « usage concerné » : une par ligne du registre. */
 export function usageOptions(groups) {
   return (groups ?? []).map((g) => ({ value: g.usage_key, label: g.name || g.id, id: g.id }));
@@ -326,9 +353,11 @@ export function acceptAllSuggestions(suggestions, campaignId, now = new Date()) 
 // Vue
 // ---------------------------------------------------------------------------------------------
 
-// État d'affichage conservé entre deux rafraîchissements (filtres, tri, focus à restaurer).
+// État d'affichage conservé entre deux rafraîchissements (filtres, tri, focus à restaurer,
+// actions modifiées gardées à l'écran jusqu'au prochain changement de filtre).
 const views = new Map();
 const openBuckets = new Map();
+const keptActions = new Map();
 let pendingFocus = null;
 
 function viewFor(campaignId, usageKeys) {
@@ -337,8 +366,107 @@ function viewFor(campaignId, usageKeys) {
   return v;
 }
 
+function keptFor(campaignId) {
+  if (!keptActions.has(campaignId)) keptActions.set(campaignId, new Set());
+  return keptActions.get(campaignId);
+}
+
 function selectControl(options, value, attrs = {}) {
   return h('select', { ...attrs, value }, options.map((o) => h('option', { value: o.value }, o.label)));
+}
+
+/**
+ * Sélecteur de statut d'une action suivi d'un bouton « Appliquer » (WCAG 3.2.2) : parcourir les
+ * options (souris ou flèches du clavier, qui déclenchent « change » sous Windows et Linux)
+ * n'enregistre rien et ne modifie pas la page. Le statut choisi n'est enregistré que par le
+ * bouton « Appliquer » (affiché seulement quand ce statut diffère du statut enregistré) ou par la
+ * touche Entrée sur le sélecteur. reset() revient au statut enregistré et, si « Appliquer » avait
+ * le focus, le rend au sélecteur. Construit des éléments DOM (testé sous Node avec un faux DOM).
+ * → { select, apply, sync, reset }
+ */
+export function statusControl(action, t, { id, onApply } = {}) {
+  const select = selectControl(ACTION_STATUSES.map((s) => ({ value: s, label: t(`common.action_status.${s}`) })), action.status, {
+    id,
+    class: 'action-status-select',
+  });
+  const pending = () => ACTION_STATUSES.includes(select.value) && select.value !== action.status;
+  const commit = () => {
+    if (pending() && typeof onApply === 'function') onApply(select.value);
+  };
+  const apply = button(t('actions.item.apply'), commit, {
+    variant: 'primary', size: 'sm', icon: 'check', attrs: { class: 'action-status-apply' },
+  });
+  const sync = () => {
+    const dirty = pending();
+    apply.hidden = !dirty;
+    if (dirty) {
+      apply.setAttribute('aria-label', t('actions.item.apply_label', { status: t(`common.action_status.${select.value}`), title: action.title }));
+    } else {
+      apply.removeAttribute('aria-label');
+    }
+  };
+  // Retour au statut enregistré (échec d'enregistrement, statut inchangé) : « Appliquer » est
+  // masqué ; s'il avait le focus, celui-ci passe au sélecteur au lieu de retomber sur la page.
+  const reset = () => {
+    const hadFocus = globalThis.document?.activeElement === apply;
+    select.value = action.status;
+    sync();
+    if (hadFocus && apply.hidden && typeof select.focus === 'function') select.focus();
+  };
+  select.addEventListener('change', sync);
+  select.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' || !pending()) return;
+    event.preventDefault();
+    commit();
+  });
+  sync();
+  return { select, apply, sync, reset };
+}
+
+/**
+ * Badges des deux niveaux d'une ligne du registre, axe affiché (« AI Act : Haut risque »,
+ * « Exposition des données : Critique ») et libellé complet (jamais le libellé court) : pour les
+ * résumés où rien d'autre ne nomme l'axe de chaque badge (rubriques de suggestions du plan
+ * d'actions, fiches des usages prioritaires du rapport). → [badge AI Act, badge données]
+ */
+export function axisBadges(effective, t) {
+  return [
+    levelBadge('ai_act', effective?.ai_act_level, t, { axisLabel: 'visible' }),
+    levelBadge('data', effective?.data_level, t, { axisLabel: 'visible' }),
+  ];
+}
+
+/**
+ * Emplacement d'un encart d'erreur d'enregistrement (masqué tant qu'il est vide, par la feuille de
+ * style). live : true pour un emplacement placé dans un dialogue (role="alert") : la notification,
+ * hors du dialogue modal, n'y est ni visible ni annoncée.
+ */
+export function saveErrorSlot({ live = false } = {}) {
+  return h('div', { class: 'actions-save-error', role: live ? 'alert' : null });
+}
+
+/**
+ * Encart d'erreur d'enregistrement, affiché en plus de la notification (actions.toast.save_error) :
+ * un seul à la fois, dans l'emplacement de l'élément concerné (sinon `fallback`), jusqu'au prochain
+ * affichage de l'onglet (enregistrement réussi), à une nouvelle tentative (clear) ou à une autre
+ * erreur, qui le déplace. Construit des éléments DOM (testé sous Node avec un faux DOM).
+ * → { show(slot) → emplacement utilisé ou null, clear(), current() }
+ */
+export function saveErrorPresenter(t, fallback = null) {
+  let current = null;
+  const clear = () => {
+    if (current) mount(current);
+    current = null;
+  };
+  const show = (slot) => {
+    const target = slot ?? fallback;
+    clear();
+    if (!target) return null;
+    mount(target, callout('danger', h('p', null, t('actions.toast.save_error'))));
+    current = target;
+    return target;
+  };
+  return { show, clear, current: () => current };
 }
 
 function statusBadge(status, t) {
@@ -351,7 +479,7 @@ function priorityTag(priority, t) {
 
 function ruleLabel(rules, id) {
   const rule = (rules?.rules ?? []).find((r) => r.id === id);
-  return rule?.label ? `${rule.label} (${id})` : id;
+  return rule?.label ? `${fr(rule.label)} (${id})` : id;
 }
 
 function groupLabel(group, t) {
@@ -387,6 +515,10 @@ export async function render(root, { campaign, model, ctx, refresh }) {
   const openSet = openBuckets.get(campaign.id);
   const progress = progressOf(model.actions, today);
   const focusTargets = new Map();
+  // Actions gardées à l'écran : seulement pendant un rafraîchissement demandé par cet onglet
+  // (focus à restaurer) ; un nouvel affichage de l'onglet repart des seuls filtres.
+  const kept = keptFor(campaign.id);
+  if (!(pendingFocus && pendingFocus.campaignId === campaign.id)) kept.clear();
   let busy = false;
 
   const guard = async (fn) => {
@@ -399,9 +531,14 @@ export async function render(root, { campaign, model, ctx, refresh }) {
     }
   };
 
-  const reportError = (err) => {
+  // Erreur d'enregistrement : notification et encart persistant près de l'élément concerné
+  // (slot) ; l'encart disparaît au prochain affichage de l'onglet, après un enregistrement réussi.
+  const pageErrorSlot = saveErrorSlot();
+  const saveErrors = saveErrorPresenter(t, pageErrorSlot);
+  const reportError = (err, slot) => {
     console.error('[Recensia] Plan d’actions : enregistrement impossible.', err);
     toast(t('actions.toast.save_error'), 'danger');
+    saveErrors.show(slot);
   };
 
   // --- Suggestions -------------------------------------------------------------------------
@@ -415,29 +552,29 @@ export async function render(root, { campaign, model, ctx, refresh }) {
     return { campaignId: campaign.id, kind: 'suggestion', key: next };
   };
 
-  async function accept(suggestion) {
+  async function accept(suggestion, slot) {
     await guard(async () => {
       try {
         await store.putAction(acceptSuggestion(suggestion, campaign.id));
       } catch (err) {
-        reportError(err);
+        reportError(err, slot);
         return;
       }
-      toast(t('actions.toast.accepted', { title: suggestion.title }), 'success');
+      toast(t('actions.toast.accepted', { title: fr(suggestion.title) }), 'success');
       pendingFocus = focusAfterSuggestion(suggestion, 'list');
       await refresh();
     });
   }
 
-  async function reject(suggestion) {
+  async function reject(suggestion, slot) {
     await guard(async () => {
       try {
         await store.putAction(rejectSuggestion(suggestion, campaign.id));
       } catch (err) {
-        reportError(err);
+        reportError(err, slot);
         return;
       }
-      toast(t('actions.toast.rejected', { title: suggestion.title }), 'info');
+      toast(t('actions.toast.rejected', { title: fr(suggestion.title) }), 'info');
       pendingFocus = focusAfterSuggestion(suggestion, 'suggestions');
       await refresh();
     });
@@ -456,7 +593,7 @@ export async function render(root, { campaign, model, ctx, refresh }) {
       try {
         await store.putActions(acceptAllSuggestions(model.suggestions, campaign.id));
       } catch (err) {
-        reportError(err);
+        reportError(err, suggestionsErrorSlot);
         return;
       }
       toast(t('actions.toast.accepted_all', { count }), 'success');
@@ -467,33 +604,35 @@ export async function render(root, { campaign, model, ctx, refresh }) {
 
   function suggestionItem(s) {
     const key = suggestionKey(s);
-    const acceptBtn = button(t('actions.suggestion.accept'), () => accept(s), {
+    const errorSlot = saveErrorSlot();
+    const acceptBtn = button(t('actions.suggestion.accept'), () => accept(s, errorSlot), {
       variant: 'primary', size: 'sm', icon: 'check',
       attrs: { 'aria-label': t('actions.suggestion.accept_label', { title: s.title }) },
     });
     focusTargets.set(`suggestion:${key}`, acceptBtn);
     return h('li', { class: 'sugg-item' },
       h('div', { class: 'sugg-head' },
-        h('p', { class: 'sugg-title' }, s.title),
+        h('p', { class: 'sugg-title' }, fr(s.title)),
         h('div', { class: 'cluster sugg-tags' },
           priorityTag(s.priority, t),
           s.effort ? h('span', { class: 'tag' }, t('actions.suggestion.effort', { effort: t(`actions.effort.${s.effort}`) })) : null,
-          s.horizon ? h('span', { class: 'tag' }, t('actions.suggestion.horizon', { horizon: s.horizon })) : null)),
-      s.description ? h('p', { class: 'sugg-desc' }, s.description) : null,
+          s.horizon ? h('span', { class: 'tag' }, t('actions.suggestion.horizon', { horizon: fr(s.horizon) })) : null)),
+      s.description ? h('p', { class: 'sugg-desc' }, fr(s.description)) : null,
       h('dl', { class: 'meta-list sugg-meta' },
         h('dt', null, t('actions.suggestion.role')),
-        h('dd', null, s.suggested_role ? s.suggested_role : t('actions.suggestion.no_role'), ' ',
+        h('dd', null, s.suggested_role ? fr(s.suggested_role) : t('actions.suggestion.no_role'), ' ',
           h('span', { class: 'muted' }, t('actions.suggestion.role_note'))),
         s.rule_ids?.length ? [
           h('dt', null, t('actions.suggestion.rules')),
-          h('dd', null, s.rule_ids.map((id) => ruleLabel(model.rules, id)).join(' ; ')),
+          h('dd', null, s.rule_ids.map((id) => ruleLabel(model.rules, id)).join('\u00a0; ')),
         ] : null),
       h('div', { class: 'cluster sugg-buttons' },
         acceptBtn,
-        button(t('actions.suggestion.reject'), () => reject(s), {
+        button(t('actions.suggestion.reject'), () => reject(s, errorSlot), {
           size: 'sm', icon: 'close',
           attrs: { 'aria-label': t('actions.suggestion.reject_label', { title: s.title }) },
-        })));
+        })),
+      errorSlot);
   }
 
   function suggestionBucket(bucket) {
@@ -509,9 +648,8 @@ export async function render(root, { campaign, model, ctx, refresh }) {
     },
       h('summary', { class: 'sugg-summary' },
         h('span', { class: 'sugg-summary-title' }, title),
-        g ? h('span', { class: 'cluster sugg-summary-badges' },
-          levelBadge('ai_act', g.effective?.ai_act_level, t, { short: true }),
-          levelBadge('data', g.effective?.data_level, t)) : null,
+        // Axe affiché et libellé complet : rien d'autre ne nomme l'axe des badges du résumé.
+        g ? h('span', { class: 'cluster sugg-summary-badges' }, axisBadges(g.effective, t)) : null,
         h('span', { class: 'tag' }, t('actions.suggestions.count', { count: bucket.items.length }))),
       bucket.id === USAGE_CAMPAIGN ? h('p', { class: 'muted sugg-scope' }, t('actions.suggestions.campaign_help')) : null,
       h('ul', { class: 'sugg-list', role: 'list' }, bucket.items.map(suggestionItem)));
@@ -521,12 +659,14 @@ export async function render(root, { campaign, model, ctx, refresh }) {
     t('actions.suggestions.title', { count: model.suggestions.length }));
   focusTargets.set('heading:suggestions', suggestionsHeading);
 
+  const suggestionsErrorSlot = saveErrorSlot();
   const suggestionsSection = h('section', { class: 'actions-section', 'aria-labelledby': 'actions-suggestions-title' },
     h('div', { class: 'cluster cluster-between actions-section-head' },
       suggestionsHeading,
       model.suggestions.length > 1
         ? button(t('actions.accept_all.button', { count: model.suggestions.length }), acceptAll, { icon: 'check' })
         : null),
+    suggestionsErrorSlot,
     h('p', { class: 'muted' }, t('actions.suggestions.help')),
     model.suggestions.length
       ? h('div', { class: 'stack sugg-groups' }, buckets.map(suggestionBucket))
@@ -571,7 +711,7 @@ export async function render(root, { campaign, model, ctx, refresh }) {
         ? h('div', { class: 'field' },
           h('p', { class: 'field-label' }, t('actions.form.usage')),
           h('p', null, usageText(existing, groupsByKey, t)),
-          h('p', { class: 'field-help' }, t('actions.form.usage_locked')))
+          h('p', { class: 'field-help' }, t(usageLockedKey(existing))))
         : field({ id: `${prefix}-usage`, label: t('actions.form.usage'), help: t('actions.form.usage_help'), control: usageInput }),
       owner: field({
         id: `${prefix}-owner`,
@@ -584,6 +724,8 @@ export async function render(root, { campaign, model, ctx, refresh }) {
       status: field({ id: `${prefix}-status`, label: t('actions.form.status'), control: statusInput }),
     };
     const controls = { title: titleInput, description: descInput, owner: ownerInput, due_date: dueInput, priority: priorityInput, status: statusInput, usage_key: usageInput };
+    // Erreur d'enregistrement affichée dans le dialogue, juste au-dessus de ses boutons.
+    const formErrorSlot = saveErrorSlot({ live: true });
 
     const form = h('form', {
       class: 'action-form',
@@ -598,10 +740,12 @@ export async function render(root, { campaign, model, ctx, refresh }) {
     fields.description,
     fields.usage_key,
     h('div', { class: 'action-form-grid' }, fields.owner, fields.due_date, fields.priority, fields.status),
+    formErrorSlot,
     // Bouton invisible : la touche Entrée d'un champ déclenche l'enregistrement.
     h('button', { type: 'submit', class: 'visually-hidden', tabindex: '-1', 'aria-hidden': 'true' }, t('common.actions.save')));
 
     const save = async () => {
+      saveErrors.clear();
       const input = {
         title: titleInput.value,
         description: descInput.value,
@@ -638,7 +782,7 @@ export async function render(root, { campaign, model, ctx, refresh }) {
       try {
         await store.putAction(result.value);
       } catch (err) {
-        reportError(err);
+        reportError(err, formErrorSlot);
         return undefined;
       }
       return result.value;
@@ -654,21 +798,25 @@ export async function render(root, { campaign, model, ctx, refresh }) {
       ],
     });
     if (!saved) return;
-    toast(isNew ? t('actions.toast.created', { title: saved.title }) : t('actions.toast.updated', { title: saved.title }), 'success');
+    toast(isNew ? t('actions.toast.created', { title: fr(saved.title) }) : t('actions.toast.updated', { title: fr(saved.title) }), 'success');
     pendingFocus = { campaignId: campaign.id, kind: 'edit', key: saved.id };
     if (isNew) {
       // L'action créée doit rester visible : filtres élargis si besoin.
       const shown = filterActions([saved], view).length > 0;
       if (!shown) views.set(campaign.id, { ...view, status: 'all', priority: 'all', usage: USAGE_ALL });
+    } else {
+      // Action modifiée : elle reste affichée (et son bouton « Modifier » garde le focus) même si
+      // elle ne correspond plus aux filtres.
+      kept.add(saved.id);
     }
     await refresh();
   }
 
-  async function removeAction(action) {
+  async function removeAction(action, slot) {
     const ok = await confirmDialog({
       title: t('actions.delete.title'),
       message: h('div', { class: 'stack-sm' },
-        h('p', null, t('actions.delete.message', { title: action.title })),
+        h('p', null, t('actions.delete.message', { title: fr(action.title) })),
         action.template_id ? h('p', { class: 'muted' }, t('actions.delete.suggested_note')) : null),
       confirmLabel: t('common.actions.delete'),
       danger: true,
@@ -678,29 +826,35 @@ export async function render(root, { campaign, model, ctx, refresh }) {
       try {
         await store.deleteAction(action.id);
       } catch (err) {
-        reportError(err);
+        reportError(err, slot);
         return;
       }
-      toast(t('actions.toast.deleted', { title: action.title }), 'info');
+      toast(t('actions.toast.deleted', { title: fr(action.title) }), 'info');
       pendingFocus = { campaignId: campaign.id, kind: 'heading', key: 'list' };
       await refresh();
     });
   }
 
-  async function changeStatus(action, status, select) {
+  // Appelé par « Appliquer » (ou Entrée) uniquement, jamais au simple changement d'option.
+  async function changeStatus(action, status, control, slot) {
     await guard(async () => {
       let current = action;
       try {
         current = (await store.listActions(campaign.id)).find((a) => a.id === action.id) ?? action;
         const { changed, value } = transitionStatus(current, status);
-        if (!changed) return;
+        if (!changed) {
+          control.reset();
+          return;
+        }
         await store.putAction(value);
       } catch (err) {
-        reportError(err);
-        select.value = action.status;
+        reportError(err, slot);
+        control.reset();
         return;
       }
-      toast(t('actions.toast.status', { title: action.title, status: t(`common.action_status.${status}`) }), 'success');
+      toast(t('actions.toast.status', { title: fr(action.title), status: t(`common.action_status.${status}`) }), 'success');
+      // L'action reste affichée même si son nouveau statut ne correspond plus au filtre.
+      kept.add(action.id);
       pendingFocus = { campaignId: campaign.id, kind: 'status', key: action.id };
       await refresh();
     });
@@ -708,30 +862,33 @@ export async function render(root, { campaign, model, ctx, refresh }) {
 
   // --- Liste des actions -------------------------------------------------------------------
 
-  function actionItem(action) {
+  function actionItem({ action, matches }) {
     const overdue = isOverdue(action, today);
     const statusId = `action-status-${action.id}`;
-    const statusSelect = selectControl(ACTION_STATUSES.map((s) => ({ value: s, label: t(`common.action_status.${s}`) })), action.status, {
+    const errorSlot = saveErrorSlot();
+    const status = statusControl(action, t, {
       id: statusId,
-      class: 'action-status-select',
-      onChange: (event) => changeStatus(action, event.target.value, event.target),
+      onApply: (value) => changeStatus(action, value, status, errorSlot),
     });
     const editBtn = button(t('common.actions.edit'), () => openEditor(action), {
       size: 'sm', icon: 'edit', attrs: { 'aria-label': t('actions.item.edit_label', { title: action.title }) },
     });
-    focusTargets.set(`status:${action.id}`, statusSelect);
+    focusTargets.set(`status:${action.id}`, status.select);
     focusTargets.set(`edit:${action.id}`, editBtn);
     const role = action.suggested_role;
 
-    return h('li', { class: ['action-item', `is-${action.status}`, overdue ? 'is-overdue' : null] },
+    return h('li', { class: ['action-item', `is-${action.status}`, overdue ? 'is-overdue' : null, matches ? null : 'is-filtered-out'] },
       h('div', { class: 'action-item-head' },
-        h('h4', { class: 'action-title' }, action.title),
+        h('h4', { class: 'action-title' }, fr(action.title)),
         h('div', { class: 'cluster action-badges' },
           statusBadge(action.status, t),
           priorityTag(action.priority, t),
           overdue ? h('span', { class: 'badge badge-overdue' }, icon('alert'), t('actions.item.overdue')) : null,
-          h('span', { class: 'tag' }, action.suggested ? t('actions.item.suggested') : t('actions.item.manual')))),
-      action.description ? h('p', { class: 'action-desc' }, action.description) : null,
+          // « Suggérée » est réservé aux suggestions en attente : une action du plan issue d'une
+          // suggestion acceptée porte une mention distincte.
+          h('span', { class: 'tag' }, action.suggested ? t('actions.item.from_suggestion') : t('actions.item.manual')))),
+      matches ? null : h('p', { class: 'action-filter-note' }, icon('info'), h('span', null, t('actions.item.filtered_out'))),
+      action.description ? h('p', { class: 'action-desc' }, fr(action.description)) : null,
       h('dl', { class: 'meta-list action-meta' },
         h('dt', null, t('actions.item.usage')),
         h('dd', null, usageText(action, groupsByKey, t)),
@@ -746,13 +903,14 @@ export async function render(root, { campaign, model, ctx, refresh }) {
         h('div', { class: 'action-status-field' },
           h('label', { class: 'field-label', for: statusId }, t('actions.item.status_label'),
             h('span', { class: 'visually-hidden' }, ` — ${action.title}`)),
-          statusSelect),
+          h('div', { class: 'action-status-row' }, status.select, status.apply)),
         h('div', { class: 'cluster action-buttons' },
           editBtn,
-          button(t('common.actions.delete'), () => removeAction(action), {
+          button(t('common.actions.delete'), () => removeAction(action, errorSlot), {
             variant: 'ghost', size: 'sm', icon: 'trash',
             attrs: { class: 'btn-ghost-danger', 'aria-label': t('actions.item.delete_label', { title: action.title }) },
-          }))));
+          }))),
+      errorSlot);
   }
 
   const listHeading = h('h3', { id: 'actions-list-title', tabindex: '-1' }, t('actions.list.title', { count: model.actions.length }));
@@ -762,7 +920,7 @@ export async function render(root, { campaign, model, ctx, refresh }) {
 
   function drawList() {
     const current = views.get(campaign.id) ?? view;
-    const filtered = sortActions(filterActions(model.actions, current), current.sort);
+    const filtered = visibleActions(model.actions, current, kept);
     countLine.textContent = t('actions.list.shown', { count: filtered.length, total: model.actions.length });
     if (!model.actions.length) {
       mount(listContainer, h('div', { class: 'empty-state actions-empty' },
@@ -776,6 +934,7 @@ export async function render(root, { campaign, model, ctx, refresh }) {
       mount(listContainer, h('p', { class: 'empty-note' }, icon('info'), h('span', null, t('actions.list.none_filtered')),
         button(t('actions.filters.reset'), () => {
           views.set(campaign.id, { ...DEFAULT_VIEW, status: 'all' });
+          kept.clear();
           syncFilters();
           drawList();
         }, { variant: 'ghost', size: 'sm' })));
@@ -812,6 +971,8 @@ export async function render(root, { campaign, model, ctx, refresh }) {
       const control = selectControl(def.options, view[def.key], {
         onChange: (event) => {
           views.set(campaign.id, { ...(views.get(campaign.id) ?? view), [def.key]: event.target.value });
+          // Changement de filtre : les actions gardées à l'écran suivent de nouveau les filtres.
+          kept.clear();
           drawList();
         },
       });
@@ -858,6 +1019,7 @@ export async function render(root, { campaign, model, ctx, refresh }) {
       h('h2', { id: 'console-tab-title' }, t('actions.title')),
       h('p', { class: 'lead' }, t('actions.lead')),
       h('p', { class: 'muted actions-owner-note' }, icon('info'), h('span', null, t('actions.owner_note')))),
+    pageErrorSlot,
     progressSection,
     suggestionsSection,
     listSection,

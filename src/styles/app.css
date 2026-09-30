@@ -216,6 +216,9 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-padding-top: var(--space-4);
+  /* --bottom-overlay : hauteur des notifications et de la bannière fixées en bas (components.js) ;
+     focus() et scrollIntoView() laissent ainsi l'élément visible au-dessus d'elles (WCAG 2.4.11). */
+  scroll-padding-bottom: var(--bottom-overlay, 0px);
 }
 
 body {
@@ -232,6 +235,8 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-wrap: break-word;
+  /* Place pour faire défiler le bas de page au-dessus des notifications et de la bannière de mise à jour. */
+  padding-bottom: var(--bottom-overlay, 0px);
 }
 
 ::selection { background: var(--selection); }
@@ -351,7 +356,6 @@ h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus, main[tabindex="-1"]:focus { ou
   padding: var(--space-5) var(--gutter) var(--space-7);
 }
 .page-narrow { max-width: calc(var(--prose-max) + 2 * var(--gutter)); }
-.page-wide { max-width: 90rem; }
 
 .page-header {
   display: flex;
@@ -506,13 +510,13 @@ h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus, main[tabindex="-1"]:focus { ou
 }
 .site-header :focus-visible { outline-color: var(--header-active); }
 
-/* Mobile : menu sur une seule ligne, défilement horizontal interne sur les écrans les plus étroits. */
+/* Mobile : menu compact sous la marque. Il passe sur deux lignes plutôt que de défiler quand la place
+   manque (320 px, zoom à 400 %) : tous les liens restent visibles et entiers (WCAG 1.4.10). */
 @media (max-width: 30rem) {
   .site-nav { width: calc(100% + 2 * var(--space-2)); margin-inline: calc(-1 * var(--space-2)); }
-  .site-nav ul { flex-wrap: nowrap; gap: 0; overflow-x: auto; scrollbar-width: none; }
-  .site-nav ul::-webkit-scrollbar { display: none; }
+  .site-nav ul { flex-wrap: wrap; gap: 0; }
   .site-nav li { flex: 0 0 auto; }
-  .site-nav a { padding: 0 var(--space-2); font-size: var(--fs-xs); white-space: nowrap; }
+  .site-nav a { padding: 0 0.4rem; font-size: var(--fs-xs); white-space: nowrap; }
   .site-nav a:focus-visible { outline-offset: -3px; }
 }
 
@@ -549,6 +553,14 @@ h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus, main[tabindex="-1"]:focus { ou
 .site-footer p { margin: 0; }
 .footer-brand strong { color: var(--heading); }
 .app-version { font-variant-numeric: tabular-nums; }
+
+/* Logo Manica (éditeur de l'outil) : monochrome sombre sur fond transparent ; version claire
+   par inversion en thème sombre. */
+.footer-publisher { display: flex; align-items: center; gap: var(--space-2); margin-left: auto; }
+.logo-manica { display: block; width: auto; height: 2.25rem; }
+@media screen and (prefers-color-scheme: dark) {
+  .logo-manica { filter: invert(1); }
+}
 
 .noscript {
   max-width: var(--prose-max);
@@ -656,7 +668,10 @@ select { padding-right: 2rem; }
 input::placeholder, textarea::placeholder { color: var(--text-muted); opacity: 0.85; }
 input:hover:not(:disabled), select:hover:not(:disabled), textarea:hover:not(:disabled) { border-color: var(--text-muted); }
 input:focus-visible, select:focus-visible, textarea:focus-visible {
-  outline: none;
+  /* Contour transparent : invisible ici (le halo suffit), mais rendu en couleur système en mode
+     couleurs forcées, où box-shadow est supprimé (WCAG 2.4.7). */
+  outline: 2px solid transparent;
+  outline-offset: 1px;
   border-color: var(--focus);
   box-shadow: 0 0 0 3px var(--focus-halo), 0 0 0 1px var(--focus);
 }
@@ -746,6 +761,8 @@ input[type="checkbox"], input[type="radio"] {
   background: currentColor;
 }
 .badge-neutral::before { display: none; }
+/* Axe affiché (« AI Act : », « Exposition des données : ») : plus discret que le niveau. */
+.badge-axis { font-weight: 500; }
 
 .badge-aia-prohibited_suspected {
   background: var(--aia-prohibited-bg);
@@ -985,7 +1002,7 @@ input[type="checkbox"], input[type="radio"] {
   position: fixed;
   z-index: 70;
   right: var(--gutter);
-  bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+  bottom: calc(var(--space-4) + env(safe-area-inset-bottom) + var(--update-banner-space, 0px));
   left: var(--gutter);
   display: flex;
   flex-direction: column;
@@ -1084,7 +1101,8 @@ input[type="checkbox"], input[type="radio"] {
 .kpi-grid {
   display: grid;
   gap: var(--space-3);
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr));
+  /* auto-fit : pas de piste vide à droite quand les indicateurs tiennent sur une ligne. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr));
   margin-bottom: var(--space-5);
 }
 .kpi {
@@ -1389,6 +1407,15 @@ input[type="checkbox"], input[type="radio"] {
   border-top: var(--border-width) solid var(--border);
 }
 .home-disclaimer p { margin: 0; font-size: var(--fs-sm); }
+.home-publisher {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+.home-publisher p { margin: 0; }
+.logo-manica-lg { height: 4rem; }
 
 .summary-card { margin: var(--space-5) 0; }
 .summary-card h2 { font-size: var(--fs-xl); }
@@ -1424,4 +1451,6 @@ input[type="checkbox"], input[type="radio"] {
 @media (forced-colors: active) {
   .badge, .btn, .callout, .card, .toast { border: 1px solid CanvasText; }
   .badge::before { forced-color-adjust: none; background: CanvasText; }
+  /* Le halo (box-shadow) disparaît dans ce mode : contour épais en couleur système. */
+  input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid Highlight; outline-offset: 1px; }
 }

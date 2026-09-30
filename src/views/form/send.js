@@ -7,10 +7,10 @@ import { h, mount, announce } from '../../ui/dom.js';
 import { button, callout, icon, toast } from '../../ui/components.js';
 import { copyText } from '../../ui/clipboard.js';
 import { downloadText } from '../../ui/download.js';
-import { importLink, planMailto, teamsShareUrl, whatsappUrl } from '../../share/urls.js';
+import { importLink, teamsShareUrl, whatsappUrl } from '../../share/urls.js';
 import { renderMessage } from '../../share/messages.js';
 import { qrSvgElement } from '../../share/qr.js';
-import { groupCodes, rcnContent, rcnFilename, sharedWarning } from './send-plan.js';
+import { groupCodes, mailPlan, rcnContent, rcnFilename, sharedWarning } from './send-plan.js';
 import { frenchSpacing } from '../../ui/questionnaire.js';
 
 function safeImportLink(baseUrl, codes) {
@@ -107,22 +107,48 @@ export function renderSendStage(container, options) {
 
   // --- Actions par canal ---------------------------------------------------------------
 
+  const copied = () => {
+    track();
+    thank(t('form.send.copied'));
+  };
+
   function mailActions(item) {
-    let messages;
+    let plan;
     try {
-      messages = planMailto({ to: item.target, codes: allCodes, baseUrl: ctx.baseUrl, templates, ctx: messageCtx, channelsData });
+      plan = mailPlan({
+        to: item.target,
+        codes: allCodes,
+        baseUrl: ctx.baseUrl,
+        templates,
+        ctx: messageCtx,
+        channelsData,
+        fallback: { subject: t('form.send.mail_fallback_subject', { title: config.title }), body: t('form.send.mail_fallback_body', { title: config.title }) },
+      });
     } catch (err) {
       console.warn('[Recensia] Message prérempli impossible.', err);
       return [callout('warn', h('p', null, t('form.send.mail_unavailable'))),
         button(t('form.send.file_button'), () => download(allCodes), { variant: 'primary', icon: 'download' })];
     }
-    const total = messages.length;
-    const nodes = messages.map((message, index) => {
-      const names = message.codes.map((code) => codes.find((c) => c.code === code)?.name).filter(Boolean).join(', ');
-      if (message.tooLong) {
+    const total = plan.items.length;
+    const namesOf = (list) => list.map((code) => codes.find((c) => c.code === code)?.name).filter(Boolean).join(', ');
+    const nodes = plan.items.map((message, index) => {
+      const names = namesOf(message.codes);
+      if (message.kind === 'fallback') {
+        // Code trop long pour un e-mail prérempli (CDC §17) : fichier ou code copié, puis un
+        // e-mail court déjà adressé, pour rester en deux clics (CDC §7.7).
         return h('div', { class: 'form-send-fallback stack-sm' },
           h('p', null, t('form.send.mail_too_long', { name: names })),
-          button(t('form.send.file_button_one'), () => download(message.codes, { note: t('form.send.file_attach', { target: item.target }) }), { icon: 'download' }));
+          h('div', { class: 'form-send-actions' },
+            button(t('form.send.file_button_one'), () => download(message.codes, { note: t('form.send.file_attach', { target: item.target }) }), { variant: index === 0 ? 'primary' : 'secondary', icon: 'download' }),
+            h('a', {
+              class: ['btn', 'btn-secondary'],
+              href: message.url,
+              onClick: () => {
+                track();
+                thank(t('form.send.mail_opened'));
+              },
+            }, icon('mail'), h('span', { class: 'btn-label' }, t('form.send.mail_fallback_open'))),
+            copyAction(t, () => message.codes.join('\n'), { label: t('form.codes.copy'), onCopied: copied })));
       }
       const label = total === 1 ? item.button_label : t('form.send.mail_part', { n: index + 1, total });
       return h('a', {
@@ -137,14 +163,9 @@ export function renderSendStage(container, options) {
     return [
       h('div', { class: ['form-send-actions', total > 1 ? 'is-list' : null] }, nodes),
       total > 1 ? h('p', { class: 'muted small' }, t('form.send.mail_split', { count: total })) : null,
-      h('p', { class: 'muted small' }, t('form.send.mail_help')),
+      h('p', { class: 'muted small' }, plan.help === 'mail_help' ? t('form.send.mail_help') : t('form.send.mail_fallback_help')),
     ];
   }
-
-  const copied = () => {
-    track();
-    thank(t('form.send.copied'));
-  };
 
   function copyActions(item) {
     const main = copyAction(t, () => allCodes.join('\n'), {
@@ -289,7 +310,9 @@ export function renderSendStage(container, options) {
         entry.rev > 1 ? h('span', { class: 'badge badge-neutral form-code-rev' }, t('form.codes.revision', { rev: entry.rev })) : null),
       h('details', { class: 'form-code-details' },
         h('summary', null, t('form.codes.show')),
-        h('p', { class: 'code-block code-block-scroll form-code-value' }, entry.code)),
+        // Sans hauteur maximale : le <details> replie déjà le code, et une zone défilante
+        // devrait être atteignable au clavier (WCAG 2.1.1, Safari).
+        h('p', { class: 'code-block form-code-value' }, entry.code)),
       h('div', { class: 'cluster' }, copy, toggle),
       qrBox);
   }

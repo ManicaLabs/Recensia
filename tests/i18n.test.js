@@ -130,24 +130,36 @@ describe('load()', () => {
 });
 
 describe('formatDate / formatDateTime / formatNumber', () => {
+  // Espace insécable entre le jour et le mois (« 31 octobre » jamais coupé en fin de ligne).
+  const NB = '\u00a0';
+
   test('jour YYYY-MM-DD en toutes lettres', () => {
-    assert.equal(formatDate('2026-10-31'), '31 octobre 2026');
-    assert.equal(formatDate('2027-12-02'), '2 décembre 2027');
-    assert.equal(formatDate('2026-08-02'), '2 août 2026');
-    assert.equal(formatDate('2026-10-01'), '1er octobre 2026');
+    assert.equal(formatDate('2026-10-31'), `31${NB}octobre 2026`);
+    assert.equal(formatDate('2027-12-02'), `2${NB}décembre 2027`);
+    assert.equal(formatDate('2026-08-02'), `2${NB}août 2026`);
+    assert.equal(formatDate('2026-10-01'), `1er${NB}octobre 2026`);
+  });
+
+  test('jour et mois insécables, mois et année séparés par une espace ordinaire', () => {
+    for (const day of ['2026-10-31', '2026-09-01', '2027-12-02']) {
+      const text = formatDate(day);
+      assert.match(text, /^\d{1,2}(?:er)?\u00a0\S+ \d{4}$/u, text);
+    }
+    const stamp = formatDateTime('2026-10-01T08:00:00Z', { timeZone: 'UTC' });
+    assert.match(stamp, /^1er\u00a0octobre 2026 à 08:00$/u, stamp);
   });
 
   test('indépendant du fuseau horaire', () => {
-    assert.equal(formatDate('2026-01-01'), '1er janvier 2026');
-    assert.equal(formatDate('2026-12-31'), '31 décembre 2026');
-    assert.equal(formatDate(new Date(2026, 9, 31, 23, 59)), '31 octobre 2026');
+    assert.equal(formatDate('2026-01-01'), `1er${NB}janvier 2026`);
+    assert.equal(formatDate('2026-12-31'), `31${NB}décembre 2026`);
+    assert.equal(formatDate(new Date(2026, 9, 31, 23, 59)), `31${NB}octobre 2026`);
   });
 
   test('horodatage ISO complet : date du fuseau local (comme formatDateTime)', () => {
     const iso = '2026-09-29T23:30:00.000Z';
     const local = new Date(iso);
     assert.equal(formatDate(iso), formatDate(new Date(local.getFullYear(), local.getMonth(), local.getDate())));
-    assert.equal(formatDate('2026-10-31T12:00:00'), '31 octobre 2026');
+    assert.equal(formatDate('2026-10-31T12:00:00'), `31${NB}octobre 2026`);
   });
 
   test('valeur invalide renvoyée telle quelle', () => {
@@ -158,8 +170,8 @@ describe('formatDate / formatDateTime / formatNumber', () => {
   });
 
   test('horodatage', () => {
-    assert.equal(formatDateTime('2026-10-31T13:05:00Z', { timeZone: 'Europe/Paris' }), '31 octobre 2026 à 14:05');
-    assert.equal(formatDateTime('2026-10-01T08:00:00Z', { timeZone: 'UTC' }), '1er octobre 2026 à 08:00');
+    assert.equal(formatDateTime('2026-10-31T13:05:00Z', { timeZone: 'Europe/Paris' }), `31${NB}octobre 2026 à 14:05`);
+    assert.equal(formatDateTime('2026-10-01T08:00:00Z', { timeZone: 'UTC' }), `1er${NB}octobre 2026 à 08:00`);
     assert.equal(formatDateTime('pas une date'), 'pas une date');
     assert.equal(formatDateTime(undefined), '');
   });
@@ -212,6 +224,30 @@ describe('catalogues src/i18n/fr/*.json', () => {
     };
     for (const ns of ['common', 'home', 'privacy', 'not_found']) walk(readCatalog(ns), ns);
     assert.deepEqual(problems, []);
+  });
+
+  test('accueil, métadonnées et manifest : promesse mesurée (CDC §7.4) et formats d\'export nommés', () => {
+    const sources = [];
+    const walk = (value, path) => {
+      if (typeof value === 'string') sources.push([path, value]);
+      else if (value && typeof value === 'object') for (const [key, child] of Object.entries(value)) walk(child, `${path}.${key}`);
+    };
+    for (const ns of ['common', 'home', 'privacy', 'not_found']) walk(readCatalog(ns), ns);
+    for (const file of ['index.html', '404.html', 'manifest.webmanifest']) {
+      sources.push([file, readFileSync(new URL(`../${file}`, import.meta.url), 'utf8')]);
+    }
+    const problems = [];
+    for (const [path, text] of sources) {
+      // L'application est livrée par un serveur web : seule l'absence de serveur de stockage est promise.
+      if (/\b(?:sans|aucun|ni)\s+serveur(?!\s+de\s+stockage)/i.test(text)) problems.push(`${path} : « serveur » sans « de stockage »`);
+      // La lecture dépend de la clé de la campagne (fichier de récupération partageable), pas d'une personne.
+      if (/\bvous seul(?:e|s|es)?\b/i.test(text)) problems.push(`${path} : « vous seul »`);
+      if (/\bXLSX\b/.test(text)) problems.push(`${path} : « XLSX » au lieu de « Excel (.xlsx) »`);
+    }
+    assert.deepEqual(problems, []);
+    const home = readCatalog('home');
+    assert.match(home.hero.lead, /sans serveur de stockage : les réponses sont chiffrées/);
+    assert.match(home.features.exports.text, /^Excel \(\.xlsx\), CSV et rapport imprimable/);
   });
 
   test('common.json : libellés partagés du contrat (§5.5 d\'ARCHITECTURE.md)', () => {

@@ -4,6 +4,7 @@
 // - textToRichHtml : fragment HTML échappé reconstruit depuis le texte ÉDITÉ par le responsable,
 //   liens http(s) et adresses e-mail valides rendus cliquables (copie en texte riche).
 // - restoreLockedBlock : remet en place la phrase verrouillée « mode, anonymat, canal » (CDC §7.7).
+// - lockedStatusChange : changement de présence de cette phrase à annoncer pendant la saisie.
 // - mailtoPlan : lien « Ouvrir dans ma messagerie » et dépassement de la limite MAILTO_MAX.
 // - planMessageMailto : message complet, sinon version courte générée, sinon « Copier ».
 
@@ -152,6 +153,21 @@ export function restoreLockedBlock(edited, original, locked) {
   }
   const trimmed = current.trimEnd();
   return trimmed ? `${trimmed}\n\n${block}` : block;
+}
+
+/**
+ * Changement de présence de la phrase verrouillée à annoncer aux lecteurs d'écran (WCAG 4.1.3) :
+ * 'missing' quand elle disparaît du message, 'present' quand elle y revient, null sinon. Les frappes
+ * qui ne changent pas l'état, et le premier affichage (état précédent inconnu), n'annoncent rien.
+ * @param {boolean|null|undefined} previous présence lors de la mise à jour précédente
+ * @param {boolean} present présence actuelle
+ * @returns {'missing'|'present'|null}
+ */
+export function lockedStatusChange(previous, present) {
+  if (typeof previous !== 'boolean') return null;
+  const now = Boolean(present);
+  if (now === previous) return null;
+  return now ? 'present' : 'missing';
 }
 
 /**

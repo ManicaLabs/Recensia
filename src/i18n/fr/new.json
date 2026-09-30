@@ -148,7 +148,7 @@
       "no_date": "non définie"
     },
     "local_title": "Vos données restent dans ce navigateur",
-    "local_text": "La campagne, sa clé et les réponses importées sont enregistrées ici seulement, sans aucun serveur. Pour changer de poste : fichier de récupération de la clé et sauvegarde de la campagne (onglet « Paramètres » de la console)."
+    "local_text": "La campagne, sa clé et les réponses importées sont enregistrées uniquement dans ce navigateur, jamais sur un serveur de Recensia. Pour changer de poste : fichier de récupération de la clé et sauvegarde de la campagne (onglet « Paramètres » de la console)."
   },
   "submit": "Créer la campagne",
   "submitting": "Génération des clés…",

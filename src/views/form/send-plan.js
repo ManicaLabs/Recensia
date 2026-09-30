@@ -3,6 +3,7 @@
 // nom et contenu du fichier .rcn. Module pur (l'environnement du navigateur est passé en paramètre).
 
 import { channelInfo, anonymityWarning, isChannelAvailable } from '../../share/channels.js';
+import { planMailto, mailtoUrl } from '../../share/urls.js';
 import { slugify } from '../../export/registry.js';
 
 /** Canaux par défaut quand le lien n'en déclare aucun : copier et fichier. */
@@ -67,6 +68,30 @@ export function sharedWarning(items) {
 /** Avertissements d'anonymat distincts des canaux (notice du formulaire). */
 export function distinctWarnings(items) {
   return [...new Set(items.filter((item) => item.available && item.warning).map((item) => item.warning))];
+}
+
+/**
+ * Carte « E-mail » du répondant (CDC §7.7, §17). Les messages préremplis (lien d'import et code)
+ * sont gardés tant qu'ils tiennent dans la limite mailto ; au-delà, chaque code trop long passe
+ * en repli : fichier .rcn ou code copié, avec un e-mail court (destinataire, objet, corps sans
+ * code) pour que l'envoi reste en deux clics.
+ * Lève l'erreur de planMailto (adresse ou code invalide) : l'appelant propose alors le fichier.
+ * @param {{ to: string, codes: string[], baseUrl: string, templates: object, ctx: object,
+ *   channelsData: object, fallback: { subject: string, body: string } }} options
+ * @returns {{ items: ({ kind: 'prefilled', url: string, codes: string[] }
+ *   | { kind: 'fallback', url: string, codes: string[] })[], openable: number,
+ *   help: 'mail_help' | 'mail_fallback_help' }}
+ */
+export function mailPlan({ to, codes, baseUrl, templates, ctx, channelsData, fallback }) {
+  const messages = planMailto({ to, codes, baseUrl, templates, ctx, channelsData });
+  let shortUrl = null;
+  const items = messages.map((message) => {
+    if (!message.tooLong) return { kind: 'prefilled', url: message.url, codes: message.codes };
+    shortUrl ??= mailtoUrl({ to, subject: fallback?.subject ?? '', body: fallback?.body ?? '' });
+    return { kind: 'fallback', url: shortUrl, codes: message.codes };
+  });
+  const openable = items.filter((item) => item.kind === 'prefilled').length;
+  return { items, openable, help: openable > 0 ? 'mail_help' : 'mail_fallback_help' };
 }
 
 /**

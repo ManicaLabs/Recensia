@@ -89,8 +89,8 @@
   "actions": {
     "title": "Avancement du plan d'actions",
     "progress": {
-      "one": "{count} action faite sur {total} retenue",
-      "other": "{count} actions faites sur {total} retenues"
+      "one": "{count} action faite sur {total} au plan",
+      "other": "{count} actions faites sur {total} au plan"
     },
     "none": "Aucune action n'a encore été ajoutée au plan.",
     "all_rejected": "Toutes les actions du plan ont été rejetées.",
@@ -103,8 +103,8 @@
   },
   "shadow": {
     "title": "Comptes personnels et IA fantôme",
-    "note": "Usages passant par un compte personnel ou dont le type de compte est inconnu : les données sortent du cadre de l'entreprise.",
-    "shadow": "Compte personnel ou inconnu",
+    "note": "Usages passant par un compte personnel ou dont le type de compte est inconnu : l'entreprise n'en maîtrise ni le contrat ni la conservation des données envoyées (à vérifier pour les comptes de type inconnu).",
+    "shadow": "Comptes personnels ou non maîtrisés",
     "others": "Autres usages",
     "center": "des usages"
   },

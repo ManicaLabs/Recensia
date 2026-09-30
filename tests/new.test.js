@@ -5,22 +5,28 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   validateCampaignForm, buildCampaign, draftCampaign, collectUrlLength, linkLengthStatus, defaultForm,
-  departmentIssue, departmentKey, mapLinkErrors, passwordStrength, recoveryFilename,
+  departmentIssue, departmentKey, mapLinkErrors, passwordStrength,
   PLACEHOLDER_ID, PLACEHOLDER_PUBLIC_KEY, LINK_TARGET_LENGTH, MIN_GROUP_SIZE, DEPARTMENTS_MAX,
   DEPARTMENT_SUGGESTION_KEYS,
 } from '../src/views/new/build-campaign.js';
-import { publicCampaign, textToRichHtml, restoreLockedBlock, mailtoPlan, planMessageMailto } from '../src/views/new/share-helpers.js';
+import {
+  publicCampaign, textToRichHtml, restoreLockedBlock, mailtoPlan, planMessageMailto, lockedStatusChange,
+} from '../src/views/new/share-helpers.js';
 import { validateCampaignConfig, campaignToLinkConfig, buildCollectUrl, decodeCampaignLink } from '../src/crypto/link.js';
 import { decodePublicKey, generateCampaignKeys } from '../src/crypto/keys.js';
 import { cleanLine, validateUsage } from '../src/engine/validate.js';
 import { renderMessage, messageContextFromCampaign, hasLockedBlock, listTemplates } from '../src/share/messages.js';
 import { MAILTO_MAX } from '../src/share/urls.js';
+import { buildRecoveryFile, importRecovery, RECOVERY_MIME } from '../src/services/recovery.js';
+import { openStore } from '../src/storage/store.js';
 import { loadJson, BASE_URL, fakeCollectLink } from './helpers/share-fixtures.js';
+import { readSource } from './helpers/source-scan.js';
 import { makeUsage, loadQuestionnaire } from './helpers/load-data.js';
 
 const channelsData = loadJson('data/channels.json');
 const templates = loadJson('data/messages.fr.json');
 const newCatalog = loadJson('src/i18n/fr/new.json');
+const shareCatalog = loadJson('src/i18n/fr/share.json');
 const TODAY = '2026-09-29';
 
 const TEN_DEPARTMENTS = ['Direction', 'Commercial et devis', 'Production', 'RH', 'Comptabilité', 'Service client',
@@ -346,10 +352,33 @@ describe('fichier de récupération', () => {
     assert.equal(passwordStrength(null).level, 'empty');
   });
 
-  test('nom du fichier : recensia-cle-<slug>-<EMPREINTE>.recensia-key', () => {
-    assert.equal(recoveryFilename({ title: 'Recensement IA : été 2026 !', fingerprint: 'a1b2c3d4' }),
-      'recensia-cle-recensement-ia-ete-2026-A1B2C3D4.recensia-key');
-    assert.equal(recoveryFilename({ id: 'k3J9xQ2mP0aZ' }), 'recensia-cle-k3j9xq2mp0az-CLE.recensia-key');
+  // L'étape « Protégez votre clé » produit le même fichier que l'onglet Paramètres (buildRecoveryFile) :
+  // même format, même nom, même type MIME, relu par l'import du fichier de récupération.
+  test('fichier de la création : format, nom et type MIME des Paramètres, relu par importRecovery', async () => {
+    const { campaign } = await built({ title: 'Recensement IA : été 2026 !' });
+    const passphrase = 'cheval batterie agrafe';
+    const file = await buildRecoveryFile(campaign, passphrase, { today: TODAY });
+    assert.match(campaign.fingerprint, /^[0-9A-F]{8}$/);
+    assert.equal(file.filename, `recensia-cle-recensement-ia-ete-2026-${campaign.fingerprint}-${TODAY}.recensia-key`);
+    assert.equal(file.mime, RECOVERY_MIME);
+    assert.equal(file.protected, true);
+    assert.ok(!file.text.includes(campaign.private_key_jwk.d), 'clé privée chiffrée');
+    const store = await openStore({ forceMemory: true });
+    const restored = await importRecovery({ store, file: file.text, passphrase });
+    assert.equal(restored.status, 'created');
+    assert.equal(restored.campaign.id, campaign.id);
+    assert.equal(restored.campaign.public_key, campaign.public_key);
+    assert.equal(restored.campaign.fingerprint, campaign.fingerprint);
+    assert.deepEqual(restored.campaign.departments, campaign.departments);
+    assert.deepEqual(restored.campaign.settings, campaign.settings);
+    assert.deepEqual(restored.campaign.private_key_jwk, campaign.private_key_jwk);
+  });
+
+  test('new.js passe par buildRecoveryFile (aucun format parallèle)', () => {
+    const src = readSource('src/views/new.js');
+    assert.ok(src.includes('buildRecoveryFile('), 'buildRecoveryFile utilisé');
+    assert.ok(!src.includes('wrapPrivateKey'), 'pas d’appel direct à wrapPrivateKey');
+    assert.ok(!src.includes('application/octet-stream'), 'type MIME de src/services/recovery.js');
   });
 });
 
@@ -478,6 +507,69 @@ describe('phrase verrouillée : garde-fou et rétablissement', () => {
     const reflowed = msg.body.replace(msg.locked_block, msg.locked_block.replace(' ; ', ' ;\n').replace(/'/g, '\u2019'));
     assert.equal(hasLockedBlock(reflowed, msg.locked_block), true);
     assert.equal(restoreLockedBlock(reflowed, msg.body, msg.locked_block), reflowed);
+  });
+
+  test('saisie : disparition et retour de la phrase annoncés une fois chacun, jamais à chaque frappe', () => {
+    assert.equal(lockedStatusChange(null, true), null, 'premier affichage : rien');
+    assert.equal(lockedStatusChange(undefined, false), null);
+    assert.equal(lockedStatusChange(true, true), null);
+    assert.equal(lockedStatusChange(false, false), null);
+    assert.equal(lockedStatusChange(true, false), 'missing');
+    assert.equal(lockedStatusChange(false, true), 'present');
+
+    // Session de saisie simulée : la phrase est effacée caractère par caractère, on tape autre
+    // chose, puis on la retape (ou Ctrl+Z) et on continue d'écrire.
+    const msg = message('invitation_email', 'anonymous', channelSets[0]);
+    const block = msg.locked_block;
+    const at = msg.body.indexOf(block);
+    const states = [msg.body];
+    for (let n = block.length - 1; n >= 0; n -= 1) states.push(msg.body.slice(0, at) + block.slice(0, n) + msg.body.slice(at + block.length));
+    const cleared = states.at(-1);
+    for (const extra of ['A', 'Ab', 'Abc']) states.push(cleared.slice(0, at) + extra + cleared.slice(at));
+    states.push(msg.body, `${msg.body}\nMerci`, `${msg.body}\nMerci !`);
+    let previous = null;
+    const announced = [];
+    for (const text of states) {
+      const change = lockedStatusChange(previous, hasLockedBlock(text, block));
+      previous = hasLockedBlock(text, block);
+      if (change) announced.push(change);
+    }
+    assert.deepEqual(announced, ['missing', 'present']);
+    const locked = shareCatalog.messages.locked;
+    assert.ok(locked.announce_missing.includes(locked.restore), 'l\'annonce nomme le bouton « Rétablir la phrase »');
+    assert.ok(locked.announce_present.length > 0);
+  });
+
+  // Dialogue « La phrase sur l'anonymat a disparu » : son contenu (message et phrase verrouillée) est relié
+  // au dialogue (aria-describedby, modal({ describe })) et lu à l'ouverture, bien que le focus aille
+  // directement sur « Rétablir la phrase » ; alertdialog, car continuer peut promettre un anonymat faux.
+  test('dialogue de la phrase disparue : contenu décrit (describe) et alertdialog (alert)', () => {
+    const src = readSource('src/views/console/share.js');
+    const at = src.indexOf("t('share.messages.locked.dialog.title')");
+    assert.ok(at > 0, 'dialogue trouvé');
+    const start = src.lastIndexOf('modal({', at);
+    const end = src.indexOf('});', at);
+    assert.ok(start > 0 && end > at, 'appel modal() complet');
+    const call = src.slice(start, end);
+    assert.match(call, /\bdescribe:\s*true\b/, 'describe: true');
+    assert.match(call, /\balert:\s*true\b/, 'alert: true');
+    assert.match(call, /current\.original\.locked_block/, 'la phrase verrouillée fait partie du contenu décrit');
+  });
+});
+
+describe('textes de diffusion : pas de promesse excessive (CDC §7.4)', () => {
+  test('le lien passe par des messageries : jamais « rien ne transite par un serveur »', () => {
+    const texts = [];
+    const walk = (value) => {
+      if (typeof value === 'string') texts.push(value);
+      else if (value && typeof value === 'object') Object.values(value).forEach(walk);
+    };
+    walk(shareCatalog);
+    walk(newCatalog);
+    for (const text of texts) {
+      assert.doesNotMatch(text, /rien ne transite|sans aucun serveur|aucun serveur\s*\./i, text);
+    }
+    assert.match(shareCatalog.lead, /Aucune réponse n'est stockée sur un serveur de Recensia\./);
   });
 });
 

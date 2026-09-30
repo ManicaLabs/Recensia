@@ -1,6 +1,6 @@
 {
   "title": "Diffuser la campagne",
-  "lead": "Le lien de collecte contient déjà la configuration et la clé publique de la campagne : il suffit de le transmettre. Rien ne transite par un serveur.",
+  "lead": "Le lien de collecte contient déjà la configuration et la clé publique de la campagne : il suffit de le transmettre. Aucune réponse n'est stockée sur un serveur de Recensia.",
   "link": {
     "title": "Lien de collecte",
     "help": "Toute personne qui ouvre ce lien peut décrire ses usages et obtenir ses codes chiffrés, que seule la clé privée de la campagne permet de lire.",
@@ -83,6 +83,8 @@
       "missing": "La phrase sur l'anonymat a été modifiée ou supprimée.",
       "restore": "Rétablir la phrase",
       "restored": "Phrase sur l'anonymat rétablie.",
+      "announce_missing": "Phrase sur l'anonymat modifiée ou supprimée : le bouton « Rétablir la phrase » la remet dans le message.",
+      "announce_present": "Phrase sur l'anonymat de nouveau présente dans le message.",
       "dialog": {
         "title": "La phrase sur l'anonymat a disparu",
         "message": "Le message ne contient plus la phrase générée d'après la configuration de la campagne :",

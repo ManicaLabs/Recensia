@@ -7,13 +7,13 @@ import { button, field, setFieldError, callout, icon, confirmDialog } from '../u
 import { downloadText } from '../ui/download.js';
 import { generateCampaignKeys, formatFingerprint } from '../crypto/keys.js';
 import { randomId } from '../crypto/random.js';
-import { wrapPrivateKey } from '../crypto/backup.js';
 import { listChannelTypes, anonymityWarning } from '../share/channels.js';
 import { formatDate, formatNumber } from '../i18n.js';
 import { localDay } from '../services/model.js';
+import { buildRecoveryFile, markRecoverySaved } from '../services/recovery.js';
 import {
   defaultForm, validateCampaignForm, buildCampaign, draftCampaign, collectUrlLength, linkLengthStatus,
-  departmentIssue, departmentKey, passwordStrength, recoveryFilename,
+  departmentIssue, departmentKey, passwordStrength,
   DEPARTMENT_SUGGESTION_KEYS, DEPARTMENTS_MAX, DEPARTMENT_MAX, TITLE_MAX, ORG_MAX, CHANNELS_MAX,
   MIN_GROUP_SIZE, PASSWORD_MIN_LENGTH, LINK_TARGET_LENGTH,
 } from './new/build-campaign.js';
@@ -909,12 +909,12 @@ function mountKeyStep({ root, ctx, campaign }) {
     try {
       const stored = await store.getCampaign(campaign.id);
       if (!stored?.private_key_jwk) throw new Error(t('new.key.errors.missing'));
-      const file = await wrapPrivateKey(stored, check.value);
-      const name = recoveryFilename(stored);
-      downloadText(`${JSON.stringify(file, null, 2)}\n`, name, 'application/octet-stream');
-      // Relecture : putCampaign écrase l'objet entier (ne rien perdre d'une écriture concurrente).
-      const latest = (await store.getCampaign(campaign.id)) ?? stored;
-      await store.putCampaign({ ...latest, recovery_saved_at: new Date().toISOString() });
+      // Même fichier (format, nom, type MIME) que l'onglet Paramètres : src/services/recovery.js.
+      const file = await buildRecoveryFile(stored, check.value, { today: localDay() });
+      const name = file.filename;
+      downloadText(file.text, name, file.mime);
+      // markRecoverySaved relit la campagne avant d'écrire (putCampaign écrase l'objet entier).
+      await markRecoverySaved(store, campaign.id);
       password.value = '';
       confirm.value = '';
       updateStrength();

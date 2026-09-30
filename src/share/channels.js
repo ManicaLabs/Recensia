@@ -16,20 +16,23 @@ const URL_MAX = 16384;
 
 // C0 (sauf \n, traité à part), DEL et C1.
 const CONTROL_RE = /[\u0000-\u0009\u000B-\u001F\u007F-\u009F]/g;
-// Contrôles bidirectionnels (dont U+202A–U+202E et U+2066–U+2069) et marques de direction.
-const BIDI_RE = /[\u202A-\u202E\u2066-\u2069\u200E\u200F\u061C]/g;
-// Caractères invisibles qui pourraient masquer du texte.
-const INVISIBLE_RE = /[\u200B\u2060\uFEFF\u00AD]/g;
+// Caractères de mise en forme invisibles (catégorie Unicode Cf) : contrôles et marques bidirectionnels
+// (U+061C, U+200E, U+200F, U+202A–U+202E, U+2066–U+2069), espaces sans chasse, BOM, trait d'union conditionnel,
+// étiquettes Unicode U+E0000–U+E007F (texte caché)… et remplisseurs hangûl (lettres sans glyphe : U+115F,
+// U+1160, U+3164, U+FFA0). Seuls les liants U+200C et U+200D (écritures, émojis composés) sont conservés.
+// Même définition que src/engine/validate.js (chemin des codes) et src/crypto/link.js (chemin du lien).
+const FORMAT_RE = /(?![\u200C\u200D])[\p{Cf}\u115F\u1160\u3164\uFFA0]/gu;
 // Espaces « larges » ramenés à une espace simple (les insécables sont conservées).
 const SPACES_RE = /[ \u1680\u2000-\u200A\u205F\u3000]+/g;
-// Paire de substitution compl\u00E8te (conserv\u00E9e) ou substitut isol\u00E9 (retir\u00E9). Sans assertion
-// arri\u00E8re : Safari ant\u00E9rieur \u00E0 16.4 refuserait tout le module \u00E0 l'analyse.
+// Paire de substitution complète (conservée) ou substitut isolé (retiré). Sans assertion
+// arrière : Safari antérieur à 16.4 refuserait tout le module à l'analyse.
 const SURROGATES_RE = /[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDFFF]/g;
 
 /**
  * Nettoie un texte avant de l'injecter dans un objet, un corps de message ou une URL.
- * Retire les caractères de contrôle C0/C1 (sauf \n si multiline), les contrôles
- * bidirectionnels et les caractères invisibles ; normalise (NFC, espaces, fins de ligne) ;
+ * Retire les caractères de contrôle C0/C1 (sauf \n si multiline), tous les caractères de mise en forme
+ * invisibles (catégorie Unicode Cf, dont bidi et étiquettes Unicode, hors liants U+200C et U+200D) et les
+ * remplisseurs hangûl ; normalise ensuite (NFC, espaces, fins de ligne) ;
  * tronque à `max` unités UTF-16 sans couper de paire de substitution.
  */
 export function sanitizeText(s, max = Infinity, { multiline = false } = {}) {
@@ -37,9 +40,10 @@ export function sanitizeText(s, max = Infinity, { multiline = false } = {}) {
   let t = String(s);
   t = typeof t.toWellFormed === 'function' ? t.toWellFormed() : t;
   t = t.replace(SURROGATES_RE, (m) => (m.length === 2 ? m : '')).replace(/\uFFFD/g, '');
-  t = t.normalize('NFC');
   t = t.replace(/\r\n?|[\u0085\u2028\u2029]/g, '\n').replace(/[\t\v\f]/g, ' ');
-  t = t.replace(CONTROL_RE, '').replace(BIDI_RE, '').replace(INVISIBLE_RE, '');
+  t = t.replace(CONTROL_RE, '').replace(FORMAT_RE, '');
+  // NFC après les retraits : « e », U+200B, U+0301 donne « é » (résultat stable).
+  t = t.normalize('NFC');
   if (!multiline) t = t.replace(/\n/g, ' ');
   t = t.replace(SPACES_RE, ' ');
   if (multiline) {

@@ -101,13 +101,15 @@ function mergeClassifications(classes, rules, calendar) {
   const triggers = unionBy(classes.map((c) => c.triggers), (t) => t.rule_id).sort((a, b) => order(a.rule_id) - order(b.rule_id));
   const questions = unionBy(classes.map((c) => c.questions_to_confirm), (q) => q.rule_id).sort((a, b) => order(a.rule_id) - order(b.rule_id));
   const deadlineIds = [...new Set(classes.flatMap((c) => c.deadlines.map((d) => d.id)))];
+  const role = classes.find((c) => c.role && c.role !== defaultRole)?.role ?? defaultRole;
   return {
     ai_act_level: maxAiAct(classes.map((c) => c.ai_act_level)),
     data_level: maxDataLevel(classes.map((c) => c.data_level)),
     data_to_qualify: classes.some((c) => c.data_to_qualify),
-    role: classes.find((c) => c.role && c.role !== defaultRole)?.role ?? defaultRole,
+    role,
     triggers,
-    deadlines: resolveDeadlines(deadlineIds, calendar),
+    // Union des échéances des membres (chacune déjà filtrée selon le rôle de son membre).
+    deadlines: resolveDeadlines(deadlineIds, calendar, { role }),
     action_ids: [...new Set(classes.flatMap((c) => c.action_ids))],
     questions_to_confirm: questions,
     signals: unionBy(classes.map((c) => c.signals), (s) => s.id),

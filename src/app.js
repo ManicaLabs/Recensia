@@ -6,7 +6,7 @@ import { i18n, t } from './i18n.js';
 import { data } from './data.js';
 import { initAnalytics, trackView, trackEvent, trackRoute } from './analytics.js';
 import { h, mount, announce } from './ui/dom.js';
-import { toast, icon, button } from './ui/components.js';
+import { toast, icon, button, watchBottomOverlays } from './ui/components.js';
 
 // Route ⇒ module de vue (chargé à la demande). L'espace de noms i18n porte le nom de la route.
 const VIEW_LOADERS = {
@@ -98,21 +98,10 @@ function runCleanup() {
 function updateNav(route) {
   const active = NAV_FOR_ROUTE[route.name] ?? null;
   for (const link of document.querySelectorAll('[data-nav]')) {
-    if (link.dataset.nav === active) {
-      link.setAttribute('aria-current', 'page');
-      revealInList(link);
-    } else {
-      link.removeAttribute('aria-current');
-    }
+    // Le menu passe sur deux lignes plutôt que de défiler (app.css) : aucun lien à ramener en vue.
+    if (link.dataset.nav === active) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
   }
-}
-
-// Menu défilant (écrans très étroits) : le lien actif est ramené dans la zone visible.
-function revealInList(link) {
-  const list = link.closest('ul');
-  if (!list || list.scrollWidth <= list.clientWidth) return;
-  const offset = link.getBoundingClientRect().left - list.getBoundingClientRect().left;
-  list.scrollLeft += offset - (list.clientWidth - link.offsetWidth) / 2;
 }
 
 function focusHeading(container, root) {
@@ -210,6 +199,8 @@ function setupChrome() {
     main?.scrollIntoView();
   });
   applyChromeTexts();
+  // Notifications et bannière de mise à jour ne masquent jamais l'élément qui a le focus.
+  watchBottomOverlays();
   const version = document.getElementById('app-version');
   if (version) version.textContent = t('common.app.version', { version: config.appVersion });
 }

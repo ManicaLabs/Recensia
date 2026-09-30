@@ -4,13 +4,14 @@ import { describe, test, before } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { generateCampaignKeys } from '../src/crypto/keys.js';
-import { encryptEntry, codeHash } from '../src/crypto/codes.js';
+import { b64urlDecode, b64urlEncode } from '../src/crypto/b64url.js';
+import { CODE_MAX_LENGTH, CodeError, decryptEntry, encryptEntry, codeHash } from '../src/crypto/codes.js';
 import { randomId } from '../src/crypto/random.js';
 import { openStore } from '../src/storage/store.js';
 import {
-  ImportError, MAX_CODES_PER_IMPORT, checkPlain, codesForCampaign, collectCodes, findCampaignForCodes, importCodes,
-  isAfterClose, otherCampaignCodes, planImport, previewCode, publicReport, recomputeAfterClose, reportCounts,
-  resolvedCodes, sortCodesByCampaign, stashReport, takeReport, textFromFile,
+  ImportError, MAX_CODES_PER_IMPORT, checkPlain, codeFormatIssue, codesForCampaign, collectCodes, diagnoseUnmatched,
+  findCampaignForCodes, importCodes, isAfterClose, isKeepableCode, otherCampaignCodes, planImport, previewCode, publicReport,
+  recomputeAfterClose, reportCounts, resolvedCodes, sortCodesByCampaign, stashReport, takeReport, textFromFile,
 } from '../src/services/import.js';
 import { loadQuestionnaire, makeUsage } from './helpers/load-data.js';
 
@@ -399,6 +400,66 @@ describe('importCodes', () => {
       assert.equal((await env.store.listEntries(perf.id)).length, 100);
     }
     assert.ok(elapsed < 2000, `import de 100 codes en ${Math.round(elapsed)} ms`);
+  });
+});
+
+describe('contrôle de forme sans clé et diagnostic des codes illisibles (lien coupé)', () => {
+  let campaign;
+  let good;
+  before(async () => {
+    campaign = await makeCampaign();
+    good = await code(campaign, plainFor());
+  });
+
+  test('codeFormatIssue : préfixe, alphabet, taille minimale, longueur maximale, version', () => {
+    assert.equal(codeFormatIssue(good), null);
+    assert.equal(codeFormatIssue('RCN1.abc'), 'format');
+    assert.equal(codeFormatIssue('RCN1.abcdefghijklmnop'), 'format', 'trop court pour un code');
+    assert.equal(codeFormatIssue(good.slice(0, 40)), 'format');
+    assert.equal(codeFormatIssue(`${good.slice(0, 20)}+${good.slice(21)}`), 'format', 'alphabet base64url strict');
+    assert.equal(codeFormatIssue(good.replace('RCN1.', 'XYZ1.')), 'format');
+    assert.equal(codeFormatIssue(`RCN2.${'Q'.repeat(200)}`), 'version');
+    assert.equal(codeFormatIssue(`RCN1.${'A'.repeat(CODE_MAX_LENGTH)}`), 'size');
+    assert.equal(codeFormatIssue(null), 'format');
+    // Préfixe RCN1. mais octet de version différent : même réponse que decryptEntry.
+    const bytes = b64urlDecode(good.slice(5));
+    bytes[0] = 2;
+    assert.equal(codeFormatIssue(`RCN1.${b64urlEncode(bytes)}`), 'version');
+  });
+
+  test('codeFormatIssue concorde avec decryptEntry pour toutes les troncatures d\'un code', async () => {
+    for (let n = 6; n < good.length; n += 1) {
+      const cut = good.slice(0, n);
+      const issue = codeFormatIssue(cut);
+      // eslint-disable-next-line no-await-in-loop
+      const reason = await decryptEntry(cut, campaign.private_key_jwk, campaign.id).then(() => 'ok', (err) => (err instanceof CodeError ? err.reason : 'other'));
+      if (issue === 'format') assert.equal(reason, 'format', `troncature à ${n} caractères`);
+      else assert.equal(reason, 'decrypt', `troncature à ${n} caractères : forme valide, déchiffrement refusé`);
+    }
+  });
+
+  test('isKeepableCode : forme valide ou version future gardées, codes mal formés écartés', () => {
+    assert.equal(isKeepableCode(good), true);
+    assert.equal(isKeepableCode(`RCN2.${'Q'.repeat(200)}`), true);
+    assert.equal(isKeepableCode('RCN1.abc'), false);
+    assert.equal(isKeepableCode(`RCN1.${'A'.repeat(CODE_MAX_LENGTH)}`), false);
+  });
+
+  test('diagnoseUnmatched : clé locale ou forme invalide ⇒ « illisible », sinon « clé absente »', () => {
+    const withKey = [campaign];
+    const withoutKey = [{ ...campaign, private_key_jwk: null }, { id: 'demo', demo: true, private_key_jwk: null }];
+    // Lien coupé à 600 caractères, de forme encore valide : la clé est là, c'est le lien qui est abîmé.
+    let cut = good.slice(0, 600);
+    for (let n = 600; codeFormatIssue(cut) !== null; n -= 1) cut = good.slice(0, n);
+    assert.equal(diagnoseUnmatched([cut], withKey), 'unreadable');
+    assert.equal(diagnoseUnmatched([cut], withoutKey), 'no_key');
+    assert.equal(diagnoseUnmatched([cut], []), 'no_key');
+    // Aucun code de forme valide : illisible même sans aucune clé locale.
+    assert.equal(diagnoseUnmatched(['RCN1.abc'], []), 'unreadable');
+    assert.equal(diagnoseUnmatched(['RCN1.abc', cut], withoutKey), 'no_key');
+    // Version plus récente du format : mise à jour, quelle que soit la clé.
+    assert.equal(diagnoseUnmatched([`RCN2.${'Q'.repeat(200)}`], withKey), 'version');
+    assert.equal(diagnoseUnmatched([`RCN2.${'Q'.repeat(200)}`, 'RCN1.abc'], []), 'unreadable');
   });
 });
 

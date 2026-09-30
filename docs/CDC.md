@@ -220,6 +220,7 @@ Le mode est fixé à la création et figure dans le lien.
 - La date de clôture est **informative** : le formulaire affiche « clôturée » après cette date, et l'import signale les codes postérieurs.
 - **Clé privée perdue = données illisibles, sans recours.** Le dire clairement à la création et proposer le fichier de récupération.
 - Les codes reçus (dans des boîtes mail, par exemple) sont des données de l'entreprise, personnelles en mode ouvert : leur conservation relève de sa politique de rétention. L'application n'en garde aucune trace.
+- **Origine partagée** : sous `https://<compte>.github.io/<dépôt>/`, IndexedDB, stockage local et cache du service worker sont communs à tous les sites publiés sous `<compte>.github.io` (le navigateur cloisonne par origine, pas par chemin). Tout autre site de l'organisation, ou un script qu'il charge, peut lire les clés privées, les réponses déchiffrées et les brouillons des répondants, et modifier les campagnes. Mesures en place : service worker à empreintes SHA-256 (un module altéré dans le cache n'est jamais servi), page 404 limitée à `/Recensia/`, avertissement explicite sur la page de confidentialité. Seule une origine dédiée (domaine personnalisé via CNAME, ou compte GitHub dont Recensia est le seul site) supprime le risque.
 
 ### 7.6 Persistance côté responsable
 Les données vivent dans l'IndexedDB du navigateur du responsable. Risques : effacement du navigateur, changement de poste. Mesures : `navigator.storage.persist()`, bandeau « dernière sauvegarde il y a X jours », export JSON complet chiffrable par mot de passe (PBKDF2-SHA-256 ≥ 600 000 itérations + AES-GCM), réimport. Pas de synchronisation entre postes : le partage se fait par fichier de récupération + export.
@@ -303,6 +304,7 @@ Règles de fonctionnement : les actions sont **suggérées** (`suggested = true`
 ├─ sw.js
 ├─ config.js                 # goatcounterCode, appVersion (aucun secret)
 ├─ .nojekyll
+├─ 404.html, 404.js          # réparation des liens dont le « # » a été encodé (%23)
 ├─ icon.svg, icon-192.png, icon-512.png, favicon-32.png
 ├─ src/
 │  ├─ app.js, router.js, i18n/fr.json
@@ -316,7 +318,7 @@ Règles de fonctionnement : les actions sont **suggérées** (`suggested = true`
 ├─ data/                     # questionnaire.json, rules.json, actions.json, regulatory-calendar.json, messages.fr.json, channels.json, demo-company.json
 ├─ vendor/                   # SheetJS, fflate, générateur de QR (versions figées)
 ├─ tests/                    # node --test, fixtures
-├─ docs/CDC.md               # ce document
+├─ docs/CDC.md               # ce document ; docs/ARCHITECTURE.md (contrat d'API), docs/TESTS-MANUELS.md (protocoles manuels)
 └─ .github/workflows/ci.yml  # tests uniquement, pas de build
 ```
 
@@ -368,6 +370,7 @@ Interface `store` (campagnes, entrées, évaluations, actions) implémentée sur
   5. Aucun secret dans le dépôt (`git grep` sur `PRIVATE`, `token`, `secret`, `.recensia-key`).
   6. Tests de chiffrement : aller-retour, altération, mauvais `campaign_id`, plafonds de taille.
   7. Gabarits de messages : toutes les combinaisons (type × mode × canal) se génèrent sans jeton `{...}` résiduel, sans matériel de clé privée, dans les limites de longueur, avec le bloc « anonymat » présent.
+  8. Version incrémentée : `appVersion` dans `config.js` et `version` dans `package.json`, cohérentes avec §5bis (`tools/check.mjs` [9]).
 - CI GitHub Actions : rejoue les étapes 1 à 3, 6 et 7 sur chaque push (aucun build).
 
 ## 13. Références réglementaires (à re-vérifier avant chaque release)
@@ -462,6 +465,20 @@ Décisions prises pendant l'implémentation, là où le CDC était ambigu. Toute
 - **Import** : en mode anonyme, un code qui porte une identité ou un horodatage complet est refusé (code forgé). Un code d'une autre campagne locale est identifié comme tel. Les codes postérieurs à la clôture sont importés et signalés.
 - **Démo** : les dates du jeu fictif sont décalées d'un nombre entier de jours à chaque chargement, pour que la démo reste « actuelle » ; les dates réglementaires ne bougent jamais.
 - **Saisie directe** (onglet « Saisir ») : entrée `source = manual`, sans code ; en mode anonyme, aucune identité.
+- **Échéances par rôle** : le délai de grâce du 2 décembre 2026 (art. 50(2)) ne concerne que les fournisseurs : l'échéance porte `applies_to_roles: ["potential_provider"]` dans le calendrier et n'est jamais affichée comme échéance applicable d'un usage de déployeur.
+- **Commentaires dans les exports** : seulement si `comments_exportable` est activé, dans une colonne « Commentaires » ajoutée après les 20 colonnes du §8.2 (texte nettoyé, 2 000 caractères au plus, neutralisé comme le reste) ; les notes d'export le signalent (un commentaire peut identifier son auteur).
+- **Codes abîmés par la messagerie** : un code coupé à 76 colonnes ou préfixé « > » (citation) est recollé à l'import ; un code tronqué est signalé « illisible », jamais « clé absente ».
+- **Lien dont le « # » a été encodé** (`%23`) par une messagerie : `404.html` répare l'adresse et redirige vers le bon écran (GitHub Pages sert cette page pour tout chemin inconnu).
+- **Typographie des messages générés** : espaces insécables comme dans l'interface ; elles s'encodent en `%C2%A0` dans un `mailto`, ce qui réduit un peu la place disponible (corps compacts ajustés et testés avec un code de 900 caractères).
+- **Notice du répondant** : résumé en une phrase, garanties repliées, limites de l'anonymat toujours visibles (canaux, service) ; les questions facultatives sont regroupées en fin de questionnaire (temps du premier usage).
+- **Notifications** : les erreurs et avertissements restent affichés jusqu'à leur fermeture et ne masquent jamais l'élément qui a le focus.
+- **Version** : `appVersion` (config.js) et `package.json` sont incrémentés à chaque release ; `tools/check.mjs` [9] les compare à §5bis.
+- **Caractères invisibles** : un même ensemble (catégorie Unicode Cf hors U+200C et U+200D, remplisseurs hangûl) est retiré sur le chemin des codes, celui du lien et celui des messages et de la fiche ; les contrôles bidi sont refusés dans un lien. Retirer plutôt que refuser ne casse aucun lien déjà diffusé. Restent possibles : les liants, les sélecteurs de variante et les homoglyphes (l'empreinte fait foi).
+- **Intégrité du cache** : `sw-precache.js` porte le SHA-256 et le type MIME de chaque fichier ; `sw.js` ne sert qu'une copie vérifiée, avec le seul en-tête `content-type` ; rien hors précache n'est intercepté ; `config.js` n'est plus remis en cache ; échec d'installation ⇒ aucun cache partiel.
+- **Page 404** : chemins absolus `/Recensia/…` uniquement, vérifiés par `tools/check.mjs` [4] ; base `/` dès qu'un fichier `CNAME` existe.
+- **Noms des fichiers sensibles** : la version à risque porte un marqueur en majuscules (`…-NON-PROTEGEE.recensia-key`, `…-EN-CLAIR.json`) ; la version protégée garde le nom canonique. Le message de fin de téléchargement nomme le fichier ; pour une version à risque, c'est un avertissement qui reste affiché.
+- **Consigne de canal entre parenthèses** : son point final est retiré (« (consigne : … fil interne) » et non « ….). »).
+- **Logo Manica** (éditeur de l'outil) : pied de page de tous les écrans et bas de l'accueil (« Un outil proposé par »), version claire par inversion en thème sombre. Source HD : `logo_manica_hd.svg` (1,8 Mo, non précaché) ; actif servi : `src/assets/logo-manica.png` (8 Ko). Absent des documents imprimés (fiche, rapport), qui portent l'identité de l'entreprise qui mène la campagne.
 
 ## 5bis. État d'avancement (à tenir à jour)
 
@@ -474,13 +491,14 @@ Décisions prises pendant l'implémentation, là où le CDC était ambigu. Toute
 - ✅ **v0.7 — formulaire répondant et saisie directe** : notice, questionnaire, brouillon local, un code par usage, envoi selon les canaux, révisions.
 - ✅ **v0.8 — administration et import** : liste des campagnes, import des codes (collage, fichiers, liens `#/i/`), fichier de récupération, sauvegarde et restauration, paramètres.
 - ✅ **v0.9 — registre et pilotage** : tableau de bord, registre filtrable (surcharges, validation, fusion et scission), plan d'actions, rapport imprimable, démo.
-- 🚧 **Recette v1.0** : critères d'acceptation des phases 1 et 2 (§14) en bout en bout, audits sécurité et accessibilité.
+- ✅ **v1.0 — recette** : critères d'acceptation des phases 1 et 2 (§14) vérifiés de bout en bout dans Chrome sans interface (création, réponse dans un contexte isolé, import par lien et par collage, registre, plan d'actions, rapport, exports relus, sauvegarde et restauration, fichier de récupération, démo, hors ligne), axe-core sans violation (16 écrans × clair/sombre × 1280/375 px), audits injection et confidentialité (durcissements : invisibles, intégrité du cache, page 404, noms des fichiers sensibles), logo Manica ; 935 tests.
 - ⚠️ **Points d'attention**
   - Le code GoatCounter est vide : aucune mesure en production tant qu'il n'est pas fourni.
   - Page de confidentialité à faire valider : éditeur, contact, exemption de consentement.
   - Règles et actions à faire relire par un juriste (`reviewed: false`).
   - Calendrier vérifié automatiquement sur le JO : à confirmer par un juriste.
-  - Test manuel des liens dans Outlook, Gmail, Teams, WhatsApp et Slack : à faire.
+  - **Hébergement dédié à décider** : l'origine `manicalabs.github.io` est partagée avec Check-up-IA-by-Manica et proto-plateforme-marketing-sport2000 (constaté le 30/09/2026) ; voir §7.5. Solution : domaine personnalisé (CNAME, par exemple `recensia.<domaine>`) ou organisation GitHub dédiée.
+  - Test manuel des liens dans Outlook, Gmail, Teams, WhatsApp et Slack : à faire (protocoles et tableaux dans `docs/TESTS-MANUELS.md`).
   - Empreinte de 32 bits (voir §17).
   - Nom du projet à valider.
 

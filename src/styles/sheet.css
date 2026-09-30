@@ -40,6 +40,31 @@
   .rc-sheet__page { --u: calc(100cqw / 210); }
 }
 
+/* Surface « papier » : fond blanc et encre sombre dans tous les thèmes. Les couleurs globales de
+   l'application (titres, gras, liens, code : claires en thème sombre) sont neutralisées ; :where()
+   garde une spécificité d'une classe, pour que les règles .rc-sheet__* qui suivent l'emportent. */
+.rc-sheet {
+  color-scheme: light;
+  color: var(--rc-sheet-ink);
+}
+
+.rc-sheet :where(h1, h2, h3, h4, h5, h6, strong, b, em, small, code, kbd, samp, li, p, span) {
+  color: inherit;
+}
+
+.rc-sheet :where(a, a:hover, a:visited) {
+  color: var(--rc-sheet-accent);
+}
+
+.rc-sheet :where(code, kbd, samp) {
+  background: transparent;
+}
+
+.rc-sheet ::selection {
+  background: #bfdbfe;
+  color: var(--rc-sheet-ink);
+}
+
 .rc-sheet__page p,
 .rc-sheet__page h2,
 .rc-sheet__page h3,

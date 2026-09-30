@@ -1,10 +1,29 @@
 // Confidentialité (CDC §11) : mesure d'audience, données de campagne, anonymat, conservation, hébergeur.
+// Origine partagée : les navigateurs cloisonnent IndexedDB, le stockage local et le cache par origine
+// (https://<compte>.github.io), pas par chemin. Publié sous un chemin (/Recensia/), Recensia partage ce
+// compartiment avec tout autre site de la même origine : la page le dit, d'après l'adresse réelle.
 
 import { h, mount } from '../ui/dom.js';
 import { callout, icon } from '../ui/components.js';
 import { ALLOWED_PATHS, ALLOWED_EVENTS, isAnalyticsEnabled } from '../analytics.js';
 
 const SECTIONS = ['audience', 'campaign', 'anonymity', 'retention', 'hosting', 'publisher'];
+
+/**
+ * Origine de l'application et partage éventuel avec d'autres sites.
+ * @param {string} baseUrl racine de l'application (ctx.baseUrl), ex. « https://manicalabs.github.io/Recensia/ »
+ * @returns {{ origin: string, url: string, shared: boolean }} shared : l'application n'est pas à la racine de
+ *   son origine (d'autres sites peuvent y être publiés) ; adresse illisible ⇒ partagée, par prudence.
+ */
+export function originScope(baseUrl) {
+  try {
+    const url = new URL(baseUrl);
+    if (!/^https?:$/.test(url.protocol)) throw new TypeError('protocole');
+    return { origin: url.origin, url: `${url.origin}${url.pathname}`, shared: url.pathname !== '/' };
+  } catch {
+    return { origin: String(globalThis.location?.origin ?? ''), url: String(baseUrl ?? ''), shared: true };
+  }
+}
 
 function section(key, t, ...content) {
   return h('section', { class: 'prose-section', id: `privacy-${key}`, 'aria-labelledby': `privacy-${key}-title` },
@@ -20,6 +39,8 @@ export async function render(root, { ctx }) {
   const { t } = ctx;
   ctx.setTitle(t('privacy.meta.title'));
   const active = isAnalyticsEnabled();
+  const scope = originScope(ctx.baseUrl ?? globalThis.location?.href);
+  const vars = { origin: scope.origin, url: scope.url };
 
   mount(root, h('div', { class: 'page page-narrow prose' },
     h('header', { class: 'page-header' },
@@ -33,7 +54,8 @@ export async function render(root, { ctx }) {
       h('ul', { class: 'check-list', role: 'list' },
         h('li', null, icon('lock'), h('span', null, t('privacy.summary.no_server'))),
         h('li', null, icon('shield'), h('span', null, t('privacy.summary.audience'))),
-        h('li', null, icon('server'), h('span', null, t('privacy.summary.hosting'))))),
+        h('li', null, icon('server'), h('span', null, t('privacy.summary.hosting'))),
+        scope.shared ? h('li', null, icon('alert'), h('span', null, t('privacy.summary.shared_origin', vars))) : null)),
 
     h('nav', { class: 'toc', 'aria-label': t('privacy.toc_label') },
       h('ul', { role: 'list' }, SECTIONS.map((key) => h('li', null,
@@ -89,7 +111,14 @@ export async function render(root, { ctx }) {
     section('hosting', t,
       h('p', null, t('privacy.hosting.provider')),
       h('p', null, t('privacy.hosting.logs')),
-      h('p', null, t('privacy.hosting.no_third_party'))),
+      h('p', null, t('privacy.hosting.no_third_party')),
+      scope.shared
+        ? callout('warn',
+          h('p', { id: 'privacy-shared-origin' }, h('strong', null, t('privacy.hosting.origin_shared_title')), ' ', t('privacy.hosting.origin_shared', vars)),
+          h('p', null, t('privacy.hosting.origin_shared_risk')),
+          h('p', null, t('privacy.hosting.origin_shared_advice', vars)))
+        : h('p', null, t('privacy.hosting.origin_own', vars)),
+      h('p', null, t('privacy.hosting.integrity'))),
 
     section('publisher', t,
       h('p', null, t('privacy.publisher.text'))),

@@ -4,6 +4,9 @@ import assert from 'node:assert/strict';
 
 import { SCHEMA_VERSION, validateUsage, validateRespondent, cleanLine, cleanMultiline } from '../src/engine/validate.js';
 import { loadQuestionnaire, makeUsage } from './helpers/load-data.js';
+import { sanitizeText } from '../src/share/channels.js';
+import { validateCampaignConfig, hasForbiddenChars } from '../src/crypto/link.js';
+import { generateCampaignKeys } from '../src/crypto/keys.js';
 
 const questionnaire = loadQuestionnaire();
 const DEPTS = ['Direction', 'Commercial et devis', 'Production'];
@@ -268,5 +271,62 @@ describe('nettoyage de texte', () => {
     assert.equal(cleanLine(`a${NUL}b\u0009c\nd`), 'ab c d');
     assert.equal(cleanLine(`  e${ch(0x301)}té  `), 'été', 'normalisation NFC');
     assert.equal(cleanMultiline('a\r\nb\rc'), 'a\nb\nc');
+  });
+
+  test('NFC après le retrait des invisibles : résultat stable', () => {
+    const cp = (...codes) => String.fromCodePoint(...codes);
+    assert.equal(cleanLine(`Cafe${cp(0x200b, 0x301)}`), 'Caf\u00e9');
+    assert.equal(cleanMultiline(`Cafe${NUL}${cp(0x301)}\nx`), 'Caf\u00e9\nx');
+    const pool = ['a', 'e', ' ', '\u00a0', '\n', '\t', ch(0x301), ch(0x327), NUL, BEL, C1, LS, RLO, LRI, ZWSP, ch(0x200d),
+      ch(0x200c), ch(0x3164), ch(0xad), cp(0xe0041), cp(0x1f469), '\u2000', '\u212b', '\ufe0f'];
+    let seed = 7;
+    const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+    for (let i = 0; i < 3000; i++) {
+      let x = '';
+      for (let j = 0; j < 12; j++) x += pool[Math.floor(rnd() * pool.length)];
+      assert.equal(cleanLine(cleanLine(x)), cleanLine(x), JSON.stringify(x));
+      assert.equal(cleanMultiline(cleanMultiline(x)), cleanMultiline(x), JSON.stringify(x));
+      assert.equal(sanitizeText(sanitizeText(x)), sanitizeText(x), JSON.stringify(x));
+    }
+  });
+
+  test('chemins code, lien et messages : mêmes caractères invisibles retirés (catégorie Cf, remplisseurs hangûl)', async () => {
+    const keys = await generateCampaignKeys();
+    const linkTitle = (title) => {
+      const r = validateCampaignConfig({ v: 1, id: 'k3J9xQ2mP0aZ', title, org: '', mode: 'anonymous', depts: [], pk: keys.publicKeyB64 });
+      return r.ok ? r.value.title : `refus:${r.errors.map((e) => e.code).join(',')}`;
+    };
+    // Tous les points de code Cf de la version d'Unicode du moteur, plus les remplisseurs hangûl.
+    const invisible = [0x115f, 0x1160, 0x3164, 0xffa0];
+    for (let c = 0; c <= 0x10ffff; c++) {
+      if (c >= 0xd800 && c <= 0xdfff) continue;
+      if (/\p{Cf}/u.test(String.fromCodePoint(c))) invisible.push(c);
+    }
+    assert.ok(invisible.length > 150, `${invisible.length} caractères`);
+    assert.ok(invisible.includes(0xe0041) && invisible.includes(0xe007f) && invisible.includes(0xfeff));
+    for (const c of invisible) {
+      const x = String.fromCodePoint(c);
+      const input = `a${x}b`;
+      const hex = c.toString(16);
+      if (c === 0x200c || c === 0x200d) {
+        // Liants : conservés partout.
+        assert.equal(cleanLine(input), input, hex);
+        assert.equal(sanitizeText(input), input, hex);
+        assert.equal(linkTitle(input), input, hex);
+        continue;
+      }
+      assert.equal(cleanLine(input), 'ab', hex);
+      assert.equal(cleanMultiline(input), 'ab', hex);
+      assert.equal(sanitizeText(input), 'ab', hex);
+      assert.equal(sanitizeText(input, Infinity, { multiline: true }), 'ab', hex);
+      // Lien : les contrôles bidirectionnels sont refusés, les autres invisibles retirés.
+      assert.equal(linkTitle(input), hasForbiddenChars(input) ? 'refus:chars' : 'ab', hex);
+    }
+    // Rien de légitime n'est retiré : lettres accentuées, ponctuation française, insécables, émojis, écritures.
+    const legit = `Élève « ça » d\u00a0: 1\u202f000\u00a0€ ß ﬁ ħ ☕ ${String.fromCodePoint(0x2764, 0xfe0f)} 한국어 ㄱ 中文 हिन्दी العربية עברית`;
+    assert.equal(cleanLine(legit), legit.normalize('NFC').replace(/\s+/g, ' '));
+    assert.equal(sanitizeText(legit), legit.normalize('NFC'));
+    // Le lien accepte ces textes tels quels (aucune marque bidi, 65 points de code).
+    assert.equal(linkTitle(legit), legit.normalize('NFC'));
   });
 });

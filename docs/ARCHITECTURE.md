@@ -275,7 +275,7 @@ export function channelInfo(type, channelsData)    // { type, label, identifies_
 export function anonymityWarning(mode, type, channelsData) // phrase d'avertissement ou null
 // urls.js
 export const MAILTO_MAX = 1800;
-export function sanitizeText(s, max)  // retire les caractères de contrôle, espaces normalisés, tronque
+export function sanitizeText(s, max)  // retire les contrôles et tous les invisibles Cf (hors ZWNJ/ZWJ) + remplisseurs hangûl, NFC ensuite, espaces normalisés, tronque
 export function isValidEmail(s)
 export function mailtoUrl({ to, subject, body }) ; export function whatsappUrl(text)
 export function teamsShareUrl(url, text) ; export function gmailComposeUrl({ to, subject, body })
@@ -407,7 +407,8 @@ Une clé absente renvoie la clé elle-même et journalise un avertissement (en l
 `sw.js` importe `sw-precache.js` (généré par `node tools/precache.mjs`) qui contient la liste
 des fichiers du shell et une version (`appVersion` + empreinte du contenu). Toute modification
 de fichier change la version ⇒ nouveau cache ⇒ bannière « nouvelle version disponible ».
-`tools/check.mjs` échoue si `sw-precache.js` n'est pas à jour.
+`tools/check.mjs` échoue si `sw-precache.js` n'est pas à jour. Depuis la v1.0, `sw-precache.js` porte aussi
+`integrity` (SHA-256 par fichier) et `types` (type MIME par extension) : voir §10.
 
 ## 6. Sécurité : invariants testés
 
@@ -455,7 +456,8 @@ Ces points précisent ou étendent le contrat ; ils font foi pour les vues à ve
   à la demande** (`import()` au clic).
 - **Partage** : codes réels de 650 à 900 caractères (au-delà de l'estimation du CDC) : l'e-mail du
   répondant passe en corps compact (lien d'import seul, qui contient le code) ; au-delà, repli fichier.
-  QR en niveau L pour un lien de ~1 500 caractères (lisibilité sur papier à tester en vrai).
+  QR en niveau L, prévu pour un lien allant jusqu'à 1 500 caractères (plafond du CDC §14 ; liens réels : 600 à
+  700 caractères pour 10 services, 1 100 au plus) ; lisibilité sur papier à tester en vrai.
 
 ## 8. Vues et services (v0.6 → v0.9)
 
@@ -483,3 +485,66 @@ Ces points précisent ou étendent le contrat ; ils font foi pour les vues à ve
 - **Boîtes de dialogue** : sans action `autofocus`, `modal()` place le focus sur le premier champ du contenu.
 - **Messages** : `reminder_j3` et `reminder_j1` ont un `body_compact` (repli `mailto`) ; l'invitation e-mail
   se replie sur le corps de `invitation_short` (`planMessageMailto`, `src/views/new/share-helpers.js`).
+
+## 9. Recette v1.0 : compléments d'API
+
+- **Fichiers ajoutés** : `404.html` + `404.js` (réparation des liens `%23`, fonction pure `repairedHash`),
+  `src/views/form/notice.js` (`anonymousLimits`, `channelLimits`), `docs/TESTS-MANUELS.md`,
+  `tests/components.test.js`, `tests/console-view.test.js`.
+- **UI** : `levelBadge(axis, level, t, { short, axisLabel: 'hidden' | 'visible' | 'none' })` (l'axe « AI Act » /
+  « Exposition des données » est toujours exposé aux lecteurs d'écran par défaut) ; `modal({ …, describe: true | nœud,
+  alert })` (aria-describedby, role alertdialog) ; `confirmDialog` décrit son message et passe en alertdialog si
+  `danger` ; `toast` : erreurs et avertissements persistants, doublons remplacés, pile limitée ;
+  `watchBottomOverlays()` (app.js) expose la hauteur des notifications dans `--bottom-overlay` (scroll-padding).
+  Région live assertive présente dans `index.html`.
+- **Moteur** : `resolveDeadlines(ids, calendar, { role })`, `deadlineAppliesToRole(deadline, role)` ; champ
+  `applies_to_roles` d'une échéance du calendrier.
+- **Crypto** : `extractCodeCandidates(text)` → `[{ code, candidates }]` (codes recoupés par la messagerie ; parcours
+  linéaire) ; `extractCodes` renvoie le candidat préféré.
+- **Partage** : `frenchSpacing` (messages.js), appliqué aux valeurs insérées dans les gabarits, jamais aux lignes de
+  lien ou de code.
+- **Exports** : `registryColumns(campaign)` (20 colonnes + « Commentaires » si `comments_exportable`),
+  `COMMENTS_COLUMN`, `commentsExportable`, `commentsText` ; `CALENDAR_STATUS`, `calendarStatusText(deadline, today)`.
+- **Import** : `codeFormatIssue(code)`, `isKeepableCode`, `diagnoseUnmatched(codes, campaigns)` → `'version' |
+  'unreadable' | 'no_key'`.
+- **Récupération** : `buildRecoveryFile(campaign, passphrase, { today })` → `{ text, filename, mime, protected }`,
+  `RECOVERY_MIME = 'application/json'`, nom `recensia-cle-<slug>-<EMPREINTE>-<AAAA-MM-JJ>.recensia-key` (protégé) ou
+  `…-<AAAA-MM-JJ>-NON-PROTEGEE.recensia-key` (sans mot de passe), utilisé par la création de campagne ET l'onglet
+  Paramètres. `recoveryFilename(campaign, today, { protected })` : marqueur ajouté sauf `protected === true`.
+  `backupDownloadFilename(campaign, today, { encrypted })` : `…-EN-CLAIR.json` sauf `encrypted === true`.
+  Constantes `UNPROTECTED_RECOVERY_MARK = 'NON-PROTEGEE'`, `PLAIN_BACKUP_MARK = 'EN-CLAIR'`.
+- **Vues** : `mailPlan` (form/send-plan.js), `lockedStatusChange` (new/share-helpers.js), `tabCounter` / `tabsNav`
+  (console.js), `isAlwaysOptional` / `displaySections` (ui/questionnaire.js).
+- **Outillage** : `tools/check.mjs` [9] (`cdcVersions`, `versionIssues`) : version de config.js = package.json, et
+  cohérente avec la dernière ligne ✅ ou 🚧 de CDC §5bis.
+- **Registre** : `src/views/console/registry/cells.js` : `levelCell(axis, group, t, { axisLabel })`,
+  `alertSlot(className)`, `setAlert(slot, message)` ; `createDetailDialog()` renvoie aussi `setError(text)`.
+- **Pilotage** (actions.js) : `statusControl(action, t, { id, onApply })` → `{ select, apply, sync, reset }`,
+  `axisBadges(effective, t)`, `saveErrorSlot({ live })`, `saveErrorPresenter(t, fallback)`,
+  `visibleActions(actions, view, keep)`. Saisie directe : `savedNotice(campaign, saved, t)` (add.js).
+- **Codes** : `checkCodeFormat(code)` → `null | 'format' | 'size' | 'version'` (contrôles de `decryptEntry` avant
+  déchiffrement, sans clé).
+- **Sauvegarde** : `exportJson` écrit `last_backup_at = exported_at` dans le fichier et le store ; `importJson`
+  garde la plus récente des deux dates.
+- **XLSX** : `SHADOW_AI_SECTION`, `SHADOW_AI_LABEL`, `ACTION_ORIGIN`, `originLabel`.
+
+## 10. Durcissement sécurité v1.0
+
+- **Caractères invisibles** : un même ensemble est retiré sur les trois chemins (codes : `cleanLine` /
+  `cleanMultiline` ; lien : `decodeCampaignLink` / `validateCampaignConfig` / `encodeCampaignLink` ; messages et fiche :
+  `sanitizeText`) : catégorie Unicode Cf sauf U+200C/U+200D, plus les remplisseurs hangûl U+115F, U+1160, U+3164,
+  U+FFA0. NFC après les retraits ; fonctions idempotentes. Dans un lien, contrôles C0/C1, U+2028/2029 et marques
+  bidi restent refusés (`'chars'`) ; un texte fait seulement d'invisibles donne `'required'`.
+- **Intégrité du cache** (contre un autre site de la même origine) : `tools/precache.mjs` exporte `MIME_TYPES`,
+  `extensionOf(file)`, `integrityOf(content)` → `'sha256-<base64>'` ; `renderPrecache(version, files, integrity)` ;
+  `buildPrecache()` → `{ version, files, integrity, content }`. Format généré :
+  `self.__RECENSIA_PRECACHE = { version, files, integrity: { './f': 'sha256-…' }, types: { '.ext': 'mime' } }`.
+  `sw.js` ne sert une copie en cache que si son SHA-256 correspond (réponse reconstruite : statut 200, seul
+  `content-type`) ; une copie altérée est supprimée puis rechargée ; hors précache et query string (sauf config.js),
+  rien n'est intercepté ; `config.js` en réseau d'abord, jamais remis en cache ; installation : chaque fichier
+  vérifié, nouvel essai avec `?v=<version>`, échec ⇒ installation abandonnée et cache supprimé.
+- **404** : `404.html` n'utilise que des chemins absolus sous `/Recensia/` (script unique `/Recensia/404.js`,
+  feuille de style, icône). `tools/check.mjs` [4] : `pagesBasePath(root)` → `'/Recensia/'` ou `'/'` si un fichier
+  `CNAME` existe ; `projectPathOf(value, basePath)` → `{ ok, path } | { ok: false, reason: 'relative' | 'outside' }`.
+- **Confidentialité** : `originScope(baseUrl)` → `{ origin, url, shared }` (privacy.js) ; avertissement « origine
+  partagée » affiché quand l'application n'est pas à la racine de son origine.

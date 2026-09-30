@@ -1,6 +1,6 @@
 // Formulaire répondant et saisie directe : brouillon, révisions, clair des codes selon le mode
 // (aller-retour de chiffrement réel), plan d'envoi, entrée manuelle §3.3.
-import { test, describe } from 'node:test';
+import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   draftKey, emptyDraft, restoreDraft, hasContent, upsertItem, removeItem, setCurrent, setRespondent,
@@ -8,8 +8,9 @@ import {
 } from '../src/views/form/draft.js';
 import { buildPlain, generateCodes, isClosed, localDay } from '../src/views/form/codes.js';
 import {
-  effectiveChannels, sendPlan, sharedWarning, distinctWarnings, groupCodes, rcnFilename, rcnContent, DEFAULT_CHANNELS,
+  effectiveChannels, sendPlan, sharedWarning, distinctWarnings, groupCodes, rcnFilename, rcnContent, DEFAULT_CHANNELS, mailPlan,
 } from '../src/views/form/send-plan.js';
+import { anonymousLimits, channelLimits, joinOr } from '../src/views/form/notice.js';
 import { buildManualEntry, declarantFrom } from '../src/views/form/entry.js';
 import { generateCampaignKeys } from '../src/crypto/keys.js';
 import { decryptEntry, extractCodes, CODE_PREFIX } from '../src/crypto/codes.js';
@@ -17,10 +18,24 @@ import { validateUsage, validateRespondent, SCHEMA_VERSION } from '../src/engine
 import { planMailto } from '../src/share/urls.js';
 import { loadQuestionnaire, makeUsage, readJson } from './helpers/load-data.js';
 import { fakeCode, BASE_URL } from './helpers/share-fixtures.js';
+import { installFakeDocument } from './helpers/fake-dom.js';
+import { t as i18nT, register as i18nRegister } from '../src/i18n.js';
+import { savedNotice } from '../src/views/console/add.js';
 
 const q = loadQuestionnaire();
 const channelsData = readJson('data/channels.json');
 const templates = readJson('data/messages.fr.json');
+const catalogs = { form: readJson('src/i18n/fr/form.json'), questionnaire: readJson('src/i18n/fr/questionnaire.json') };
+
+// t() de test : résout dans les catalogues form et questionnaire ; une clé absente est renvoyée telle quelle.
+function t(key, vars = {}) {
+  const [ns, ...path] = key.split('.');
+  let v = catalogs[ns];
+  for (const p of path) v = v && typeof v === 'object' ? v[p] : undefined;
+  if (v && typeof v === 'object') v = Number(vars.count) === 1 ? v.one : v.other;
+  if (typeof v !== 'string') return key;
+  return v.replace(/\{(\w+)\}/g, (m, k) => (vars[k] ?? m));
+}
 const CID = 'k3J9xQ2mP0aZ';
 const ID_A = 'entryAAAAAAAAAAA';
 const ID_B = 'entryBBBBBBBBBBB';
@@ -311,10 +326,100 @@ describe('plan d\'envoi', () => {
     assert.ok(messages.every((m) => !m.tooLong && m.url.length <= 1800));
   });
 
+  test('e-mail : code trop long pour un e-mail prérempli ⇒ e-mail court sans code et aide propre au repli', () => {
+    const code = fakeCode(1500, 3);
+    const to = 'ia@exemple.fr';
+    const ctx = { title: 'T', mode: 'open', channels: [{ type: 'mailto', target: to }] };
+    const fallback = { subject: t('form.send.mail_fallback_subject', { title: 'T' }), body: t('form.send.mail_fallback_body', { title: 'T' }) };
+    assert.ok(code.length > 1000);
+    assert.equal(planMailto({ to, codes: [code], baseUrl: BASE_URL, templates, ctx, channelsData })[0].tooLong, true, 'prérequis : au-delà de la limite mailto');
+    const plan = mailPlan({ to, codes: [code], baseUrl: BASE_URL, templates, ctx, channelsData, fallback });
+    assert.equal(plan.items.length, 1);
+    assert.equal(plan.items[0].kind, 'fallback');
+    assert.deepEqual(plan.items[0].codes, [code]);
+    assert.match(plan.items[0].url, /^mailto:ia@exemple\.fr\?subject=/, 'lien mailto adressé au responsable');
+    assert.ok(plan.items[0].url.length <= 1800);
+    assert.ok(!plan.items[0].url.includes(code.slice(5, 40)), 'le corps court ne contient pas le code');
+    assert.equal(plan.openable, 0);
+    assert.equal(plan.help, 'mail_fallback_help', 'pas d\'aide « le message s\'ouvre, prêt à partir »');
+    assert.notEqual(t(`form.send.${plan.help}`), t('form.send.mail_help'));
+    assert.ok(!t(`form.send.${plan.help}`).startsWith('form.'), 'texte présent dans le catalogue');
+  });
+
+  test('e-mail : un code court prérempli et un code trop long ⇒ l\'aide habituelle reste affichée', () => {
+    const to = 'ia@exemple.fr';
+    const codes = [fakeCode(700, 1), fakeCode(1500, 2)];
+    const plan = mailPlan({ to, codes, baseUrl: BASE_URL, templates, ctx: { title: 'T', mode: 'open', channels: [{ type: 'mailto', target: to }] }, channelsData, fallback: { subject: 'S', body: 'B' } });
+    assert.deepEqual(plan.items.map((i) => i.kind), ['prefilled', 'fallback']);
+    assert.equal(plan.openable, 1);
+    assert.equal(plan.help, 'mail_help');
+    assert.throws(() => mailPlan({ to: 'pas une adresse', codes, baseUrl: BASE_URL, templates, ctx: {}, channelsData, fallback: {} }));
+  });
+
   test('fichier .rcn : nom dérivé du titre, un code par ligne', () => {
     assert.equal(rcnFilename('Recensement IA 2026 — Siège'), 'recensia-recensement-ia-2026-siege-codes.rcn');
     assert.equal(rcnFilename(''), 'recensia-campagne-codes.rcn');
     assert.equal(rcnContent(['RCN1.a', 'RCN1.b']), 'RCN1.a\nRCN1.b\n');
+  });
+});
+
+describe('notice : limites de la réponse anonyme', () => {
+  const noShare = { navigator: {} };
+  const mailCopy = [{ type: 'mailto', target: 'ia@exemple.fr' }, { type: 'copy' }];
+  const limitsFor = (mode, { depts = ['Direction', 'Marketing'], dreq, channels = mailCopy } = {}) => anonymousLimits({
+    mode, depts, dreq, plan: sendPlan({ channels, mode, channelsData, env: noShare }), channelsData, t,
+  });
+
+  test('anonyme : le service reste visible, limite toujours présente (service obligatoire)', () => {
+    const limits = limitsFor('anonymous', { dreq: true });
+    const dept = limits.find((l) => l.id === 'department');
+    assert.ok(dept, 'limite « service » présente');
+    assert.equal(dept.text, catalogs.form.mode.anonymous_department);
+    assert.match(dept.text, /service reste visible/);
+    assert.ok(!dept.text.includes(catalogs.questionnaire.department_unspecified), 'pas de choix « ne pas préciser » si le service est obligatoire');
+  });
+
+  test('anonyme, service facultatif : la limite propose « Je préfère ne pas le préciser »', () => {
+    for (const dreq of [false, undefined]) {
+      const dept = limitsFor('anonymous', { dreq }).find((l) => l.id === 'department');
+      assert.match(dept.text, /service reste visible/);
+      assert.ok(dept.text.includes(`« ${catalogs.questionnaire.department_unspecified} »`), dept.text);
+    }
+  });
+
+  test('anonyme sans service proposé : pas de limite « service » ; mode ouvert : aucune limite', () => {
+    assert.equal(limitsFor('anonymous', { depts: [] }).some((l) => l.id === 'department'), false);
+    assert.deepEqual(limitsFor('open', { dreq: true }), []);
+    assert.deepEqual(limitsFor('open'), []);
+  });
+
+  test('avertissements des canaux fusionnés en une liste courte, puis service et champs libres', () => {
+    const limits = limitsFor('anonymous', { dreq: true });
+    assert.deepEqual(limits.map((l) => l.id), ['channel_0', 'channel_1', 'department', 'free_text']);
+    assert.match(limits[0].text, /^Par e-mail, l'envoi n'est pas anonyme/);
+    assert.match(limits[1].text, /^Par copier-coller, tout dépend/);
+    const three = channelLimits(sendPlan({ channels: [{ type: 'mailto', target: 'ia@exemple.fr' }, { type: 'whatsapp' }, { type: 'file' }], mode: 'anonymous', channelsData, env: noShare }), channelsData, t);
+    assert.equal(three.length, 2, 'un avertissement par nature de canal, pas un par canal');
+    assert.match(three[0], /^Par e-mail ou par WhatsApp, l'envoi n'est pas anonyme/);
+    assert.match(three[1], /^Par fichier, tout dépend/);
+    assert.equal(joinOr(['a', 'b', 'c'], t), 'a, b ou c');
+    assert.equal(joinOr([], t), '');
+  });
+
+  test('canal indisponible (partage natif absent) : pas d\'avertissement pour lui', () => {
+    const limits = channelLimits(sendPlan({ channels: [{ type: 'share' }], mode: 'anonymous', channelsData, env: noShare }), channelsData, t);
+    assert.deepEqual(limits, [t('form.mode.channel_depends', { via: 'Par copier-coller' })], 'seul le repli « Copier » est signalé');
+  });
+});
+
+describe('textes du répondant', () => {
+  test('un seul terme pour la personne qui lance la campagne : jamais « organisateur »', () => {
+    const text = JSON.stringify(catalogs.form);
+    assert.equal(/organisat(eur|rice)/i.test(text), false);
+  });
+
+  test('états des étapes annoncés en texte', () => {
+    for (const state of ['done', 'current', 'todo']) assert.equal(typeof catalogs.form.steps[state], 'string', state);
   });
 });
 
@@ -346,5 +451,42 @@ describe('saisie directe par le responsable (entrée §3.3)', () => {
     assert.deepEqual(partial.errors.map((e) => e.field), ['last_name']);
     assert.deepEqual(declarantFrom({ first_name: 'Jean', last_name: 'Martin' }, 'anonymous'), { ok: true, value: null, errors: [] });
     assert.equal(declarantFrom({ first_name: 'J'.repeat(61), last_name: 'M' }, 'open').errors[0].code, 'too_long');
+  });
+});
+
+describe('saisie directe : confirmation d\'enregistrement', () => {
+  const NB = '\u00A0';
+  const byClass = (node, cls, out = []) => {
+    for (const child of node.childNodes ?? []) {
+      if ((child.getAttribute?.('class') ?? '').split(' ').includes(cls)) out.push(child);
+      byClass(child, cls, out);
+    }
+    return out;
+  };
+  let fake;
+  before(() => {
+    fake = installFakeDocument();
+    i18nRegister('common', readJson('src/i18n/fr/common.json'));
+    i18nRegister('add', readJson('src/i18n/fr/add.json'));
+  });
+  after(() => fake.restore());
+
+  test('classement indicatif : l\'axe de chaque badge est écrit à l\'écran (CDC D5)', () => {
+    const node = savedNotice({ id: CID }, { name: 'Tri de CV', classification: { ai_act_level: 'high', data_level: 2 } }, i18nT);
+    const badges = byClass(node, 'badge');
+    assert.equal(badges.length, 2);
+    assert.deepEqual(byClass(node, 'badge-axis').map((n) => n.textContent), [`AI Act${NB}: `, `Exposition des données${NB}: `]);
+    assert.equal(byClass(node, 'visually-hidden').length, 0, 'axe visible, pas seulement lu');
+    assert.equal(badges[0].textContent, `AI Act${NB}: Haut risque`);
+    assert.equal(badges[1].getAttribute('data-level'), '2');
+    assert.equal(byClass(node, 'disclaimer').length, 1, 'classement présenté comme indicatif');
+    assert.ok(node.textContent.includes(`Usage «${NB}Tri de CV${NB}» ajouté au registre.`));
+  });
+
+  test('sans classification : ni badge ni avertissement, lien vers le registre conservé', () => {
+    const node = savedNotice({ id: CID }, { name: 'Usage', classification: null }, i18nT);
+    assert.equal(byClass(node, 'badge').length, 0);
+    assert.equal(byClass(node, 'disclaimer').length, 0);
+    assert.ok(node.textContent.includes('Voir dans le registre'));
   });
 });

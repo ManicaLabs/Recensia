@@ -234,9 +234,10 @@ function priorities(campaign, model, t) {
             h('span', { class: 'dashboard-id' }, group.id), ' · ',
             t('dashboard.priority.count', { display: countDisplay(group, campaign) }),
             open ? ` · ${t('dashboard.priority.questions', { count: open })}` : '')),
+        // Aucun en-tête ne nomme les axes ici : « AI Act : » et « Exposition des données : » affichés.
         h('div', { class: 'dashboard-priority-levels' },
-          levelBadge('ai_act', ai.level, t),
-          levelBadge('data', data.level, t),
+          levelBadge('ai_act', ai.level, t, { axisLabel: 'visible' }),
+          levelBadge('data', data.level, t, { axisLabel: 'visible' }),
           ai.overridden || data.overridden ? h('span', { class: 'dashboard-flag' }, t('dashboard.priority.overridden')) : null),
         h('p', { class: 'dashboard-priority-reason' }, t(`dashboard.priority.reason.${reason}`)));
     }));

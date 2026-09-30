@@ -16,7 +16,15 @@
     "saisir": "Saisir un usage",
     "diffuser": "Diffuser",
     "rapport": "Rapport",
-    "parametres": "Paramètres"
+    "parametres": "Paramètres",
+    "count_registry": {
+      "one": "{count} usage recensé",
+      "other": "{count} usages recensés"
+    },
+    "count_suggestions": {
+      "one": "{count} suggestion en attente",
+      "other": "{count} suggestions en attente"
+    }
   },
   "banners": {
     "demo": "Campagne de démonstration : données entièrement fictives (Menuiserie Alpine Concept).",

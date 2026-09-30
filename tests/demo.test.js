@@ -6,6 +6,7 @@ import { validateUsage, validateRespondent, SCHEMA_VERSION } from '../src/engine
 import { consolidate } from '../src/engine/consolidate.js';
 import { suggestActions } from '../src/engine/actions.js';
 import { computeStats } from '../src/engine/stats.js';
+import { applicableDeadline, registryRows } from '../src/export/registry.js';
 import { loadAll } from './helpers/load-data.js';
 
 const { demo, questionnaire, rules, calendar, actions: actionsData } = loadAll();
@@ -168,5 +169,24 @@ describe('consolidation de la démo', () => {
     assert.ok(stats.by_department.some((d) => d.masked), 'au moins un service masqué (< 5)');
     assert.ok(stats.by_department.some((d) => !d.masked && d.count >= 5), 'au moins un service affiché');
     assert.ok(stats.actions_progress.done + stats.actions_progress.in_progress > 0);
+  });
+
+  // CDC §13 : le délai de grâce du 2 décembre 2026 ne vise que le marquage par les fournisseurs.
+  test('échéances : un déployeur (R-AIA-LIM-02) relève de l\'art. 50 en vigueur, pas du délai de grâce des fournisseurs', () => {
+    const visuals = groups.find((g) => g.name === 'Visuels marketing');
+    assert.equal(visuals.computed.role, 'deployer');
+    assert.ok(visuals.computed.triggers.some((t) => t.rule_id === 'R-AIA-LIM-02'));
+    assert.ok(!visuals.computed.deadlines.some((d) => d.id === 'marking_grace_art50_2'));
+    const found = applicableDeadline(visuals.computed.deadlines, '2026-09-30', calendar);
+    assert.equal(found.deadline.id, 'transparency_art50');
+    assert.equal(found.in_force, true);
+    const row = registryRows([visuals], { campaign, actions: [], questionnaire, rules, calendar, today: '2026-09-30' })[0];
+    assert.equal(row.deadline, '02/08/2026 — Obligations de transparence (art. 50) (en vigueur)');
+    assert.ok(groups.every((g) => g.computed.role !== 'deployer' || !g.computed.deadlines.some((d) => d.id === 'marking_grace_art50_2')));
+    const stats = computeStats({ campaign, entries, groups, actions: [], suggestions: [], calendar, today: '2026-09-30', questionnaire });
+    const grace = stats.upcoming_deadlines.find((d) => d.id === 'marking_grace_art50_2');
+    assert.equal(grace.usages_count, 0, 'aucun usage de déployeur compté');
+    assert.deepEqual(grace.applies_to_roles, ['potential_provider']);
+    assert.equal(stats.upcoming_deadlines.find((d) => d.id === 'high_risk_annex_iii').applies_to_roles, null);
   });
 });

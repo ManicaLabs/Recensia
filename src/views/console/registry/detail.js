@@ -14,6 +14,7 @@ import {
   compareEntries, VALIDATION_STATUSES, campaignMode, minGroupSize,
 } from './filters.js';
 import { JUSTIFICATION_MIN, JUSTIFICATION_MAX, OWNER_MAX, historyNewestFirst } from './assessment.js';
+import { alertSlot, setAlert } from './cells.js';
 
 /** Champs de l'usage affichés dans « Toutes les réponses » (ordre du questionnaire). */
 export const ANSWER_FIELDS = Object.freeze([
@@ -30,12 +31,15 @@ const TITLE_ID = 'registry-detail-title';
 
 /**
  * Crée la boîte de dialogue (vide). onClose est appelé une fois, à la fermeture.
- * → { dialog, setContent({ eyebrow, title, nodes }), setStatus(text), focus(key), close(), isOpen() }
+ * setStatus(text) : message de réussite (annoncé poliment) ; setError(text) : encart d'erreur
+ * persistant (role="alert") hors de la zone qui défile. L'un efface l'autre ; null efface.
+ * → { dialog, setContent({ eyebrow, title, nodes }), setStatus(text), setError(text), focus(key), scrollTop(), close(), isOpen() }
  */
 export function createDetailDialog({ t, onClose }) {
   const eyebrow = h('p', { class: 'eyebrow registry-detail-eyebrow' });
   const heading = h('h2', { class: 'modal-title', id: TITLE_ID, tabindex: '-1' });
   const status = h('p', { class: 'registry-detail-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
+  const errorBox = alertSlot('registry-detail-alert');
   const body = h('div', { class: 'modal-content registry-detail-body' });
   let closed = false;
   let statusTimer = null;
@@ -51,6 +55,7 @@ export function createDetailDialog({ t, onClose }) {
           onClick: () => close(),
         }, icon('close'))),
       status,
+      errorBox,
       body));
 
   function close() {
@@ -84,8 +89,17 @@ export function createDetailDialog({ t, onClose }) {
       status.textContent = '';
       status.classList.toggle('is-visible', Boolean(text));
       if (!text) return;
+      setAlert(errorBox, null);
       // Léger délai : un message identique au précédent est de nouveau annoncé.
       statusTimer = setTimeout(() => { status.textContent = String(text); }, 60);
+    },
+    setError(text) {
+      if (text) {
+        clearTimeout(statusTimer);
+        status.textContent = '';
+        status.classList.toggle('is-visible', false);
+      }
+      return setAlert(errorBox, text);
     },
     focus(key) {
       const target = (key && Array.from(body.querySelectorAll('[data-focus]')).find((el) => el.dataset.focus === key && !el.disabled)) || heading;
@@ -161,11 +175,12 @@ function summary(group, campaign, t) {
     h('div', { class: 'cluster registry-detail-badges' },
       h('span', { class: 'registry-axis' },
         h('span', { class: 'registry-axis-label' }, t('registry.detail.ai_act')),
-        levelBadge('ai_act', ai.level, t),
+        // Axe déjà écrit juste avant (« AI Act », « Données ») : pas de préfixe dans le badge.
+        levelBadge('ai_act', ai.level, t, { axisLabel: 'none' }),
         ai.overridden ? h('span', { class: 'registry-flag' }, t('registry.detail.overridden_from', { level: aiLabel(t, ai.computed) })) : null),
       h('span', { class: 'registry-axis' },
         h('span', { class: 'registry-axis-label' }, t('registry.detail.data')),
-        levelBadge('data', data.level, t),
+        levelBadge('data', data.level, t, { axisLabel: 'none' }),
         data.overridden ? h('span', { class: 'registry-flag' }, t('registry.detail.overridden_from', { level: dataLabel(t, data.computed) })) : null,
         data.toQualify ? h('span', { class: 'registry-flag is-warn' }, t('registry.table.to_qualify')) : null)),
     h('p', { class: 'cluster registry-detail-facts' },
@@ -206,9 +221,10 @@ function description(group, model, t) {
     ]));
 }
 
+// Déclencheurs regroupés sous un intertitre par axe (« AI Act », « Exposition des données ») : badge sans préfixe.
 function triggerBadge(trigger, t) {
-  if (trigger.axis === 'ai_act' && isAiActLevel(trigger.level)) return levelBadge('ai_act', trigger.level, t, { short: true });
-  if (trigger.axis === 'data' && isDataLevel(trigger.level)) return levelBadge('data', trigger.level, t);
+  if (trigger.axis === 'ai_act' && isAiActLevel(trigger.level)) return levelBadge('ai_act', trigger.level, t, { short: true, axisLabel: 'none' });
+  if (trigger.axis === 'data' && isDataLevel(trigger.level)) return levelBadge('data', trigger.level, t, { axisLabel: 'none' });
   if (trigger.kind === 'modifier' && Number.isInteger(trigger.delta) && trigger.delta !== 0) {
     return h('span', { class: 'tag' }, t('registry.detail.trigger_delta', { delta: trigger.delta > 0 ? `+${trigger.delta}` : String(trigger.delta) }));
   }

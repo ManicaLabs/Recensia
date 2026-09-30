@@ -24,8 +24,10 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  /* Deux colonnes dès 320 px de contenu. */
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.25rem), 1fr));
+  /* auto-fit : les pistes inutilisées sont repliées, les indicateurs occupent toute la ligne (6 en
+   * mode anonyme, 7 en mode ouvert : une seule ligne dès 1 080 px de contenu). Deux colonnes dès
+   * 320 px de contenu. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
 }
 .dashboard-kpis > li { margin: 0; }
 .dashboard .kpi-label { order: 0; font-weight: 600; color: var(--heading); }

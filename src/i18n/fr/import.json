@@ -99,7 +99,8 @@
     "after_close_badge": "après la clôture",
     "submitted": "déclaré le {date}",
     "after_close_text": "Ces déclarations sont datées d'après la clôture indicative ({date}). Elles sont importées : à vous de décider, dans le registre, de les garder ou de les écarter.",
-    "invalid_text": "Rien n'a été enregistré pour ces codes. Un code tronqué par la messagerie peut être demandé de nouveau à son expéditeur, sans chercher à savoir qui il est.",
+    "invalid_text": "Rien n'a été enregistré pour ces codes. S'ils ont été tronqués, répondez au message reçu pour demander le fichier .rcn ou le code complet ; en mode anonyme, une relance générale évite d'identifier l'expéditeur.",
+    "invalid_text_open": "Rien n'a été enregistré pour ces codes. S'ils ont été tronqués, répondez au message reçu pour demander le fichier .rcn ou le code complet.",
     "other_item": {
       "one": "{count} code pour « {title} »",
       "other": "{count} codes pour « {title} »"
@@ -119,7 +120,7 @@
     "same_rev": "Déjà importé (même version de la déclaration).",
     "older_rev": "Version plus ancienne que celle du registre.",
     "obsolete": "Remplacé par une version plus récente reçue en même temps.",
-    "repeated": "Même version de la déclaration reçue plusieurs fois dans cet import : une seule est gardée.",
+    "repeated": "Même version de la déclaration reçue plusieurs fois dans cet import : une seule est gardée.",
     "format": "Code incomplet ou mal copié (tronqué ?).",
     "size": "Code trop volumineux.",
     "decrypt": "Illisible : code altéré, ou destiné à une campagne dont la clé n'est pas dans ce navigateur.",

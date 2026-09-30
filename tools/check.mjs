@@ -464,75 +464,142 @@ export function parseHtml(source) {
   return tags;
 }
 
+/** Politique CSP (attribut content du <meta http-equiv>) d'un document analysé, ou null. */
+function cspOf(tags) {
+  const meta = tags.find((tag) => tag.name === 'meta' && (tag.attrs.get('http-equiv') ?? '').toLowerCase() === 'content-security-policy');
+  return meta ? (meta.attrs.get('content') ?? '') : null;
+}
+
+// Chemin du site de projet GitHub Pages : https://<compte>.github.io/<dépôt>/.
+const PROJECT_PATH = '/Recensia/';
+
+/**
+ * Chemin sous lequel GitHub Pages publie le site : « / » avec un domaine dédié (fichier CNAME),
+ * « /Recensia/ » (nom du dépôt) sinon.
+ */
+export function pagesBasePath(root = ROOT) {
+  return existsSync(join(root, 'CNAME')) ? '/' : PROJECT_PATH;
+}
+
+/**
+ * Adresse locale d'une page servie à une profondeur inconnue (404.html) : elle doit être absolue et
+ * rester sous basePath, sinon elle peut viser un autre site de la même origine (…github.io/404.js).
+ * → { ok: true, path: 'chemin relatif au dépôt' } ou { ok: false, reason }
+ */
+export function projectPathOf(value, basePath) {
+  const path = String(value).split(/[?#]/)[0];
+  if (!path.startsWith('/')) return { ok: false, reason: 'relative' };
+  if (!path.startsWith(basePath) || /(?:^|\/)\.\.?(?:\/|$)|%2e/i.test(path.slice(basePath.length))) return { ok: false, reason: 'outside' };
+  return { ok: true, path: path.slice(basePath.length) };
+}
+
+/**
+ * Structure d'une page HTML du site : balises équilibrées, id uniques, aucun style ni script inline,
+ * ressources locales présentes, CSP stricte. basePath : page servie à une profondeur inconnue
+ * (404.html) ; toute adresse locale doit être absolue et rester sous ce chemin (voir projectPathOf).
+ * → { tags, ids, moduleScripts: [src…], policy }
+ */
+function checkHtmlStructure(rel, source, s, { basePath = null } = {}) {
+  const tags = parseHtml(source);
+  const where = (line) => `${rel}:${line}`;
+  for (const bad of tags.malformed) {
+    s.errors.push(`${where(bad.line)} : balise non analysable « ${bad.text} » (écrire les attributs séparés par des espaces)`);
+  }
+  const stack = [];
+  const ids = new Map();
+  const moduleScripts = [];
+  for (const tag of tags) {
+    if (tag.closing) {
+      const open = stack.pop();
+      if (!open) s.errors.push(`${where(tag.line)} : </${tag.name}> sans balise ouvrante`);
+      else if (open.name !== tag.name) s.errors.push(`${where(tag.line)} : </${tag.name}> ferme <${open.name}> (ouverte ligne ${open.line})`);
+      continue;
+    }
+    if (!VOID_ELEMENTS.has(tag.name)) stack.push(tag);
+    for (const [name, value] of tag.attrs) {
+      if (name === 'style') s.errors.push(`${where(tag.line)} : attribut style= interdit (CSP)`);
+      if (/^on[a-z]/.test(name)) s.errors.push(`${where(tag.line)} : attribut ${name}= interdit (CSP)`);
+      if (name === 'id') {
+        if (ids.has(value)) s.errors.push(`${where(tag.line)} : id « ${value} » déjà utilisé ligne ${ids.get(value)}`);
+        else ids.set(value, tag.line);
+      }
+    }
+    if (tag.name === 'style') s.errors.push(`${where(tag.line)} : balise <style> interdite (CSP)`);
+    if (tag.name === 'script') {
+      if (!tag.attrs.has('src') || tag.content.trim() !== '') s.errors.push(`${where(tag.line)} : script inline interdit (CSP)`);
+      if (tag.attrs.get('type') === 'module') moduleScripts.push(tag.attrs.get('src') ?? '');
+    }
+    // Ressources locales référencées : elles doivent exister.
+    for (const attrName of ['href', 'src']) {
+      const value = tag.attrs.get(attrName);
+      if (!value || /^(?:[a-z][a-z0-9+.-]*:|#|\/\/)/i.test(value)) continue;
+      let path = value.split(/[?#]/)[0];
+      if (basePath !== null) {
+        const local = projectPathOf(value, basePath);
+        if (!local.ok) {
+          s.errors.push(local.reason === 'relative'
+            ? `${where(tag.line)} : chemin relatif « ${value} » interdit (page servie à une profondeur inconnue : écrire « ${basePath}… »)`
+            : `${where(tag.line)} : « ${value} » sort du projet ${basePath} (un autre site de la même origine pourrait le servir)`);
+          continue;
+        }
+        path = local.path;
+      }
+      if (['a'].includes(tag.name)) continue;
+      if (path && !existsSync(join(ROOT, path))) s.errors.push(`${where(tag.line)} : ressource introuvable « ${value} »`);
+      if (tag.name === 'link' && /\.png$/i.test(path) && existsSync(join(ROOT, path))) {
+        // Sans attribut sizes, une icône apple-touch doit mesurer 180 × 180.
+        const declared = tag.attrs.get('sizes') ?? (tag.attrs.get('rel') === 'apple-touch-icon' ? '180x180' : null);
+        const size = pngSize(path);
+        if (!size) s.errors.push(`${where(tag.line)} : « ${path} » n'est pas un PNG valide`);
+        else if (declared && declared !== `${size.width}x${size.height}`) {
+          s.errors.push(`${where(tag.line)} : « ${path} » mesure ${size.width}x${size.height}, attendu ${declared}`);
+        }
+      }
+    }
+  }
+  for (const open of stack) s.errors.push(`${where(open.line)} : <${open.name}> jamais fermée`);
+
+  const policy = cspOf(tags);
+  if (policy === null) {
+    s.errors.push(`${rel} : politique CSP absente (<meta http-equiv="Content-Security-Policy">)`);
+  } else {
+    if (/'unsafe-inline'|'unsafe-eval'|'unsafe-hashes'/.test(policy)) s.errors.push(`${rel} : CSP : unsafe-inline / unsafe-eval interdits`);
+    const scriptSrc = /(?:^|;)\s*script-src\s+([^;]*)/.exec(policy)?.[1].trim().split(/\s+/) ?? [];
+    const extra = scriptSrc.filter((source) => !["'self'", 'https://gc.zgo.at'].includes(source));
+    if (!scriptSrc.length) s.errors.push(`${rel} : CSP : directive script-src manquante`);
+    if (extra.length) s.errors.push(`${rel} : CSP : sources de script non autorisées : ${extra.join(' ')}`);
+    if (!/(?:^|;)\s*object-src\s+'none'/.test(policy)) s.warnings.push(`${rel} : CSP : object-src 'none' conseillé`);
+  }
+  return { tags, ids, moduleScripts, policy };
+}
+
 function checkIndexHtml() {
-  const s = section('4', 'Structure de index.html');
+  const s = section('4', 'Structure de index.html et 404.html');
   const rel = 'index.html';
   if (!existsSync(join(ROOT, rel))) {
     s.errors.push(`${rel} absent`);
     return s;
   }
-  const source = read(rel);
-  const tags = parseHtml(source);
-  for (const bad of tags.malformed) {
-    s.errors.push(`ligne ${bad.line} : balise non analysable « ${bad.text} » (écrire les attributs séparés par des espaces)`);
-  }
-  const stack = [];
-  const ids = new Map();
-  let moduleScripts = 0;
-  for (const tag of tags) {
-    if (tag.closing) {
-      const open = stack.pop();
-      if (!open) s.errors.push(`ligne ${tag.line} : </${tag.name}> sans balise ouvrante`);
-      else if (open.name !== tag.name) s.errors.push(`ligne ${tag.line} : </${tag.name}> ferme <${open.name}> (ouverte ligne ${open.line})`);
-      continue;
-    }
-    if (!VOID_ELEMENTS.has(tag.name)) stack.push(tag);
-    for (const [name, value] of tag.attrs) {
-      if (name === 'style') s.errors.push(`ligne ${tag.line} : attribut style= interdit (CSP)`);
-      if (/^on[a-z]/.test(name)) s.errors.push(`ligne ${tag.line} : attribut ${name}= interdit (CSP)`);
-      if (name === 'id') {
-        if (ids.has(value)) s.errors.push(`ligne ${tag.line} : id « ${value} » déjà utilisé ligne ${ids.get(value)}`);
-        else ids.set(value, tag.line);
-      }
-    }
-    if (tag.name === 'style') s.errors.push(`ligne ${tag.line} : balise <style> interdite (CSP)`);
-    if (tag.name === 'script') {
-      if (!tag.attrs.has('src') || tag.content.trim() !== '') s.errors.push(`ligne ${tag.line} : script inline interdit (CSP)`);
-      if (tag.attrs.get('type') === 'module') moduleScripts += 1;
-    }
-    // Ressources locales référencées : elles doivent exister.
-    for (const attrName of ['href', 'src']) {
-      const value = tag.attrs.get(attrName);
-      if (!value || /^(?:[a-z][a-z0-9+.-]*:|#|\/\/)/i.test(value) || ['a'].includes(tag.name)) continue;
-      const path = value.split(/[?#]/)[0];
-      if (path && !existsSync(join(ROOT, path))) s.errors.push(`ligne ${tag.line} : ressource introuvable « ${value} »`);
-      if (tag.name === 'link' && /\.png$/i.test(path) && existsSync(join(ROOT, path))) {
-        // Sans attribut sizes, une icône apple-touch doit mesurer 180 × 180.
-        const declared = tag.attrs.get('sizes') ?? (tag.attrs.get('rel') === 'apple-touch-icon' ? '180x180' : null);
-        const size = pngSize(path);
-        if (!size) s.errors.push(`ligne ${tag.line} : « ${path} » n'est pas un PNG valide`);
-        else if (declared && declared !== `${size.width}x${size.height}`) {
-          s.errors.push(`ligne ${tag.line} : « ${path} » mesure ${size.width}x${size.height}, attendu ${declared}`);
-        }
-      }
-    }
-  }
-  for (const open of stack) s.errors.push(`ligne ${open.line} : <${open.name}> jamais fermée`);
-  if (moduleScripts !== 1) s.warnings.push(`${moduleScripts} scripts de type module (un seul attendu : src/app.js)`);
+  const index = checkHtmlStructure(rel, read(rel), s);
+  if (index.moduleScripts.length !== 1) s.warnings.push(`${index.moduleScripts.length} scripts de type module (un seul attendu : src/app.js)`);
+  s.notes.push(`${rel} : ${index.tags.length} balises analysées, ${index.ids.size} identifiants uniques.`);
 
-  const csp = tags.find((tag) => tag.name === 'meta' && (tag.attrs.get('http-equiv') ?? '').toLowerCase() === 'content-security-policy');
-  if (!csp) {
-    s.errors.push('politique CSP absente (<meta http-equiv="Content-Security-Policy">)');
+  // 404.html : page autonome servie par GitHub Pages pour les adresses inconnues (liens « %23 »).
+  const notFound = '404.html';
+  if (existsSync(join(ROOT, notFound))) {
+    const basePath = pagesBasePath();
+    const page = checkHtmlStructure(notFound, read(notFound), s, { basePath });
+    if (page.policy !== null && index.policy !== null && page.policy !== index.policy) {
+      s.errors.push(`${notFound} : la CSP doit être identique à celle d'index.html`);
+    }
+    if (!page.moduleScripts.length) s.errors.push(`${notFound} : aucun script (404.js attendu)`);
+    for (const src of page.moduleScripts) {
+      if (src !== `${basePath}404.js`) s.errors.push(`${notFound} : script inattendu « ${src} » (seul ${basePath}404.js est autorisé)`);
+    }
+    s.notes.push(`${notFound} : ${page.tags.length} balises analysées, ${page.ids.size} identifiants uniques.`);
   } else {
-    const policy = csp.attrs.get('content') ?? '';
-    if (/'unsafe-inline'|'unsafe-eval'|'unsafe-hashes'/.test(policy)) s.errors.push('CSP : unsafe-inline / unsafe-eval interdits');
-    const scriptSrc = /(?:^|;)\s*script-src\s+([^;]*)/.exec(policy)?.[1].trim().split(/\s+/) ?? [];
-    const extra = scriptSrc.filter((source) => !["'self'", 'https://gc.zgo.at'].includes(source));
-    if (!scriptSrc.length) s.errors.push('CSP : directive script-src manquante');
-    if (extra.length) s.errors.push(`CSP : sources de script non autorisées : ${extra.join(' ')}`);
-    if (!/(?:^|;)\s*object-src\s+'none'/.test(policy)) s.warnings.push("CSP : object-src 'none' conseillé");
+    s.warnings.push(`${notFound} absent : un lien dont le « # » a été encodé en « %23 » mène à la page 404 générique de GitHub`);
   }
-  s.notes.push(`${tags.length} balises analysées, ${ids.size} identifiants uniques.`);
   return s;
 }
 
@@ -626,6 +693,9 @@ async function checkPrecache() {
     s.errors.push(`${PRECACHE_FILE} absent : lancez « node tools/precache.mjs »`);
     return s;
   }
+  for (const file of ['./404.html', './404.js']) {
+    if (expected.files.includes(file)) s.errors.push(`${file.slice(2)} ne doit pas figurer dans le précache (page 404 autonome)`);
+  }
   const appVersion = await readAppVersion(ROOT);
   const version = /version:\s*'([^']+)'/.exec(current)?.[1];
   if (!version || !version.startsWith(`${appVersion}-`)) {
@@ -644,12 +714,92 @@ async function checkPrecache() {
   } else {
     s.notes.push(`${expected.files.length} fichiers, version ${expected.version}.`);
   }
-  try {
-    const pkg = JSON.parse(read('package.json'));
-    if (pkg.version && pkg.version !== appVersion) s.warnings.push(`package.json (${pkg.version}) et config.js (${appVersion}) ont des versions différentes`);
-  } catch {
-    // package.json absent ou illisible : sans objet ici
+  return s;
+}
+
+// ---------------------------------------------------------------------------------------------
+// (9) Version de l'application
+// ---------------------------------------------------------------------------------------------
+
+const SEMVER_RE = /^(\d+)\.(\d+)\.(\d+)$/;
+
+function compareMinor(a, b) {
+  return a[0] - b[0] || a[1] - b[1];
+}
+
+/**
+ * Versions citées dans l'état d'avancement du CDC (§5bis) : lignes « - ✅ **vX.Y … » (livrées) et
+ * « - 🚧 **… vX.Y** » (en cours). → { released: [[X, Y]…], inProgress: [[X, Y]…] } dans l'ordre du texte.
+ */
+export function cdcVersions(text) {
+  const released = [];
+  const inProgress = [];
+  const lines = String(text ?? '').split('\n');
+  const start = lines.findIndex((line) => /^##\s+5bis\b/.test(line));
+  if (start === -1) return { released, inProgress };
+  for (const line of lines.slice(start + 1)) {
+    if (/^##\s/.test(line) || /^---\s*$/.test(line)) break;
+    const match = /^\s*-\s*(✅|🚧)\s*\*\*[^*\n]*?\bv(\d+)\.(\d+)\b/u.exec(line);
+    if (!match) continue;
+    (match[1] === '✅' ? released : inProgress).push([Number(match[2]), Number(match[3])]);
   }
+  return { released, inProgress };
+}
+
+/**
+ * Cohérence de la version affichée (pied de page, sauvegardes, nom du cache) : appVersion de config.js
+ * = version de package.json, et au moins égale à la dernière version livrée du CDC §5bis.
+ * → { errors: [], warnings: [], notes: [] }
+ */
+export function versionIssues({ appVersion, packageVersion, cdcText }) {
+  const out = { errors: [], warnings: [], notes: [] };
+  const app = SEMVER_RE.exec(String(appVersion ?? ''));
+  if (!app) {
+    out.errors.push(`appVersion « ${appVersion ?? '?'} » (config.js) : format X.Y.Z attendu`);
+    return out;
+  }
+  if (packageVersion === undefined || packageVersion === null) {
+    out.warnings.push('package.json : champ « version » absent');
+  } else if (packageVersion !== appVersion) {
+    out.errors.push(`package.json (${packageVersion}) et config.js (${appVersion}) ont des versions différentes`);
+  }
+  if (cdcText === null || cdcText === undefined) {
+    out.warnings.push('docs/CDC.md absent : version non comparée à l\'état d\'avancement (§5bis)');
+    return out;
+  }
+  const { released, inProgress } = cdcVersions(cdcText);
+  const current = [Number(app[1]), Number(app[2])];
+  const fmt = ([major, minor]) => `v${major}.${minor}`;
+  if (!released.length) {
+    out.warnings.push('CDC §5bis : aucune ligne « ✅ vX.Y » trouvée');
+    return out;
+  }
+  const last = released.reduce((max, v) => (compareMinor(v, max) > 0 ? v : max));
+  const diff = compareMinor(current, last);
+  if (diff < 0) {
+    out.errors.push(`appVersion ${appVersion} en retard sur la dernière version livrée du CDC §5bis (${fmt(last)}) : incrémenter appVersion (config.js et package.json)`);
+  } else if (diff > 0 && !inProgress.some((v) => compareMinor(v, current) === 0)) {
+    out.warnings.push(`appVersion ${appVersion} en avance sur le CDC §5bis (dernière version livrée : ${fmt(last)}) : mettre à jour l'état d'avancement`);
+  } else {
+    out.notes.push(`appVersion ${appVersion} : cohérente avec package.json et le CDC §5bis (${diff > 0 ? `${fmt(current)} en cours` : fmt(last)}).`);
+  }
+  return out;
+}
+
+async function checkVersion() {
+  const s = section('9', 'Version de l\'application (config.js, package.json, CDC §5bis)');
+  const appVersion = await readAppVersion(ROOT);
+  let packageVersion;
+  try {
+    packageVersion = JSON.parse(read('package.json')).version;
+  } catch {
+    s.warnings.push('package.json absent ou illisible');
+  }
+  const cdcText = existsSync(join(ROOT, 'docs/CDC.md')) ? read('docs/CDC.md') : null;
+  const result = versionIssues({ appVersion, packageVersion, cdcText });
+  s.errors.push(...result.errors);
+  s.warnings.push(...result.warnings);
+  s.notes.push(...result.notes);
   return s;
 }
 
@@ -723,13 +873,16 @@ export function findThirdPartyUrls(file, text) {
   return problems;
 }
 
+// Scripts de page hors de src/ soumis aux mêmes interdits.
+const PAGE_SCRIPTS = ['404.js'];
+
 function checkForbidden() {
-  const s = section('7', 'Interdits dans src/ (HTML brut, eval, style inline, réseau)');
-  const code = srcFiles(['.js', '.mjs']);
+  const s = section('7', 'Interdits dans src/ et 404.js (HTML brut, eval, style inline, réseau)');
+  const code = [...srcFiles(['.js', '.mjs']), ...PAGE_SCRIPTS.filter((file) => existsSync(join(ROOT, file)))];
   for (const file of code) {
     for (const problem of findForbiddenCode(file, read(file))) s.errors.push(`${file}:${problem.line} : ${problem.label}`);
   }
-  for (const file of srcFiles(['.js', '.mjs', '.css', '.json', '.html'])) {
+  for (const file of [...srcFiles(['.js', '.mjs', '.css', '.json', '.html']), ...PAGE_SCRIPTS.filter((f) => existsSync(join(ROOT, f)))]) {
     for (const problem of findThirdPartyUrls(file, read(file))) {
       s.errors.push(`${file}:${problem.line} : URL tierce non autorisée « ${problem.url} »`);
     }
@@ -823,7 +976,7 @@ const FIX = process.argv.includes('--fix');
 
 async function main() {
   console.log(paint('1', 'Recensia — validation avant push (CDC §12)'));
-  const steps = [checkSyntax, checkJson, checkIndexHtml, checkSecrets, checkPrecache, checkForbidden, checkI18nKeys];
+  const steps = [checkSyntax, checkJson, checkIndexHtml, checkSecrets, checkPrecache, checkForbidden, checkI18nKeys, checkVersion];
   for (const step of steps) {
     try {
       printSection(await step());

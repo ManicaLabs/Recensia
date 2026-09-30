@@ -138,9 +138,15 @@ function toUtcDay(day) {
   return value.getUTCMonth() === month - 1 && value.getUTCDate() === date ? value : null;
 }
 
-// « 1 octobre » ⇒ « 1er octobre » (usage typographique français).
+// « 1 octobre » ⇒ « 1er octobre » (usage typographique français). L'espace qui suit le jour devient
+// insécable (U+00A0) : « 31 octobre » n'est jamais coupé en fin de ligne. Ces dates ne servent qu'à
+// l'affichage (les messages générés formatent leurs dates avec src/share/messages.js).
 function joinParts(parts) {
-  return parts.map((part) => (part.type === 'day' && part.value === '1' ? '1er' : part.value)).join('');
+  return parts.map((part, index) => {
+    if (part.type === 'day' && part.value === '1') return '1er';
+    if (part.type === 'literal' && parts[index - 1]?.type === 'day') return part.value.replace(/ /g, ' ');
+    return part.value;
+  }).join('');
 }
 
 /** « 2026-10-31 » ⇒ « 31 octobre 2026 ». Valeur invalide : renvoyée telle quelle. */

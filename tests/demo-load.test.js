@@ -11,6 +11,10 @@ import { validateUsage } from '../src/engine/validate.js';
 import { generateCampaignKeys } from '../src/crypto/keys.js';
 import { buildCollectUrl, decodeAndVerifyCampaignLink } from '../src/crypto/link.js';
 import { encryptEntry, decryptEntry } from '../src/crypto/codes.js';
+import { registryPreview, registryPreviewRows } from '../src/views/demo.js';
+import { register, t } from '../src/i18n.js';
+import { readFileSync } from 'node:fs';
+import { installFakeDocument } from './helpers/fake-dom.js';
 import { loadAll } from './helpers/load-data.js';
 
 const { demo, rules, calendar, questionnaire, actions: actionsData } = loadAll();
@@ -250,6 +254,81 @@ describe('buildDemoRecords (pur)', () => {
     const code = await encryptEntry(plain, config.pk, 'demo');
     const back = await decryptEntry(code, r.campaign.private_key_jwk, 'demo');
     assert.equal(back.usage.usage_name, r.entries[0].usage.usage_name);
+  });
+});
+
+describe('vue #/demo : aperçu du registre de l\'annexe A (CDC §14, phase 1)', () => {
+  const r = buildDemoRecords(demo, keys, NOW);
+  const groups = consolidate(r.entries, rules, calendar, { byDepartment: r.campaign.settings.group_by_department, assessments: r.assessments });
+  for (const ns of ['common', 'demo']) {
+    register(ns, JSON.parse(readFileSync(new URL(`../src/i18n/fr/${ns}.json`, import.meta.url), 'utf8')));
+  }
+  const elements = (node, tag, out = []) => {
+    for (const child of node.childNodes ?? []) {
+      if (child.nodeType === 1 && (!tag || child.localName === tag)) out.push(child);
+      if (child.nodeType === 1) elements(child, tag, out);
+    }
+    return out;
+  };
+  const levelsOf = (node) => elements(node).filter((el) => el.hasAttribute('data-level')).map((el) => el.getAttribute('data-level'));
+
+  test('10 lignes, dans l\'ordre du registre, avec les niveaux attendus de l\'annexe A', () => {
+    const rows = registryPreviewRows(groups);
+    assert.equal(rows.length, 10);
+    assert.deepEqual(rows.map((x) => x.id), groups.map((g) => g.id));
+    for (const row of rows) assert.deepEqual([row.ai_act_level, row.data_level], EXPECTED.get(row.name), row.name);
+    assert.equal(rows[0].name, 'Analyse d\'émotions en visio (test)', 'interdit suspecté en tête');
+    assert.deepEqual(registryPreviewRows(undefined), []);
+  });
+
+  test('rendu : tableau (en-têtes nommant chaque axe) et cartes, 10 usages et leurs deux niveaux, lien vers le registre', () => {
+    const dom = installFakeDocument();
+    try {
+      const node = registryPreview(t, groups, { href: '#/admin/demo/registre' });
+      const table = elements(node, 'table')[0];
+      const headers = elements(elements(table, 'thead')[0], 'th').map((th) => th.textContent);
+      assert.deepEqual(headers, ['Cas d\'usage', 'Service(s)', 'Niveau AI Act', 'Exposition des données']);
+      const trs = elements(elements(table, 'tbody')[0], 'tr');
+      assert.equal(trs.length, 10);
+      const byName = new Map(trs.map((tr) => [elements(tr, 'th')[0].textContent, levelsOf(tr)]));
+      for (const [name, [ai, data]] of EXPECTED) assert.deepEqual(byName.get(name), [ai, String(data)], name);
+      // Annexe A : n°4 et n°5 haut risque, n°9 interdit suspecté, n°5 exposition critique.
+      assert.equal(byName.get('Tri automatique de CV')[0], 'high');
+      assert.deepEqual(byName.get('Aide à l\'évaluation annuelle'), ['high', '3']);
+      assert.equal(byName.get('Analyse d\'émotions en visio (test)')[0], 'prohibited_suspected');
+      const text = node.textContent;
+      assert.match(text, /Haut risque/);
+      assert.match(text, /Interdit suspecté/);
+      assert.match(text, /Critique/);
+      assert.match(text, /indicative, à confirmer/);
+
+      const cards = elements(elements(node, 'ul').find((ul) => ul.getAttribute('class') === 'demo-registry-cards'), 'li');
+      assert.equal(cards.length, 10);
+      assert.deepEqual(cards.map(levelsOf), trs.map(levelsOf), 'mêmes niveaux dans les cartes (petits écrans)');
+      const link = elements(node, 'a').find((a) => a.getAttribute('href') === '#/admin/demo/registre');
+      assert.ok(link, 'lien « Voir le registre complet »');
+      assert.equal(link.textContent, 'Voir le registre complet');
+    } finally {
+      dom.restore();
+    }
+  });
+
+  test('registre vide : message au lieu du tableau', () => {
+    const dom = installFakeDocument();
+    try {
+      const node = registryPreview(t, [], { href: '#/admin/demo/registre' });
+      assert.equal(elements(node, 'table').length, 0);
+      assert.match(node.textContent, /réinitialisez la démo/);
+    } finally {
+      dom.restore();
+    }
+  });
+
+  test('compteur d\'actions de la page : actions retenues au plan (libellé « au plan », pas « engagées »)', () => {
+    const planned = r.actions.filter((a) => a.status !== 'rejected').length;
+    assert.equal(planned, 5);
+    assert.equal(t('demo.content.kpi.actions', { count: planned }), 'actions au plan');
+    assert.equal(t('demo.content.kpi.actions', { count: 1 }), 'action au plan');
   });
 });
 
