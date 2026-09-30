@@ -1,0 +1,79 @@
+/* Questionnaire d'usage (src/ui/questionnaire.js) — mobile d'abord.
+ * Réutilise .field, .choice, .choice-grid, .callout d'app.css ; jetons de couleur partagés
+ * (clair et sombre à l'écran) : aucune règle sombre propre n'est nécessaire. */
+
+.questionnaire {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+.questionnaire > * { margin: 0; }
+.q-legend { font-size: var(--fs-sm); }
+
+/* Récapitulatif des erreurs */
+.q-error-summary:focus { outline: 3px solid var(--focus); outline-offset: 2px; }
+.q-error-title { margin: 0 0 var(--space-2); font-weight: 700; color: var(--heading); }
+.q-error-list { margin: 0; padding-left: 1.1rem; }
+.q-error-list a { color: var(--danger); font-weight: 600; }
+.q-error-list a:hover { color: var(--danger-hover); }
+
+/* Sections */
+.q-section {
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+@media (min-width: 40rem) {
+  .q-section { padding: var(--space-5) var(--space-6); }
+}
+.q-section-count {
+  margin: 0 0 var(--space-1);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.q-section-title { margin: 0 0 var(--space-2); font-size: var(--fs-xl); }
+.q-section-intro { margin: 0 0 var(--space-5); max-width: 44rem; color: var(--text-muted); }
+.q-section > .q-field:last-child { margin-bottom: 0; }
+
+/* Champs */
+fieldset.q-field { min-width: 0; margin-inline: 0; }
+.q-field.has-error {
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--danger);
+}
+.q-field .choice-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); }
+/* Cibles tactiles d'au moins 44 px */
+.q-choices .choice { min-height: 2.75rem; }
+.q-choice-exclusive { border-style: dashed; }
+.q-choice-exclusive:has(input:checked) { border-style: solid; }
+
+.q-warning {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  margin: 0 0 var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--warn);
+  border-radius: var(--radius-sm);
+  background: var(--warn-soft);
+  color: var(--text);
+  font-size: var(--fs-sm);
+}
+.q-warning .icon { color: var(--warn); margin-top: 0.15em; }
+
+.q-counter {
+  margin: var(--space-1) 0 0;
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text-muted);
+}
+.q-counter.is-near { color: var(--warn); font-weight: 650; }
+
+.q-option-help { margin: var(--space-2) 0 0; }
+.q-clear { margin-top: var(--space-2); }

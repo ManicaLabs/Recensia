@@ -1,0 +1,33 @@
+{
+  "title": "Saisir un usage",
+  "lead": "Saisissez vous-même un usage recueilli lors d'un entretien, d'un atelier ou d'un échange. Il rejoint le registre comme une réponse reçue.",
+  "mode_open": "Campagne nominative : vous pouvez indiquer la personne qui a déclaré cet usage (facultatif). Les questions s'adressent à elle : répondez à sa place.",
+  "mode_anonymous": "Campagne anonyme : aucune identité n'est enregistrée avec l'usage et la date de réponse est conservée au jour près. Les questions s'adressent à la personne qui utilise l'IA : répondez à sa place.",
+  "demo": "Campagne de démonstration : l'usage saisi s'ajoute aux données fictives de ce navigateur.",
+  "declarant": {
+    "title": "Déclarant (facultatif)",
+    "help": "Laissez les deux champs vides si l'usage est collectif ou si la personne préfère ne pas être nommée.",
+    "first_name": "Prénom",
+    "last_name": "Nom",
+    "errors": {
+      "first_name_required": "Indiquez aussi le prénom, ou laissez les deux champs vides.",
+      "last_name_required": "Indiquez aussi le nom, ou laissez les deux champs vides.",
+      "too_long": "{max} caractères au maximum.",
+      "invalid": "Cette valeur n'est pas valide : vérifiez ce champ."
+    }
+  },
+  "save": "Enregistrer l'usage",
+  "saving": "Enregistrement en cours…",
+  "reset": "Vider le formulaire",
+  "reset_done": "Formulaire vidé.",
+  "toast": "Usage « {name} » enregistré.",
+  "saved": {
+    "title": "Usage « {name} » ajouté au registre.",
+    "levels": "Classement indicatif :",
+    "registry_link": "Voir dans le registre"
+  },
+  "errors": {
+    "no_store": "Le stockage local est indisponible : l'usage ne peut pas être enregistré.",
+    "save_failed": "L'usage n'a pas pu être enregistré. Réessayez ; si le problème persiste, rechargez la page."
+  }
+}

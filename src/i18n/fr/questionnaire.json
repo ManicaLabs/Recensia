@@ -1,0 +1,78 @@
+{
+  "counter": "{count} / {max} caractères",
+  "counter_left": {
+    "one": "Il reste {count} caractère.",
+    "other": "Il reste {count} caractères."
+  },
+  "department_unspecified": "Je préfère ne pas le préciser",
+  "select_placeholder": "Choisissez une réponse",
+  "clear": "Effacer ma réponse",
+  "cleared": "Réponse effacée : {label}",
+  "exclusive_checked": "« {option} » est cochée : les autres cases ont été décochées.",
+  "exclusive_unchecked": "« {option} » a été décochée.",
+  "section_count": "Partie {n} sur {total}",
+  "summary": {
+    "title": {
+      "one": "Une réponse est à vérifier :",
+      "other": "{count} réponses sont à vérifier :"
+    },
+    "announce": {
+      "one": "Une réponse est à vérifier avant d'enregistrer.",
+      "other": "{count} réponses sont à vérifier avant d'enregistrer."
+    },
+    "item": "{label} — {message}"
+  },
+  "errors": {
+    "required_text": "Renseignez ce champ.",
+    "required_select": "Choisissez une réponse dans la liste.",
+    "required_radio": "Choisissez une réponse.",
+    "required_multi": "Cochez au moins une case.",
+    "too_long": "{max} caractères au maximum : raccourcissez un peu votre texte.",
+    "too_few": {
+      "one": "Cochez au moins une case.",
+      "other": "Cochez au moins {count} cases."
+    },
+    "exclusive": "« {option} » ne peut pas être cochée avec d'autres réponses.",
+    "invalid_department": "Ce service ne fait pas partie de la liste : choisissez-en un autre.",
+    "invalid_value": "Cette réponse ne fait pas partie de la liste : choisissez-en une autre.",
+    "invalid": "Cette réponse n'est pas valide : vérifiez ce champ."
+  },
+  "field_errors": {
+    "usage_name": {
+      "required": "Donnez un nom court à cet usage, par exemple « Résumer des comptes rendus »."
+    },
+    "department": {
+      "required": "Choisissez votre service."
+    },
+    "tool": {
+      "required": "Choisissez l'outil utilisé ; s'il n'est pas dans la liste, choisissez « Autre »."
+    },
+    "tool_other": {
+      "required": "Précisez le nom de l'outil, ou à défaut ce qu'il fait."
+    },
+    "account_type": {
+      "required": "Choisissez le type de compte ; « Je ne sais pas » est une réponse valable."
+    },
+    "status": {
+      "required": "Indiquez où en est cet usage."
+    },
+    "task_types": {
+      "required": "Cochez au moins un type de tâche."
+    },
+    "business_domain": {
+      "required": "Choisissez le domaine concerné."
+    },
+    "frequency": {
+      "required": "Indiquez à quelle fréquence vous utilisez l'outil."
+    },
+    "data_types": {
+      "required": "Cochez au moins une case, ou « Aucune donnée de l'entreprise »."
+    },
+    "affects_people": {
+      "required": "Choisissez une réponse ; « Je ne sais pas » est une réponse valable."
+    },
+    "biometric_emotion": {
+      "required": "Choisissez une réponse ; « Je ne sais pas » est une réponse valable."
+    }
+  }
+}

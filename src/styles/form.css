@@ -1,0 +1,203 @@
+/* Formulaire répondant (#/c/…) et onglet « Saisir » de la console — mobile d'abord.
+ * Couleurs : jetons d'app.css uniquement (clair et sombre à l'écran). */
+
+/* --- En-tête et étapes ------------------------------------------------------------------ */
+
+.form-header-meta { margin: 0; gap: var(--space-2) var(--space-4); font-size: var(--fs-sm); }
+.form-header-meta .badge { font-size: var(--fs-sm); }
+.form-header-meta .badge .icon { width: 1em; height: 1em; }
+.form-page > .callout { margin-bottom: var(--space-4); }
+.form-steps { margin: 0 0 var(--space-5); }
+
+/* --- Étape 1 : notice ---------------------------------------------------------------- */
+
+.form-intro .lead { margin-bottom: var(--space-3); }
+.form-intro .lead + p { margin: 0; }
+.form-facts { margin: 0; }
+.form-facts .icon { margin-top: 0.2em; }
+
+.form-mode h3,
+.form-fingerprint h3,
+.form-identity h3,
+.form-before-send h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-lg);
+}
+.form-mode h3 .icon,
+.form-fingerprint h3 .icon,
+.form-identity h3 .icon,
+.form-before-send h3 .icon { color: var(--primary); }
+.form-mode .check-list { margin: 0; }
+.form-mode .check-list .icon { color: var(--success); }
+.form-mode-limits { margin: var(--space-4) 0 var(--space-2); font-size: var(--fs-base); }
+.form-limits { margin: 0; }
+
+.form-fingerprint-value { margin: 0 0 var(--space-2); font-size: var(--fs-2xl); line-height: 1.2; }
+.form-fingerprint p:last-child { margin: 0; }
+
+.form-identity-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 var(--space-4);
+}
+.form-identity-grid .field { margin-bottom: var(--space-4); }
+.form-identity-grid .field:last-child { margin-bottom: 0; }
+@media (min-width: 40rem) {
+  .form-identity-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .form-identity-grid .field:last-child { grid-column: 1 / -1; }
+}
+
+.form-resume { display: flex; gap: var(--space-2); align-items: flex-start; color: var(--text-muted); }
+.form-resume .icon { margin-top: 0.2em; color: var(--info); }
+
+/* Boutons pleine largeur au pouce, côte à côte dès que la place le permet */
+@media (max-width: 40rem) {
+  .form-page .form-actions > .btn,
+  .add-tab .form-actions > .btn { flex: 1 1 100%; }
+}
+
+/* --- Étape 2 : usages --------------------------------------------------------------- */
+
+.form-edit > h2 { margin-bottom: var(--space-2); }
+.form-edit > .callout { margin: var(--space-3) 0 0; }
+.form-edit-form { margin-top: var(--space-4); }
+
+.form-usages { display: grid; gap: var(--space-3); margin: 0; }
+.form-usage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.form-usage-text {
+  display: flex;
+  flex: 1 1 16rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.form-usage-text > * { margin: 0; }
+.form-usage-title { font-size: var(--fs-lg); }
+.form-usage-actions { flex: 0 0 auto; }
+
+.form-identity-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.form-identity-summary p { margin: 0; }
+.form-identity-summary .icon { color: var(--primary); }
+.form-list-alert:empty { display: none; }
+.form-list-alert .callout { margin: 0; }
+.form-empty { color: var(--text-muted); }
+
+/* --- Étape 3 : codes et envoi --------------------------------------------------------- */
+
+.form-generating p { display: flex; align-items: center; gap: var(--space-3); }
+
+.form-before-send .meta-list { margin-bottom: var(--space-3); }
+.form-before-send dd { font-weight: 600; overflow-wrap: anywhere; }
+.form-before-send .fingerprint { font-size: var(--fs-lg); }
+.form-before-send .callout { margin: var(--space-3) 0 0; }
+.form-before-send > p { margin: 0; }
+
+.form-channels-section h3,
+.form-codes-section h3 { font-size: var(--fs-xl); }
+.form-channels { display: grid; gap: var(--space-3); margin: 0; }
+.form-channel { display: flex; flex-direction: column; gap: var(--space-3); }
+.form-channel > * { margin: 0; }
+.form-channel .callout { margin: 0; }
+.form-channel-title { font-size: var(--fs-lg); }
+.form-channel-target { overflow-wrap: anywhere; }
+.form-channel.is-unavailable { background: var(--surface-2); }
+.form-channel .muted.small { margin: 0; }
+
+.form-send-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.form-send-actions.is-list { flex-direction: column; flex-wrap: nowrap; align-items: stretch; }
+.form-send-link { justify-content: flex-start; text-align: left; }
+.form-send-link .btn-label { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.form-send-detail { font-size: var(--fs-sm); font-weight: 500; overflow-wrap: anywhere; }
+.form-send-fallback { padding: var(--space-3); border: 1px dashed var(--border-strong); border-radius: var(--radius); }
+.form-send-fallback p { margin: 0; }
+@media (max-width: 40rem) {
+  .form-send-actions:not(.is-list) > .btn { flex: 1 1 100%; }
+}
+
+.form-code-list { display: grid; gap: var(--space-3); margin: 0 0 var(--space-3); }
+.form-code {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.form-code > * { margin: 0; }
+.form-code-title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-size: var(--fs-base); }
+.form-code-details summary {
+  display: list-item;
+  box-sizing: border-box;
+  min-height: 2.75rem; /* cible tactile d'au moins 44 px */
+  padding-block: var(--space-2);
+  color: var(--link);
+  font-weight: 600;
+  cursor: pointer;
+}
+.form-code-details summary:hover { color: var(--link-hover); }
+.form-code-value { margin: var(--space-2) 0 0; font-size: var(--fs-xs); }
+.form-code-qr[hidden] { display: none; }
+.form-qr-figure { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); margin: 0; }
+.form-qr-figure figcaption { max-width: 34rem; text-align: center; }
+.form-qr {
+  display: block;
+  width: min(100%, 18rem);
+  height: auto;
+  padding: var(--space-2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+}
+
+.form-send > .callout { margin: 0; }
+
+/* --- Pied du formulaire ------------------------------------------------------------- */
+
+.form-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-top: var(--space-7);
+  padding-top: var(--space-4);
+  border-top: var(--border-width) solid var(--border);
+}
+.form-footer p { margin: 0; }
+.form-clear { color: var(--danger); }
+.form-clear:hover:not(:disabled) { background: var(--danger-soft); color: var(--danger); }
+
+/* --- Onglet « Saisir » de la console ----------------------------------------------------- */
+
+.add-tab { max-width: 60rem; }
+.add-tab .lead { margin-bottom: var(--space-2); }
+.add-tab .lead + .muted { margin: 0; }
+.add-form { display: flex; flex-direction: column; gap: var(--space-5); }
+.add-form > .form-actions { margin-top: 0; }
+.add-declarant h3 { font-size: var(--fs-lg); margin-bottom: var(--space-1); }
+.add-declarant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 0 var(--space-4);
+}
+.add-declarant-grid .field { margin-bottom: 0; }
+.add-saved:focus { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: var(--radius); }
+.add-saved .callout { margin: 0; }
+.add-saved .callout-body > * { margin: 0 0 var(--space-2); }
+.add-saved .callout-body > :last-child { margin-bottom: 0; }
+.add-levels { gap: var(--space-2); }

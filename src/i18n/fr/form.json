@@ -1,0 +1,225 @@
+{
+  "meta": {
+    "title": "Répondre : {title}"
+  },
+  "header": {
+    "eyebrow": "Recensement des usages de l'IA",
+    "mode_anonymous": "Réponse anonyme",
+    "mode_open": "Réponse nominative",
+    "fingerprint": "Empreinte"
+  },
+  "steps": {
+    "label": "Étapes du questionnaire",
+    "intro": "Présentation",
+    "usages": "Vos usages",
+    "send": "Envoi des codes"
+  },
+  "closed": {
+    "title": "Campagne clôturée le {date}.",
+    "text": "Vous pouvez encore répondre : votre réponse sera signalée au responsable comme arrivée après la clôture."
+  },
+  "errors": {
+    "insecure_title": "Formulaire indisponible sur cette page",
+    "insecure_text": "Le chiffrement des réponses exige une page sécurisée (adresse commençant par « https »). Ouvrez le lien d'origine, sans le modifier, dans un navigateur à jour.",
+    "version_title": "Lien créé avec une version plus récente",
+    "version_text": "Ce lien a été préparé avec une version de Recensia plus récente que celle chargée sur cet appareil. Rechargez la page pour obtenir la dernière version ; si le message persiste, demandez un nouveau lien à la personne qui vous l'a envoyé.",
+    "broken_title": "Lien incomplet ou abîmé",
+    "broken_text": "Ce lien semble tronqué ou modifié, par exemple par votre messagerie. Demandez à la personne qui vous l'a envoyé de vous le transmettre à nouveau, en entier, ou utilisez le QR code de l'invitation.",
+    "data_title": "Questionnaire indisponible"
+  },
+  "intro": {
+    "title": "Avant de commencer",
+    "lead_org": "{org} recense les usages de l'intelligence artificielle au travail, pour mieux vous accompagner : outils adaptés, bonnes pratiques, formation.",
+    "lead": "Ce recensement porte sur les usages de l'intelligence artificielle au travail, pour mieux vous accompagner : outils adaptés, bonnes pratiques, formation.",
+    "no_control": "Il ne s'agit ni de contrôler ni de sanctionner : toutes les réponses sont utiles, y compris « Je ne sais pas ».",
+    "duration": {
+      "one": "Environ {count} minute pour décrire un premier usage.",
+      "other": "Environ {count} minutes pour décrire un premier usage."
+    },
+    "one_code": "Vous décrivez un usage à la fois. Chacun devient un code chiffré, lisible uniquement par le responsable de la campagne.",
+    "return": "À la fin, vous transmettrez vos codes {channel}.",
+    "return_default": "À la fin, vous transmettrez vos codes par copier-coller ou sous forme de fichier.",
+    "local": "Rien n'est envoyé pendant la saisie : vos réponses restent sur cet appareil jusqu'à l'envoi de vos codes.",
+    "closes": "Réponses attendues au plus tard le {date}.",
+    "no_storage": "Ce navigateur ne permet pas de conserver vos réponses (navigation privée, par exemple) : gardez cette page ouverte jusqu'à l'envoi de vos codes.",
+    "resume": {
+      "zero": "Vous avez commencé à décrire un usage sur cet appareil : vous pouvez reprendre là où vous en étiez.",
+      "one": "Vous avez déjà décrit un usage sur cet appareil : vous pouvez reprendre là où vous en étiez.",
+      "other": "Vous avez déjà décrit {count} usages sur cet appareil : vous pouvez reprendre là où vous en étiez."
+    },
+    "start": "Commencer",
+    "resume_button": "Reprendre"
+  },
+  "mode": {
+    "anonymous_title": "Réponse anonyme : ce qui est garanti",
+    "anonymous_no_identity": "Votre réponse ne contient ni votre nom ni votre adresse : seulement ce que vous décrivez.",
+    "anonymous_day": "Seule la date du jour est enregistrée, sans l'heure.",
+    "anonymous_unlinkable": "Chaque usage est chiffré séparément, avec une clé à usage unique : rien dans le contenu des codes ne relie vos différents usages entre eux.",
+    "limits_title": "Et ses limites",
+    "anonymous_free_text": "Dans les champs libres (nom de l'usage, commentaire), évitez ce qui permettrait de vous reconnaître.",
+    "open_title": "Réponse nominative",
+    "open_text": "Vos prénom et nom (et votre e-mail, si vous l'indiquez) sont transmis avec chaque usage décrit, ainsi que la date et l'heure de votre réponse.",
+    "open_encrypted": "Vos réponses sont chiffrées sur cet appareil : seul le responsable de la campagne peut les lire."
+  },
+  "fingerprint": {
+    "title": "Empreinte de la campagne",
+    "help_org": "Comparez-la avec l'empreinte communiquée par {org} (invitation, affiche, intranet). Si elles diffèrent, ne répondez pas et prévenez l'organisateur : le lien a peut-être été falsifié.",
+    "help": "Comparez-la avec l'empreinte communiquée par l'organisateur (invitation, affiche, intranet). Si elles diffèrent, ne répondez pas et prévenez-le : le lien a peut-être été falsifié."
+  },
+  "identity": {
+    "title": "Qui répond ?",
+    "lead": "En mode nominatif, votre prénom et votre nom accompagnent chacune de vos réponses.",
+    "first_name": "Prénom",
+    "last_name": "Nom",
+    "email": "Adresse e-mail (facultatif)",
+    "email_help": "Pour que le responsable puisse vous recontacter à propos de vos réponses.",
+    "invalid": "Vérifiez votre prénom et votre nom avant de continuer.",
+    "errors": {
+      "first_name_required": "Indiquez votre prénom.",
+      "last_name_required": "Indiquez votre nom.",
+      "too_long": "{max} caractères au maximum.",
+      "email_too_long": "Cette adresse est trop longue.",
+      "invalid_email": "Cette adresse e-mail ne semble pas valide : vérifiez-la, ou laissez le champ vide.",
+      "invalid": "Cette réponse n'est pas valide : vérifiez ce champ."
+    }
+  },
+  "edit": {
+    "title_first": "Décrivez un premier usage",
+    "title_another": "Décrivez un autre usage",
+    "title_edit": "Modifier « {name} »",
+    "lead_first": {
+      "one": "Un usage, c'est un outil pour une façon de travailler. Comptez environ {count} minute.",
+      "other": "Un usage, c'est un outil pour une façon de travailler. Comptez environ {count} minutes."
+    },
+    "lead": "Un usage, c'est un outil pour une façon de travailler : un outil différent, ou le même outil pour une autre tâche.",
+    "revision_note": "Un code a déjà été produit pour cet usage. Après modification, un nouveau code sera produit : envoyez-le, il remplacera l'ancien.",
+    "save": "Enregistrer cet usage",
+    "save_edit": "Enregistrer les modifications",
+    "back_intro": "Revenir à la présentation",
+    "cancel_title": "Abandonner cette saisie ?",
+    "cancel_text": "Les réponses saisies pour cet usage depuis le dernier enregistrement seront perdues.",
+    "cancel_confirm": "Abandonner"
+  },
+  "list": {
+    "title": {
+      "zero": "Vos usages",
+      "one": "Votre usage décrit",
+      "other": "Vos {count} usages décrits"
+    },
+    "lead": "Vous pouvez décrire d'autres usages : un outil différent, ou le même outil pour une autre tâche. Quand vous avez terminé, obtenez vos codes.",
+    "saved": "Usage « {name} » enregistré sur cet appareil.",
+    "edited": "Modifications de « {name} » enregistrées.",
+    "deleted": "Usage « {name} » supprimé de cet appareil.",
+    "empty": "Aucun usage décrit pour l'instant.",
+    "unnamed": "Usage n° {n}",
+    "incomplete": "À compléter",
+    "coded": "Code produit (version {rev})",
+    "outdated": "Modifié : un nouveau code sera produit",
+    "identity": "Vous répondez en tant que {name}",
+    "identity_edit": "Modifier",
+    "another": "Décrire un autre usage",
+    "finish": "Terminer et obtenir mes codes",
+    "incomplete_alert": {
+      "one": "Un usage est incomplet : ouvrez-le avec « Modifier » pour le compléter.",
+      "other": "{count} usages sont incomplets : ouvrez-les avec « Modifier » pour les compléter."
+    },
+    "delete_title": "Supprimer cet usage ?",
+    "delete_text": "« {name} » sera supprimé de cet appareil.",
+    "delete_sent": "« {name} » sera supprimé de cet appareil. Si vous avez déjà envoyé son code, le responsable le conserve : prévenez-le si vous souhaitez retirer cette réponse.",
+    "delete_confirm": "Supprimer"
+  },
+  "generating": {
+    "title": "Chiffrement de vos réponses",
+    "text": "Préparation de vos codes chiffrés sur cet appareil…",
+    "failed_title": "Les codes n'ont pas pu être produits",
+    "failed_text": "Le chiffrement a échoué sur cet appareil. Réessayez ; si le problème persiste, ouvrez le lien dans un autre navigateur à jour. Vos réponses sont conservées."
+  },
+  "send": {
+    "title": {
+      "one": "Votre code est prêt",
+      "other": "Vos {count} codes sont prêts"
+    },
+    "lead": {
+      "one": "Votre usage a été chiffré sur cet appareil : seul le responsable de la campagne peut le lire. Il ne reste qu'à l'envoyer.",
+      "other": "Chaque usage a été chiffré sur cet appareil : seul le responsable de la campagne peut lire ces codes. Il ne reste qu'à les envoyer."
+    },
+    "ready": {
+      "one": "Votre code est prêt.",
+      "other": "Vos {count} codes sont prêts."
+    },
+    "closed": "La campagne est clôturée : vous pouvez encore envoyer vos codes, ils seront signalés comme arrivés après la clôture.",
+    "before_title": "Avant d'envoyer, vérifiez",
+    "recipient": "Destinataire",
+    "recipient_org": "{org}, pour « {title} »",
+    "recipient_title": "Responsable de « {title} »",
+    "fingerprint": "Empreinte",
+    "fingerprint_help_org": "Elle doit être identique à celle communiquée par {org}. Sinon, n'envoyez rien et prévenez l'organisateur.",
+    "fingerprint_help": "Elle doit être identique à celle communiquée par l'organisateur. Sinon, n'envoyez rien et prévenez-le.",
+    "channels_title_one": "Envoyer mon code",
+    "channels_title": "Envoyer mes codes",
+    "fallback_title": "Copier-coller",
+    "to": "Destinataire :",
+    "number": "Numéro :",
+    "instruction": "Consigne :",
+    "mail_part": "E-mail {n} sur {total}",
+    "mail_split": "Vos codes sont trop longs pour un seul e-mail : envoyez chacun des {count} messages.",
+    "mail_help": "Le message s'ouvre dans votre logiciel de messagerie, prêt à partir. Rien ne s'ouvre ? Écrivez à l'adresse indiquée et collez-y votre code (« Copier ce code », plus bas).",
+    "mail_too_long": "Le code de « {name} » est trop long pour un e-mail prérempli : téléchargez son fichier et joignez-le à votre message.",
+    "mail_unavailable": "L'e-mail prérempli n'a pas pu être préparé : téléchargez le fichier .rcn et joignez-le à votre message.",
+    "mail_opened": "Message prérempli ouvert dans votre messagerie : pensez à l'envoyer.",
+    "copy_one": "Copier le code",
+    "copy_all": "Copier les {count} codes",
+    "copy_message": "Copier avec le message d'accompagnement",
+    "copy_help": "Collez ensuite le texte à l'endroit indiqué. Le message d'accompagnement ajoute un lien qui facilite l'import pour le responsable.",
+    "copy_help_no_target": "Collez ensuite le texte là où l'organisateur vous l'a demandé (voir son invitation). Le message d'accompagnement ajoute un lien qui facilite l'import pour le responsable.",
+    "copied": "Copié : collez maintenant le texte là où l'organisateur l'a demandé.",
+    "file_button": "Télécharger le fichier .rcn",
+    "file_button_one": "Télécharger le fichier de ce code",
+    "file_help": "Le fichier « {name} » contient vos codes, un par ligne. Déposez-le ou envoyez-le à l'endroit indiqué.",
+    "file_help_no_target": "Le fichier « {name} » contient vos codes, un par ligne. Transmettez-le de la façon demandée par l'organisateur (voir son invitation).",
+    "file_done": "Fichier « {name} » téléchargé.",
+    "file_attach": "Fichier téléchargé : joignez-le à votre e-mail à {target}.",
+    "share_title": "Réponse chiffrée : {title}",
+    "share_unavailable": "Le partage n'est pas disponible sur cet appareil : utilisez un autre moyen d'envoi.",
+    "share_failed": "Le partage n'a pas abouti. Réessayez, ou utilisez un autre moyen d'envoi.",
+    "shared": "Partage lancé : terminez l'envoi dans l'application choisie.",
+    "service_part": "{label} ({n} sur {total})",
+    "service_opened": "{label} ouvert dans un nouvel onglet : pensez à envoyer le message.",
+    "service_help": "{label} s'ouvre dans un nouvel onglet avec le message prérempli.",
+    "service_unavailable": "Ce lien de partage n'a pas pu être préparé : utilisez un autre moyen d'envoi.",
+    "new_window": "(s'ouvre dans un nouvel onglet)",
+    "back": "Modifier mes réponses"
+  },
+  "codes": {
+    "title": {
+      "one": "Votre code",
+      "other": "Vos codes"
+    },
+    "lead": "Un code par usage décrit. En secours, vous pouvez afficher ou copier le texte brut de chaque code.",
+    "show": "Afficher le code",
+    "copy": "Copier ce code",
+    "revision": "version {rev}",
+    "qr_show": "Afficher le QR code",
+    "qr_hide": "Masquer le QR code",
+    "qr_label": "QR code du lien d'import de « {name} »",
+    "qr_help": "Pour envoyer ce code depuis un autre appareil, votre téléphone par exemple : scannez ce QR code avec l'appareil photo, puis transmettez le lien obtenu par le canal indiqué. Le code reste chiffré.",
+    "qr_failed": "Le QR code n'a pas pu être créé : utilisez le texte du code.",
+    "correction": "Une erreur après l'envoi ? Modifiez l'usage puis envoyez son nouveau code : il remplacera l'ancien chez le responsable."
+  },
+  "thanks": {
+    "title": "Merci pour votre participation !",
+    "text": "Une fois vos codes envoyés, vous pouvez effacer vos réponses de cet appareil."
+  },
+  "clear": {
+    "button": "Effacer mes réponses de cet appareil",
+    "title": "Effacer vos réponses de cet appareil ?",
+    "text": "Les usages décrits, votre identité éventuelle et les codes produits seront supprimés de ce navigateur. Les codes déjà envoyés ne sont pas concernés.",
+    "confirm": "Effacer",
+    "done": "Vos réponses ont été effacées de cet appareil."
+  },
+  "footer": {
+    "local": "Vos réponses sont enregistrées dans ce navigateur jusqu'à ce que vous les effaciez ; elles ne sont transmises qu'avec vos codes, par vous.",
+    "memory": "Vos réponses ne sont conservées que tant que cette page reste ouverte.",
+    "privacy": "Confidentialité"
+  }
+}
