@@ -224,6 +224,10 @@ export function modal({ title, content, actions = [], dismissible = true, size }
 
     d.body.appendChild(dialog);
     dialog.showModal();
+    if (!dialog.querySelector('[autofocus]')) {
+      const first = dialog.querySelector('.modal-content :is(input:not([type="hidden"]), select, textarea):not([disabled])');
+      if (first) first.focus();
+    }
   });
 }
 

@@ -1,0 +1,48 @@
+{
+  "back": "Mes campagnes",
+  "no_org": "Campagne",
+  "fingerprint": "Empreinte {fp}",
+  "closes_on": "Clôture indicative : {date}",
+  "mode": {
+    "anonymous": "Anonyme",
+    "open": "Nominatif"
+  },
+  "tabs": {
+    "label": "Sections de la campagne",
+    "tableau": "Tableau de bord",
+    "registre": "Registre",
+    "actions": "Plan d'actions",
+    "import": "Importer des codes",
+    "saisir": "Saisir un usage",
+    "diffuser": "Diffuser",
+    "rapport": "Rapport",
+    "parametres": "Paramètres"
+  },
+  "banners": {
+    "demo": "Campagne de démonstration : données entièrement fictives (Menuiserie Alpine Concept).",
+    "demo_action": "Réinitialiser la démo",
+    "no_key": "La clé privée de cette campagne n'est pas dans ce navigateur : les codes reçus ne peuvent pas être déchiffrés. Importez le fichier de récupération depuis « Mes campagnes ».",
+    "no_key_action": "Importer la clé",
+    "recovery": "Vous n'avez pas encore enregistré le fichier de récupération de la clé. Sans lui, la perte de ce navigateur rendrait toutes les réponses illisibles.",
+    "recovery_action": "Enregistrer le fichier",
+    "backup_never": "Aucune sauvegarde de cette campagne : vos données n'existent que dans ce navigateur.",
+    "backup_old": {
+      "one": "Dernière sauvegarde il y a {count} jour : pensez à en faire une nouvelle.",
+      "other": "Dernière sauvegarde il y a {count} jours : pensez à en faire une nouvelle."
+    },
+    "backup_action": "Sauvegarder"
+  },
+  "no_store": {
+    "title": "Stockage indisponible",
+    "text": "Ce navigateur ne permet pas d'enregistrer les données de la console (navigation privée ou stockage bloqué). Ouvrez Recensia dans une fenêtre normale."
+  },
+  "not_found": {
+    "title": "Campagne introuvable dans ce navigateur",
+    "text": "Les campagnes ne sont enregistrées que dans le navigateur qui les a créées. Sur un autre poste, importez le fichier de récupération ou une sauvegarde.",
+    "action": "Voir mes campagnes"
+  },
+  "load_error": {
+    "title": "Impossible de charger la campagne",
+    "text": "Les données de l'application n'ont pas pu être lues. Rechargez la page ; si le problème persiste, vérifiez votre connexion lors du premier chargement."
+  }
+}

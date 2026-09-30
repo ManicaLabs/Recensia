@@ -21,6 +21,16 @@ import { isCampaignId, isValidDay } from './codes.js';
 import { decodePublicKey, importPublicKey } from './keys.js';
 
 export const LINK_VERSION = 1;
+
+// Ponctuation finale tolérée (et retirée) après un payload : jamais dans l'alphabet base64url.
+const TRAILING_JUNK = new Set(['.', ',', ';', ':', '!', '?', ')', ']', '}', '>', '»', "'", '"', '’', '…']);
+
+/** Retire la ponctuation collée à la fin d'un lien (parcours linéaire depuis la fin, sans regex). */
+export function stripTrailingJunk(s) {
+  let end = s.length;
+  while (end > 0 && TRAILING_JUNK.has(s[end - 1])) end--;
+  return end === s.length ? s : s.slice(0, end);
+}
 /** Longueur maximale du payload (caractères), vérifiée avant tout décodage. */
 export const LINK_MAX_PAYLOAD = 6000;
 /** Plafond du JSON décompressé (octets). */
@@ -95,6 +105,10 @@ export function encodeCampaignLink(config) {
 export function decodeCampaignLink(payload) {
   if (typeof payload !== 'string' || payload.length === 0) throw new LinkError('format');
   if (payload.length > LINK_MAX_PAYLOAD) throw new LinkError('size');
+  // Une messagerie colle parfois une ponctuation au lien (« …ABC). », « …ABC> ») : ces caractères
+  // n'appartiennent jamais à l'alphabet base64url, on les retire avant la validation stricte.
+  payload = stripTrailingJunk(payload);
+  if (payload.length === 0) throw new LinkError('format');
   if (!B64URL_RE.test(payload)) throw new LinkError('format');
   let obj;
   let bytes;

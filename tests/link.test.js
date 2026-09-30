@@ -107,6 +107,15 @@ describe('lien : décodage strict (format, taille, version)', () => {
     expectLinkError(() => decodeCampaignLink(good + 'A'.repeat(pad)), 'format');
   });
 
+  test('ponctuation collée à la fin du lien par une messagerie : retirée, lien valide', () => {
+    const good = encodeCampaignLink(baseConfig());
+    const expected = decodeCampaignLink(good);
+    for (const junk of ['.', ')', ').', '»', '>', '…', '’']) {
+      assert.deepEqual(decodeCampaignLink(good + junk), expected, junk);
+    }
+    expectLinkError(() => decodeCampaignLink(').'), 'format');
+  });
+
   test('longueur maximale du payload vérifiée avant tout décodage', () => {
     expectLinkError(() => decodeCampaignLink('A'.repeat(LINK_MAX_PAYLOAD + 1)), 'size');
     expectLinkError(() => decodeCampaignLink('!'.repeat(LINK_MAX_PAYLOAD + 1)), 'size');

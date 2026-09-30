@@ -56,6 +56,14 @@ describe('parseHash', () => {
     }
   });
 
+  test('ponctuation finale ajoutée par une messagerie : retirée (formulaire et lien d\'import)', () => {
+    assert.equal(parseHash('#/c/abc_DEF-1).').params.payload, 'abc_DEF-1');
+    assert.equal(parseHash('#/c/abc%29').params.payload, 'abc');
+    assert.equal(parseHash('#/c/abc»').params.payload, 'abc');
+    assert.deepEqual(parseHash('#/i/RCN1.aaa~RCN1.bbb.').params.codes, ['RCN1.aaa', 'RCN1.bbb']);
+    assert.equal(parseHash('#/c/).').name, 'not_found');
+  });
+
   test('lien d\'import : un ou plusieurs codes séparés par « ~ »', () => {
     const a = `RCN1.${longPayload(420)}`;
     const b = `RCN1.${longPayload(380)}`;

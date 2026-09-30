@@ -126,6 +126,11 @@ function toUtcDay(day) {
     return Number.isNaN(day.getTime()) ? null : new Date(Date.UTC(day.getFullYear(), day.getMonth(), day.getDate()));
   }
   if (typeof day !== 'string') return null;
+  // Horodatage ISO complet (…T…) : date du fuseau local, comme l'heure affichée par formatDateTime.
+  if (/^\d{4}-\d{2}-\d{2}T/.test(day)) {
+    const stamp = new Date(day);
+    return Number.isNaN(stamp.getTime()) ? null : toUtcDay(stamp);
+  }
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(day);
   if (!match) return null;
   const [year, month, date] = [Number(match[1]), Number(match[2]), Number(match[3])];

@@ -14,6 +14,22 @@ export const ROUTE_NAMES = Object.freeze([
 // Charges utiles (#/c/…, #/i/…) : base64url, séparateur « ~ », points des codes « RCN1. »
 // et séquences %XX laissées par certaines messageries. Test linéaire, sans retour arrière.
 const PAYLOAD_RE = /^[A-Za-z0-9\-_~.%]+$/;
+// Ponctuation qu'une messagerie colle parfois à la fin d'un lien (« …ABC). ») : retirée avant analyse.
+// Un payload ou un code se termine toujours par un caractère base64url. Parcours linéaire (pas de regex
+// ancrée en fin de chaîne, quadratique sur une longue suite de ponctuation).
+const TRAILING_CHARS = new Set(['.', ',', ';', ':', '!', '?', ')', ']', '}', '>', '»', "'", '"', '’', '…']);
+const TRAILING_ENCODED = ['%29', '%3E', '%3e', '%C2%BB', '%c2%bb'];
+
+function stripTrailingJunk(s) {
+  let end = s.length;
+  for (;;) {
+    if (end > 0 && TRAILING_CHARS.has(s[end - 1])) { end--; continue; }
+    const seq = TRAILING_ENCODED.find((x) => end >= x.length && s.startsWith(x, end - x.length));
+    if (seq) { end -= seq.length; continue; }
+    break;
+  }
+  return end === s.length ? s : s.slice(0, end);
+}
 const CAMPAIGN_ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
 function route(name, params = {}) {
@@ -56,13 +72,16 @@ export function parseHash(hash) {
     case 'privacy':
       return rest === '' ? route(head) : notFound();
 
-    case 'c':
-      if (!PAYLOAD_RE.test(rest)) return notFound();
-      return route('form', { payload: safeDecode(rest) });
+    case 'c': {
+      const clean = stripTrailingJunk(rest);
+      if (!PAYLOAD_RE.test(clean)) return notFound();
+      return route('form', { payload: safeDecode(clean) });
+    }
 
     case 'i': {
-      if (!PAYLOAD_RE.test(rest)) return notFound();
-      const payload = safeDecode(rest);
+      const clean = stripTrailingJunk(rest);
+      if (!PAYLOAD_RE.test(clean)) return notFound();
+      const payload = safeDecode(clean);
       const codes = payload.split('~').filter((code) => code !== '');
       return codes.length > 0 ? route('import_link', { payload, codes }) : notFound();
     }

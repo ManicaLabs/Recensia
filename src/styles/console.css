@@ -1,0 +1,20 @@
+/* Console d'une campagne (#/admin/<id>/<onglet>) : en-tête, bandeaux, onglets. */
+
+.console-header { margin-bottom: var(--space-4); }
+.console-header h1 { overflow-wrap: anywhere; }
+
+.console-meta {
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+.console-meta .badge { gap: var(--space-1); }
+
+.console-banners { margin-bottom: var(--space-4); }
+.console-banners:empty { display: none; }
+
+/* Les onglets défilent horizontalement sur mobile (app.css) : on garde la page sans débordement. */
+.console-tabs { min-width: 0; max-width: 100%; }
+
+.console-content { min-width: 0; }

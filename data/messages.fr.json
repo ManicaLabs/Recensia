@@ -24,7 +24,8 @@
       "kind": "email",
       "requires": ["title", "link"],
       "subject": "Rappel : {title}",
-      "body": "Bonjour,\n\nPetit rappel : le recensement des usages de l'IA « {title} »[[ lancé par {org}]] [[se termine le {closes_on}||se termine bientôt]]. Si vous n'avez pas encore répondu, il est encore temps[[ : comptez environ {duration}]].\n\nPour répondre, ouvrez ce lien :\n{link}\n\nÀ la fin du questionnaire, vous obtiendrez un code par usage : transmettez-le {return_channel}.\n\nCe rappel est envoyé à tout le monde : si vous avez déjà répondu, merci, et ignorez simplement ce message. Il ne s'agit ni de contrôler ni de sanctionner, mais de mieux connaître les usages pour mieux vous accompagner.\n\n{anonymity_block}\n\nEmpreinte du formulaire : {fingerprint}\n\nMerci !"
+      "body": "Bonjour,\n\nPetit rappel : le recensement des usages de l'IA « {title} »[[ lancé par {org}]] [[se termine le {closes_on}||se termine bientôt]]. Si vous n'avez pas encore répondu, il est encore temps[[ : comptez environ {duration}]].\n\nPour répondre, ouvrez ce lien :\n{link}\n\nÀ la fin du questionnaire, vous obtiendrez un code par usage : transmettez-le {return_channel}.\n\nCe rappel est envoyé à tout le monde : si vous avez déjà répondu, merci, et ignorez simplement ce message. Il ne s'agit ni de contrôler ni de sanctionner, mais de mieux connaître les usages pour mieux vous accompagner.\n\n{anonymity_block}\n\nEmpreinte du formulaire : {fingerprint}\n\nMerci !",
+      "body_compact": "Bonjour,\n\nPetit rappel : le recensement des usages de l'IA « {title} » [[se termine le {closes_on}||se termine bientôt]]. Si vous n'avez pas encore répondu, il est encore temps[[ (environ {duration})]] :\n{link}\n\nSi vous avez déjà répondu, merci : ignorez ce message.\n\n{anonymity_block}\n\nEmpreinte du formulaire : {fingerprint}"
     },
     "reminder_j1": {
       "label": "Dernière relance (J-1)",
@@ -32,7 +33,8 @@
       "kind": "email",
       "requires": ["title", "link"],
       "subject": "Dernier rappel : {title}",
-      "body": "Bonjour,\n\nDernier rappel : le recensement des usages de l'IA « {title} »[[ lancé par {org}]] [[se termine le {closes_on}||touche à sa fin]]. Chaque réponse compte, même courte : décrire un seul usage est déjà utile.\n\nPour répondre[[ (environ {duration})]], ouvrez ce lien :\n{link}\n\nÀ la fin du questionnaire, vous obtiendrez un code par usage : transmettez-le {return_channel}.\n\nCe rappel est envoyé à tout le monde : si vous avez déjà répondu, merci, et ignorez simplement ce message.\n\n{anonymity_block}\n\nEmpreinte du formulaire : {fingerprint}\n\nMerci !"
+      "body": "Bonjour,\n\nDernier rappel : le recensement des usages de l'IA « {title} »[[ lancé par {org}]] [[se termine le {closes_on}||touche à sa fin]]. Chaque réponse compte, même courte : décrire un seul usage est déjà utile.\n\nPour répondre[[ (environ {duration})]], ouvrez ce lien :\n{link}\n\nÀ la fin du questionnaire, vous obtiendrez un code par usage : transmettez-le {return_channel}.\n\nCe rappel est envoyé à tout le monde : si vous avez déjà répondu, merci, et ignorez simplement ce message.\n\n{anonymity_block}\n\nEmpreinte du formulaire : {fingerprint}\n\nMerci !",
+      "body_compact": "Bonjour,\n\nDernier rappel : le recensement des usages de l'IA « {title} » [[se termine le {closes_on}||touche à sa fin]]. Décrire un seul usage est déjà utile :\n{link}\n\nSi vous avez déjà répondu, merci : ignorez ce message.\n\n{anonymity_block}\n\nEmpreinte du formulaire : {fingerprint}"
     },
     "closing_thanks": {
       "label": "Clôture et remerciements",

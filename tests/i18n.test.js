@@ -143,6 +143,13 @@ describe('formatDate / formatDateTime / formatNumber', () => {
     assert.equal(formatDate(new Date(2026, 9, 31, 23, 59)), '31 octobre 2026');
   });
 
+  test('horodatage ISO complet : date du fuseau local (comme formatDateTime)', () => {
+    const iso = '2026-09-29T23:30:00.000Z';
+    const local = new Date(iso);
+    assert.equal(formatDate(iso), formatDate(new Date(local.getFullYear(), local.getMonth(), local.getDate())));
+    assert.equal(formatDate('2026-10-31T12:00:00'), '31 octobre 2026');
+  });
+
   test('valeur invalide renvoyée telle quelle', () => {
     assert.equal(formatDate('2026-02-30'), '2026-02-30');
     assert.equal(formatDate('bientôt'), 'bientôt');

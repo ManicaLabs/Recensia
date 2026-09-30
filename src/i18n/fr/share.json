@@ -1,0 +1,101 @@
+{
+  "title": "Diffuser la campagne",
+  "lead": "Le lien de collecte contient déjà la configuration et la clé publique de la campagne : il suffit de le transmettre. Rien ne transite par un serveur.",
+  "link": {
+    "title": "Lien de collecte",
+    "help": "Toute personne qui ouvre ce lien peut décrire ses usages et obtenir ses codes chiffrés, que seule la clé privée de la campagne permet de lire.",
+    "label": "Lien de collecte complet",
+    "length": "{length} caractères",
+    "long": "Lien long ({length} caractères) : certaines messageries risquent de le couper. Vérifiez qu'il s'ouvre en entier, ou diffusez plutôt le QR code et la fiche imprimable.",
+    "copy": "Copier le lien",
+    "share": "Partager",
+    "share_text": "Recensement des usages de l'IA : « {title} »",
+    "open": "Ouvrir le formulaire",
+    "open_label": "Ouvrir le formulaire dans un nouvel onglet (aperçu)",
+    "shared": "Lien partagé.",
+    "share_failed": "Le partage n'a pas abouti : utilisez « Copier le lien ».",
+    "error": "Le lien de collecte n'a pas pu être construit : la configuration enregistrée de la campagne semble incomplète."
+  },
+  "fingerprint": {
+    "label": "Empreinte de la campagne :",
+    "help": "Communiquez-la par un autre canal (réunion, intranet, affichage) : chaque répondant vérifie que le formulaire affiche la même empreinte. Un lien falsifié aurait une autre empreinte.",
+    "missing": "indisponible"
+  },
+  "closed": "La date de clôture indicative ({date}) est passée : le formulaire indique désormais aux répondants que la campagne est close.",
+  "no_channel": "Aucun canal de retour n'est défini pour cette campagne : précisez dans votre message comment vous transmettre les codes.",
+  "qr": {
+    "title": "QR code",
+    "help": "À projeter en réunion ou à afficher : il ouvre le même lien.",
+    "label": "QR code du formulaire « {title} »",
+    "png": "PNG",
+    "png_label": "Télécharger le QR code en PNG",
+    "svg": "SVG",
+    "svg_label": "Télécharger le QR code en SVG",
+    "download": "Télécharger :",
+    "error": "Le QR code n'a pas pu être généré."
+  },
+  "sheet": {
+    "title": "Fiche imprimable",
+    "help": "Une page avec le titre, le QR code, trois consignes, le canal de retour et l'empreinte. Également utilisable comme diapositive.",
+    "layout": "Format",
+    "page": "Page A4",
+    "slide": "Diapositive (16:9)",
+    "zoom": "Agrandir l'aperçu",
+    "print": "Imprimer la fiche",
+    "fullscreen": "Projeter en plein écran",
+    "preview": "Aperçu de la fiche",
+    "preview_zoomed": "Aperçu agrandi : faites défiler pour tout lire.",
+    "error": "La fiche n'a pas pu être générée."
+  },
+  "messages": {
+    "title": "Messages prêts à l'emploi",
+    "help": "Générés d'après la configuration de la campagne, sans IA. Relisez-les et adaptez-les avant l'envoi.",
+    "template": "Modèle de message",
+    "subject": "Objet",
+    "body": "Message",
+    "copy_subject": "Copier l'objet",
+    "copy": "Copier le message",
+    "copy_rich": "Copier en texte riche",
+    "copy_rich_help": "« Copier en texte riche » garde le lien cliquable dans Outlook, Teams ou Gmail.",
+    "mailto": "Ouvrir dans ma messagerie",
+    "mailto_too_long": "Ce message est trop long pour « Ouvrir dans ma messagerie » ({length} caractères une fois encodé, pour une limite d'environ {max}) : utilisez « Copier le message », puis collez-le dans un nouvel e-mail.",
+    "mailto_short": "Ouvrir la version courte dans ma messagerie",
+    "mailto_short_help": "Le message complet est trop long pour être ouvert dans une messagerie ({length} caractères une fois encodé, pour une limite d'environ {max}). Ce bouton ouvre donc une version courte : même objet, message abrégé avec le lien seul sur sa ligne, la phrase sur l'anonymat et l'empreinte. Vos modifications du message n'y sont pas reprises. Pour envoyer la version complète, utilisez « Copier le message », puis collez-la dans un nouvel e-mail.",
+    "mailto_short_opened": "Version courte ouverte dans votre messagerie : relisez-la avant l'envoi.",
+    "webmail": {
+      "summary": "Messageries en ligne (à vérifier)",
+      "help": "Liens de composition de Gmail et d'Outlook sur le web : ces services modifient parfois leurs adresses sans préavis ; vérifiez le message obtenu avant de l'envoyer.",
+      "gmail": "Ouvrir dans Gmail",
+      "outlook": "Ouvrir dans Outlook sur le web"
+    },
+    "reset": "Rétablir le message d'origine",
+    "reset_confirm": {
+      "title": "Rétablir le message d'origine ?",
+      "message": "Vos modifications de ce modèle seront perdues.",
+      "confirm": "Rétablir"
+    },
+    "reset_done": "Message d'origine rétabli.",
+    "edited": "Message modifié",
+    "locked": {
+      "title": "Phrase verrouillée",
+      "help": "Générée d'après le mode et les canaux de retour. Gardez-la dans le message : elle évite de promettre un anonymat que le canal ne garantit pas.",
+      "present": "Phrase présente dans le message.",
+      "missing": "La phrase sur l'anonymat a été modifiée ou supprimée.",
+      "restore": "Rétablir la phrase",
+      "restored": "Phrase sur l'anonymat rétablie.",
+      "dialog": {
+        "title": "La phrase sur l'anonymat a disparu",
+        "message": "Le message ne contient plus la phrase générée d'après la configuration de la campagne :",
+        "risk": "Sans elle, les destinataires pourraient croire leur réponse plus anonyme qu'elle ne l'est réellement.",
+        "restore": "Rétablir la phrase",
+        "continue": "Continuer quand même"
+      }
+    },
+    "copied": "Copié",
+    "copied_rich": "Message copié en texte riche.",
+    "copied_plain_fallback": "Texte riche indisponible dans ce navigateur : le message a été copié en texte brut (le lien reste lisible, mais peut ne pas être cliquable).",
+    "reminder_anonymous": "Mode anonyme : vous ne savez pas qui a répondu. Les relances partent donc à tout le monde ; les modèles le précisent.",
+    "reminder_open": "Mode nominatif : les réponses importées indiquent qui a répondu. Les modèles de relance s'adressent toutefois à tout le monde.",
+    "error": "Ce message n'a pas pu être généré."
+  }
+}

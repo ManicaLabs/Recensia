@@ -1,0 +1,260 @@
+{
+  "meta": {
+    "title": "Créer une campagne"
+  },
+  "eyebrow": "Nouvelle campagne",
+  "title": "Créer une campagne de recensement",
+  "lead": "Quelques réglages suffisent. Votre navigateur génère ensuite la paire de clés de la campagne et le lien de collecte à diffuser.",
+  "steps": {
+    "label": "Étapes de la création",
+    "settings": "Paramètres",
+    "key": "Clé de déchiffrement",
+    "share": "Diffusion",
+    "current": "(étape en cours)",
+    "done": "(étape terminée)"
+  },
+  "no_store": {
+    "title": "Stockage indisponible",
+    "text": "Ce navigateur ne permet pas d'enregistrer de campagne (navigation privée ou stockage bloqué) : la clé de déchiffrement serait aussitôt perdue. Ouvrez Recensia dans une fenêtre de navigation normale."
+  },
+  "memory_store": "Stockage temporaire : la campagne et sa clé disparaîtront à la fermeture de cet onglet. Enregistrez impérativement le fichier de récupération à l'étape suivante.",
+  "sections": {
+    "campaign": "La campagne",
+    "mode": {
+      "title": "Mode de réponse",
+      "help": "Le mode est fixé à la création et figure dans le lien : il ne pourra plus être modifié.",
+      "legend": "Mode de réponse des participants"
+    },
+    "departments": {
+      "title": "Services",
+      "help": "Les répondants choisiront leur service dans cette liste : 30 services au maximum, 60 caractères chacun."
+    },
+    "channels": {
+      "title": "Canal de retour des codes",
+      "help": "À la fin du questionnaire, chaque répondant obtient un code chiffré par usage décrit. Choisissez comment il vous le transmet : 3 canaux au maximum.",
+      "legend": "Canaux de retour proposés aux répondants"
+    },
+    "advanced": "Paramètres avancés",
+    "advanced_hint": "Masquage des petits groupes, commentaires dans les exports, regroupement du registre."
+  },
+  "fields": {
+    "title": {
+      "label": "Titre de la campagne",
+      "help": "Visible par les répondants et inclus dans le lien : restez bref (80 caractères au maximum).",
+      "placeholder": "Recensement des usages de l'IA 2026"
+    },
+    "org_name": {
+      "label": "Entreprise ou organisation",
+      "help": "Facultatif, 80 caractères au maximum."
+    },
+    "closes_on": {
+      "label": "Date de clôture indicative",
+      "help": "Facultative et informative : après cette date, le formulaire indique que la campagne est close et l'import signale les réponses tardives. Rien n'est bloqué techniquement."
+    },
+    "department_row": "Service {n}",
+    "department_new": {
+      "label": "Ajouter un service",
+      "placeholder": "Par exemple : Achats"
+    },
+    "department_required": {
+      "label": "Rendre le choix du service obligatoire",
+      "help_anonymous": "Dans une petite équipe, le service peut suffire à reconnaître quelqu'un : les effectifs de moins de {k} réponses sont affichés « < {k} » dans le tableau de bord et les exports, mais le registre indique le service de chaque usage. Laissez ce choix facultatif si certains services comptent très peu de personnes.",
+      "help_open": "Toujours obligatoire en mode nominatif.",
+      "help_empty": "Ajoutez au moins un service pour pouvoir l'exiger."
+    },
+    "min_group_size": {
+      "label": "Seuil de masquage des petits groupes",
+      "help": "En mode anonyme, tout effectif inférieur à ce seuil est affiché « < seuil » (par exemple « < 5 ») dans le tableau de bord et les exports. Entre {min} et {max} (5 par défaut).",
+      "help_open": "Sans objet en mode nominatif : les réponses portent le nom de leur auteur."
+    },
+    "comments_exportable": {
+      "label": "Inclure les commentaires libres dans les exports",
+      "help": "Désactivé par défaut : un commentaire peut contenir des informations permettant de reconnaître quelqu'un. Les commentaires restent consultables dans la console."
+    },
+    "group_by_department": {
+      "label": "Distinguer les usages par service dans le registre",
+      "help": "Désactivé par défaut : un même usage déclaré dans plusieurs services forme une seule ligne du registre."
+    }
+  },
+  "mode": {
+    "anonymous": {
+      "label": "Anonyme",
+      "identity": "Aucune identité dans le code de réponse.",
+      "day": "Date de réponse au jour près, sans l'heure.",
+      "mask": "Effectifs de moins de {k} réponses affichés « < {k} » dans le tableau de bord et les exports.",
+      "limit": "Limite : l'anonymat réel dépend du canal de retour. Un e-mail, par exemple, révèle l'expéditeur ; les répondants en sont avertis avant l'envoi."
+    },
+    "open": {
+      "label": "Nominatif",
+      "identity": "Prénom et nom obligatoires, e-mail facultatif.",
+      "time": "Horodatage complet de chaque réponse.",
+      "department": "Choix du service obligatoire.",
+      "limit": "Les réponses sont des données personnelles : annoncez clairement ce mode aux répondants."
+    }
+  },
+  "departments": {
+    "list_label": "Services de la campagne",
+    "count": {
+      "zero": "Aucun service (au plus {max})",
+      "one": "{count} service sur {max} au maximum",
+      "other": "{count} services sur {max} au maximum"
+    },
+    "empty": "Aucun service pour l'instant : les répondants n'auront pas à en choisir.",
+    "empty_open": "Aucun service pour l'instant : ajoutez-en au moins un, le service est obligatoire en mode nominatif.",
+    "suggestions": {
+      "label": "Ajouter en un clic :",
+      "direction": "Direction",
+      "commercial": "Commercial",
+      "production": "Production",
+      "rh": "RH",
+      "comptabilite": "Comptabilité",
+      "service_client": "Service client",
+      "marketing": "Marketing",
+      "informatique": "Informatique"
+    },
+    "suggestion_add": "Ajouter le service « {name} »",
+    "add": "Ajouter",
+    "remove": "Retirer le service « {name} »",
+    "remove_empty": "Retirer le service {n}",
+    "added": "Service « {name} » ajouté ({count} sur {max}).",
+    "removed": "Service « {name} » retiré.",
+    "full": "Nombre maximal de services atteint."
+  },
+  "channels": {
+    "required": "Au moins un canal est obligatoire en mode anonyme.",
+    "count": {
+      "zero": "Aucun canal choisi (3 au maximum)",
+      "one": "{count} canal choisi sur 3 au maximum",
+      "other": "{count} canaux choisis sur 3 au maximum"
+    },
+    "max_reached": "3 canaux au maximum : décochez-en un pour en choisir un autre.",
+    "respondent_warning": "Avertissement affiché aux répondants avant l'envoi :",
+    "web_share": "Le bouton n'apparaît que si l'appareil du répondant le permet : prévoyez un autre canal en complément.",
+    "none_open": "Aucun canal choisi : indiquez au moins un canal pour que les répondants sachent comment vous transmettre leur code.",
+    "optional": "facultatif"
+  },
+  "preview": {
+    "title": "Aperçu du lien",
+    "length": "Lien de collecte : environ {length} caractères",
+    "target": "Cible : moins de {target} caractères, pour un QR code lisible et des messageries qui ne coupent pas le lien.",
+    "over": "Lien long : raccourcissez le titre, le nom de l'entreprise, les noms de services ou les consignes des canaux.",
+    "over_announce": "Attention : le lien de collecte dépasse {target} caractères.",
+    "summary": {
+      "mode": "Mode",
+      "departments": "Services",
+      "channels": "Canaux",
+      "closes": "Clôture",
+      "none": "aucun",
+      "no_date": "non définie"
+    },
+    "local_title": "Vos données restent dans ce navigateur",
+    "local_text": "La campagne, sa clé et les réponses importées sont enregistrées ici seulement, sans aucun serveur. Pour changer de poste : fichier de récupération de la clé et sauvegarde de la campagne (onglet « Paramètres » de la console)."
+  },
+  "submit": "Créer la campagne",
+  "submitting": "Génération des clés…",
+  "cancel": "Annuler",
+  "create_failed": "La campagne n'a pas pu être créée ni enregistrée dans ce navigateur. Réessayez ; si le problème persiste, rechargez la page.",
+  "created_announce": "Campagne créée. Étape suivante : protéger la clé de déchiffrement.",
+  "errors": {
+    "summary": {
+      "one": "Le formulaire contient une erreur :",
+      "other": "Le formulaire contient {count} erreurs :"
+    },
+    "generic": "Valeur non valide.",
+    "title": {
+      "required": "Indiquez le titre de la campagne.",
+      "too_long": "Le titre dépasse 80 caractères.",
+      "chars": "Le titre contient des caractères non autorisés."
+    },
+    "org_name": {
+      "too_long": "Le nom de l'entreprise dépasse 80 caractères.",
+      "chars": "Le nom de l'entreprise contient des caractères non autorisés."
+    },
+    "mode": {
+      "required": "Choisissez un mode de réponse."
+    },
+    "closes_on": {
+      "invalid_date": "Date invalide.",
+      "past": "Cette date est déjà passée : choisissez une date à venir, ou laissez le champ vide."
+    },
+    "departments": {
+      "too_many": "30 services au maximum.",
+      "required_open": "Ajoutez au moins un service : le choix du service est obligatoire en mode nominatif."
+    },
+    "department": {
+      "empty": "Service vide : complétez-le ou retirez-le.",
+      "too_long": "60 caractères au maximum.",
+      "duplicate": "Ce service figure déjà dans la liste.",
+      "too_many": "30 services au maximum : retirez-en un pour en ajouter un autre.",
+      "chars": "Ce nom contient des caractères non autorisés."
+    },
+    "channels": {
+      "required_anonymous": "Choisissez au moins un canal : en mode anonyme, les répondants doivent savoir comment transmettre leur code et ce que ce canal révèle.",
+      "too_many": "3 canaux au maximum."
+    },
+    "channel": {
+      "target_required": "Indiquez l'adresse qui recevra les codes.",
+      "invalid_email": "Adresse e-mail invalide (exemple : ia@exemple.fr).",
+      "invalid_phone": "Numéro invalide : utilisez le format international, par exemple +33 6 12 34 56 78.",
+      "target_too_long": "200 caractères au maximum.",
+      "invalid_target": "Consigne invalide.",
+      "too_long": "200 caractères au maximum.",
+      "chars": "La consigne contient des caractères non autorisés.",
+      "pattern": "Numéro invalide : utilisez le format international, par exemple +33 6 12 34 56 78."
+    },
+    "min_group_size": {
+      "range": "Indiquez un nombre entier entre {min} et {max}."
+    }
+  },
+  "key": {
+    "title": "Protégez votre clé de déchiffrement",
+    "created": "La campagne « {title} » est créée et enregistrée dans ce navigateur.",
+    "lead": "Sa clé privée est la seule à pouvoir lire les réponses. Elle se trouve uniquement dans ce navigateur.",
+    "danger_title": "Clé privée perdue = réponses illisibles, sans aucun recours.",
+    "danger": "Personne, pas même Recensia, ne peut la retrouver : si ce navigateur est effacé, réinitialisé ou remplacé, les codes reçus ne pourront plus jamais être déchiffrés.",
+    "explain": "Le fichier de récupération contient cette clé. Téléchargez-le maintenant et rangez-le hors de ce poste : coffre-fort de mots de passe, clé USB rangée en lieu sûr, espace sécurisé de l'entreprise.",
+    "fingerprint": "Empreinte de la campagne :",
+    "password": {
+      "label": "Mot de passe du fichier (recommandé)",
+      "help": "Au moins {min} caractères. Une phrase de plusieurs mots est facile à retenir et difficile à deviner. Ce mot de passe n'est enregistré nulle part : notez-le en lieu sûr, car sans lui le fichier ne pourra pas être ouvert."
+    },
+    "confirm": {
+      "label": "Confirmez le mot de passe"
+    },
+    "username": "Fichier de récupération Recensia {fp}",
+    "show": "Afficher les mots de passe",
+    "strength": {
+      "label": "Force indicative :",
+      "empty": "aucun mot de passe saisi",
+      "too_short": "trop court",
+      "weak": "faible (trop prévisible)",
+      "fair": "correcte",
+      "good": "bonne",
+      "strong": "très bonne"
+    },
+    "no_password": "Enregistrer sans mot de passe (déconseillé : quiconque obtient le fichier peut lire toutes les réponses)",
+    "no_password_warning": "Sans mot de passe, la clé figure en clair dans le fichier : ne l'envoyez jamais par e-mail et ne le déposez pas dans un dossier partagé.",
+    "download": "Télécharger le fichier de récupération",
+    "downloading": "Chiffrement du fichier…",
+    "downloaded_title": "Fichier de récupération téléchargé",
+    "downloaded": "Vérifiez que « {name} » figure bien dans vos téléchargements, puis rangez-le en lieu sûr.",
+    "downloaded_announce": "Fichier de récupération téléchargé.",
+    "download_again": "Télécharger de nouveau",
+    "continue": "Continuer : diffuser le lien",
+    "later": "Reporter",
+    "later_confirm": {
+      "title": "Reporter l'enregistrement de la clé ?",
+      "message": "Tant que le fichier de récupération n'est pas enregistré, la clé n'existe que dans ce navigateur : s'il est effacé ou perdu, toutes les réponses deviendront illisibles, sans recours. Un bandeau vous le rappellera dans la console.",
+      "confirm": "Reporter quand même"
+    },
+    "moving": "Pour utiliser la campagne sur un autre poste : importez ce fichier depuis « Mes campagnes », puis une sauvegarde des réponses (onglet « Paramètres » de la console).",
+    "errors": {
+      "password_required": "Choisissez un mot de passe, ou cochez « Enregistrer sans mot de passe ».",
+      "too_short": "Au moins {min} caractères.",
+      "weak": "Mot de passe trop prévisible : ajoutez des mots ou des caractères variés.",
+      "mismatch": "Les deux mots de passe ne correspondent pas.",
+      "failed": "Le fichier de récupération n'a pas pu être créé. Réessayez.",
+      "missing": "La clé de cette campagne est introuvable dans ce navigateur."
+    }
+  }
+}
