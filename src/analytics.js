@@ -1,5 +1,9 @@
 // Mesure d'audience GoatCounter (CDC §11) : chemins fixes en liste blanche, aucune donnée.
 // Aucun envoi automatique de l'URL : seules les valeurs ci-dessous peuvent être transmises.
+// Le compte GoatCounter (« manica ») est commun aux outils Manica (Check-up IA…) : tout ce que Recensia
+// envoie est préfixé « recensia » (chemin) et « Recensia · » (titre), pour filtrer ses pages et événements.
+
+import { analyticsOptOut, setAnalyticsOptOut } from './ui/safe-storage.js';
 
 /** Chemins de pages comptés (liste blanche). */
 export const ALLOWED_PATHS = Object.freeze([
@@ -12,10 +16,25 @@ export const ALLOWED_EVENTS = Object.freeze([
   'event/import_link', 'event/export_xlsx', 'event/export_csv', 'event/export_print',
 ]);
 
-const SCRIPT_URL = 'https://gc.zgo.at/count.js';
+// Version figée + empreinte SRI (même fichier que Check-up IA) : le navigateur refuse tout script modifié.
+// Changer de version : télécharger count.vX.js, `openssl dgst -sha384 -binary count.vX.js | openssl base64 -A`.
+const SCRIPT_URL = 'https://gc.zgo.at/count.v5.js';
+const SCRIPT_INTEGRITY = 'sha384-atnOLvQb9t+jTSipvd75X2yginT4PjVbqDdlJAmxMm+wYElFmeR6EmLP5bYeoRVQ';
+/** Préfixe de tous les chemins envoyés (vues : « /recensia/home » ; événements : « recensia/event/… »). */
+export const SITE_PREFIX = 'recensia';
 const CODE_RE = /^[a-z0-9-]{1,63}$/;
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '::1', '0.0.0.0', '']);
 const TITLE = 'Recensia';
+// Titres lisibles dans le tableau de bord GoatCounter (colonne « titre »).
+const TITLES = Object.freeze({
+  '/home': 'Accueil', '/new': 'Nouvelle campagne', '/form': 'Formulaire répondant',
+  '/admin/registre': 'Console : registre', '/admin/actions': "Console : plan d'actions", '/admin/rapport': 'Console : rapport',
+  '/demo': 'Démo', '/privacy': 'Confidentialité',
+  'event/campaign_created': 'Campagne créée', 'event/code_generated': 'Code de réponse généré',
+  'event/share_link': 'Lien de collecte partagé', 'event/share_code': 'Code de réponse envoyé',
+  'event/import_link': "Import par lien", 'event/export_xlsx': 'Export XLSX', 'event/export_csv': 'Export CSV',
+  'event/export_print': 'Impression / PDF',
+});
 const MAX_QUEUE = 20;
 
 // Route (src/router.js) ⇒ chemin fixe. Console : seuls ces trois onglets sont comptés.
@@ -71,7 +90,7 @@ export function initAnalytics(config, location = globalThis.location, env = {}) 
   state = freshState();
   const doc = env.document ?? globalThis.document;
   const win = env.window ?? globalThis;
-  if (!doc || !shouldLoad(config, location)) return api();
+  if (!doc || !shouldLoad(config, location) || analyticsOptOut() === true) return api();
 
   state.enabled = true;
   state.win = win;
@@ -80,6 +99,8 @@ export function initAnalytics(config, location = globalThis.location, env = {}) 
     const script = doc.createElement('script');
     script.async = true;
     script.referrerPolicy = 'no-referrer';
+    script.integrity = SCRIPT_INTEGRITY;
+    script.crossOrigin = 'anonymous';
     script.setAttribute('data-goatcounter', `https://${config.goatcounterCode}.goatcounter.com/count`);
     script.setAttribute('data-goatcounter-settings', '{"no_onload": true}');
     const current = state;
@@ -120,9 +141,19 @@ function dispatch(payload) {
   }
 }
 
-function send(path, event) {
+/** Chemin réellement envoyé à GoatCounter pour une vue ('/home') ou un événement ('event/…'). */
+export function publicPath(name) {
+  return name.startsWith('/') ? `/${SITE_PREFIX}${name}` : `${SITE_PREFIX}/${name}`;
+}
+
+/** Titre envoyé : « Recensia · Accueil ». */
+export function publicTitle(name) {
+  return Object.hasOwn(TITLES, name) ? `${TITLE} · ${TITLES[name]}` : TITLE;
+}
+
+function send(name, event) {
   if (!state.enabled) return false;
-  const payload = { path, title: TITLE, referrer: '', event };
+  const payload = { path: publicPath(name), title: publicTitle(name), referrer: '', event };
   if (state.ready) dispatch(payload);
   else if (state.queue.length < MAX_QUEUE) state.queue.push(payload);
   return true;
@@ -149,4 +180,19 @@ export function trackRoute(route) {
 /** La mesure d'audience est-elle active sur cette page ? */
 export function isAnalyticsEnabled() {
   return state.enabled;
+}
+
+/** Refus de la mesure mémorisé dans ce navigateur : true, false, ou null si le stockage est indisponible. */
+export function isOptedOut() {
+  return analyticsOptOut();
+}
+
+/**
+ * Enregistre (ou retire) le refus de la mesure. Effet immédiat : plus aucun envoi pendant la visite.
+ * @returns {boolean} true si le choix a pu être mémorisé.
+ */
+export function setOptOut(refused) {
+  const saved = setAnalyticsOptOut(refused === true);
+  if (refused === true) disable(state);
+  return saved;
 }

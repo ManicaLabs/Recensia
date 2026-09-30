@@ -2,8 +2,9 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ALLOWED_PATHS, ALLOWED_EVENTS, initAnalytics, trackView, trackEvent, trackRoute, pathForRoute,
-  isValidCode, isLocalHost, shouldLoad, isAnalyticsEnabled,
+  isValidCode, isLocalHost, shouldLoad, isAnalyticsEnabled, publicPath, publicTitle, SITE_PREFIX, isOptedOut, setOptOut,
 } from '../src/analytics.js';
+import { config } from '../config.js';
 import { listFiles, readSource, lineOf } from './helpers/source-scan.js';
 
 const PROD = { protocol: 'https:', hostname: 'manicalabs.github.io' };
@@ -115,7 +116,9 @@ describe('chargement du script', () => {
     assert.equal(env.scripts.length, 1);
     const [script] = env.scripts;
     assert.equal(script.tagName, 'SCRIPT');
-    assert.equal(script.src, 'https://gc.zgo.at/count.js');
+    assert.equal(script.src, 'https://gc.zgo.at/count.v5.js');
+    assert.match(script.integrity, /^sha384-[A-Za-z0-9+/]{64}$/);
+    assert.equal(script.crossOrigin, 'anonymous');
     assert.equal(script.async, true);
     assert.equal(script.attributes['data-goatcounter'], 'https://recensia.goatcounter.com/count');
     assert.deepEqual(JSON.parse(script.attributes['data-goatcounter-settings']), { no_onload: true });
@@ -130,13 +133,13 @@ describe('chargement du script', () => {
     assert.equal(env.calls.length, 0);
     env.load();
     assert.deepEqual(env.calls, [
-      { path: '/home', title: 'Recensia', referrer: '', event: false },
-      { path: 'event/code_generated', title: 'Recensia', referrer: '', event: true },
+      { path: '/recensia/home', title: 'Recensia · Accueil', referrer: '', event: false },
+      { path: 'recensia/event/code_generated', title: 'Recensia · Code de réponse généré', referrer: '', event: true },
     ]);
     assert.equal(trackRoute({ name: 'console', params: { id: 'k3J9xQ2mP0aZ', tab: 'rapport' } }), true);
-    assert.deepEqual(env.calls.at(-1), { path: '/admin/rapport', title: 'Recensia', referrer: '', event: false });
+    assert.deepEqual(env.calls.at(-1), { path: '/recensia/admin/rapport', title: 'Recensia · Console : rapport', referrer: '', event: false });
     assert.equal(trackRoute({ name: 'form', params: { payload: 'contenu-du-lien' } }), true);
-    assert.deepEqual(env.calls.at(-1), { path: '/form', title: 'Recensia', referrer: '', event: false });
+    assert.deepEqual(env.calls.at(-1), { path: '/recensia/form', title: 'Recensia · Formulaire répondant', referrer: '', event: false });
     for (const call of env.calls) assert.deepEqual(Object.keys(call).sort(), ['event', 'path', 'referrer', 'title']);
   });
 
@@ -252,4 +255,75 @@ describe('analyse statique de src/', () => {
     assert.match(text, /referrer:\s*''/);
     assert.match(text, /no_onload/);
   });
+});
+
+describe('compte partagé « manica » : Recensia se distingue par son préfixe', () => {
+  test('tout chemin envoyé commence par « recensia », tout titre par « Recensia · »', () => {
+    assert.equal(SITE_PREFIX, 'recensia');
+    for (const path of ALLOWED_PATHS) {
+      assert.equal(publicPath(path), `/recensia${path}`);
+      assert.match(publicTitle(path), /^Recensia · \S/);
+    }
+    for (const name of ALLOWED_EVENTS) {
+      assert.equal(publicPath(name), `recensia/${name}`);
+      assert.match(publicTitle(name), /^Recensia · \S/);
+    }
+    const titles = [...ALLOWED_PATHS, ...ALLOWED_EVENTS].map(publicTitle);
+    assert.equal(new Set(titles).size, titles.length, 'titres distincts');
+  });
+
+  test('config.js : compte manica, présent dans la CSP d\'index.html et de 404.html', () => {
+    assert.equal(config.goatcounterCode, 'manica');
+    assert.equal(isValidCode(config.goatcounterCode), true);
+    for (const file of ['index.html', '404.html']) {
+      const csp = /Content-Security-Policy" content="([^"]*)"/.exec(readSource(file))?.[1] ?? '';
+      const host = `https://${config.goatcounterCode}.goatcounter.com`;
+      assert.match(csp, new RegExp(`connect-src [^;]*${host.replace(/[.]/g, '\\.')}`), `${file} connect-src`);
+      assert.match(csp, new RegExp(`img-src [^;]*${host.replace(/[.]/g, '\\.')}`), `${file} img-src`);
+    }
+  });
+});
+
+describe('refus de la mesure (clé skipgc, commune aux outils Manica)', () => {
+  function withStorage(storage, fn) {
+    const saved = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+    Object.defineProperty(globalThis, 'localStorage', { configurable: true, get: () => { if (!storage) throw new Error('bloqué'); return storage; } });
+    try { return fn(); } finally {
+      if (saved) Object.defineProperty(globalThis, 'localStorage', saved);
+      else delete globalThis.localStorage;
+    }
+  }
+  const memoryStorage = () => {
+    const m = new Map();
+    return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k), m };
+  };
+
+  test('refus mémorisé : aucun script chargé, aucun envoi', () => withStorage(memoryStorage(), () => {
+    assert.equal(isOptedOut(), false);
+    assert.equal(setOptOut(true), true);
+    assert.equal(globalThis.localStorage.getItem('skipgc'), 't');
+    assert.equal(isOptedOut(), true);
+    const env = fakeEnv();
+    const api = initAnalytics({ goatcounterCode: 'manica' }, PROD, env);
+    assert.equal(api.enabled, false);
+    assert.equal(env.scripts.length, 0);
+    assert.equal(trackView('/home'), false);
+    assert.equal(setOptOut(false), true);
+    assert.equal(globalThis.localStorage.getItem('skipgc'), null);
+  }));
+
+  test('refus exprimé pendant la visite : envois arrêtés immédiatement', () => withStorage(memoryStorage(), () => {
+    const env = fakeEnv();
+    initAnalytics({ goatcounterCode: 'manica' }, PROD, env);
+    env.load();
+    assert.equal(trackView('/home'), true);
+    setOptOut(true);
+    assert.equal(trackView('/privacy'), false);
+    assert.equal(env.calls.length, 1);
+  }));
+
+  test('stockage bloqué : null, jamais d\'exception', () => withStorage(null, () => {
+    assert.equal(isOptedOut(), null);
+    assert.equal(setOptOut(true), false);
+  }));
 });

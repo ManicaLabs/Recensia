@@ -4,8 +4,10 @@
 // compartiment avec tout autre site de la même origine : la page le dit, d'après l'adresse réelle.
 
 import { h, mount } from '../ui/dom.js';
-import { callout, icon } from '../ui/components.js';
-import { ALLOWED_PATHS, ALLOWED_EVENTS, isAnalyticsEnabled } from '../analytics.js';
+import { button, callout, icon } from '../ui/components.js';
+import {
+  ALLOWED_PATHS, ALLOWED_EVENTS, isAnalyticsEnabled, isOptedOut, publicPath, setOptOut,
+} from '../analytics.js';
 
 const SECTIONS = ['audience', 'campaign', 'anonymity', 'retention', 'hosting', 'publisher'];
 
@@ -29,6 +31,38 @@ function section(key, t, ...content) {
   return h('section', { class: 'prose-section', id: `privacy-${key}`, 'aria-labelledby': `privacy-${key}-title` },
     h('h2', { id: `privacy-${key}-title` }, t(`privacy.${key}.title`)),
     content);
+}
+
+/** Refus de la mesure (clé « skipgc », commune aux outils Manica publiés sur la même origine). */
+function optOutControl(t) {
+  const status = h('p', { class: 'status-line', role: 'status' });
+  const host = h('div', { id: 'privacy-opt-out', class: 'stack' }, h('p', null, t('privacy.audience.opt_out_text')), status);
+  const refused = isOptedOut();
+  if (refused === null) {
+    status.textContent = t('privacy.audience.opt_out_unavailable');
+    return host;
+  }
+  let current = refused;
+  const btn = button('', () => {
+    const next = !current;
+    if (!setOptOut(next)) {
+      status.textContent = t('privacy.audience.opt_out_failed');
+      return;
+    }
+    current = next;
+    draw(true);
+  }, { variant: 'secondary', attrs: { 'aria-pressed': 'false' } });
+  const label = btn.querySelector('.btn-label');
+  function draw(changed) {
+    label.textContent = current ? t('privacy.audience.opt_out_undo') : t('privacy.audience.opt_out_do');
+    btn.setAttribute('aria-pressed', current ? 'true' : 'false');
+    status.textContent = current
+      ? t(changed ? 'privacy.audience.opt_out_saved' : 'privacy.audience.opt_out_on')
+      : t(changed ? 'privacy.audience.opt_out_removed' : 'privacy.audience.opt_out_off');
+  }
+  draw(false);
+  host.append(h('div', { class: 'cluster' }, btn));
+  return host;
 }
 
 function codeList(values) {
@@ -75,14 +109,16 @@ export async function render(root, { ctx }) {
       h('p', { class: ['status-line', active ? 'is-active' : 'is-inactive'] },
         icon(active ? 'info' : 'check'),
         h('span', null, active ? t('privacy.audience.status_active') : t('privacy.audience.status_inactive'))),
+      h('p', null, t('privacy.audience.account')),
       h('p', null, t('privacy.audience.paths')),
-      codeList(ALLOWED_PATHS),
+      codeList(ALLOWED_PATHS.map(publicPath)),
       h('p', null, t('privacy.audience.events')),
-      codeList(ALLOWED_EVENTS),
+      codeList(ALLOWED_EVENTS.map(publicPath)),
       h('p', null, t('privacy.audience.never')),
       h('p', null, t('privacy.audience.technical')),
       h('p', null, t('privacy.audience.local')),
-      h('p', null, t('privacy.audience.blocker'))),
+      h('p', null, t('privacy.audience.blocker')),
+      optOutControl(t)),
 
     section('campaign', t,
       h('p', null, t('privacy.campaign.link')),

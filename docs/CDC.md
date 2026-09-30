@@ -339,8 +339,8 @@ Interface `store` (campagnes, entrées, évaluations, actions) implémentée sur
 - Jamais de cryptographie « maison » ni d'obfuscation.
 
 ### 10.5 Sécurité front
-- CSP via `<meta http-equiv="Content-Security-Policy">` : `default-src 'self'; script-src 'self' https://gc.zgo.at; connect-src 'self' https://*.goatcounter.com; img-src 'self' data: blob: https://*.goatcounter.com; style-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; manifest-src 'self'; worker-src 'self'`.
-  (v0.1 : `'self'` ajouté à `connect-src`, indispensable au chargement de `data/*.json` ; `img-src` étendu au pixel de repli de GoatCounter et aux aperçus `blob:`. Une CSP en `<meta>` ne peut pas imposer `frame-ancestors` : pas de protection contre le *clickjacking* sur GitHub Pages.)
+- CSP via `<meta http-equiv="Content-Security-Policy">` : `default-src 'self'; script-src 'self' https://gc.zgo.at; connect-src 'self' https://manica.goatcounter.com; img-src 'self' data: blob: https://manica.goatcounter.com; style-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; manifest-src 'self'; worker-src 'self'`.
+  (v0.1 : `'self'` ajouté à `connect-src`, indispensable au chargement de `data/*.json` ; `img-src` étendu au pixel de repli de GoatCounter et aux aperçus `blob:`. Une CSP en `<meta>` ne peut pas imposer `frame-ancestors` : pas de protection contre le *clickjacking* sur GitHub Pages. v1.1 : hôte GoatCounter restreint au compte `manica`.)
 - Tout texte issu d'un lien ou d'un code est affiché via `textContent` (jamais `innerHTML`) et validé strictement (schéma, longueurs, valeurs autorisées).
 - La clé privée n'est jamais journalisée, affichée dans l'URL ni envoyée où que ce soit.
 - Aucune dépendance chargée depuis un CDN au runtime (tout est vendorisé, y compris pour le hors ligne).
@@ -348,12 +348,13 @@ Interface `store` (campagnes, entrées, évaluations, actions) implémentée sur
 
 ## 11. Sonde de trafic GoatCounter
 
-- Le code du compteur est dans `config.js` (`goatcounterCode`). **S'il est vide, aucun script n'est chargé.** Le compte GoatCounter est créé par l'utilisateur.
-- Chargement dynamique de `https://gc.zgo.at/count.js` avec `data-goatcounter="https://<code>.goatcounter.com/count"` et `data-goatcounter-settings='{"no_onload": true}'` ; échec silencieux (bloqueur de publicité, hors ligne) sans jamais casser l'application.
+- Le code du compteur est dans `config.js` (`goatcounterCode`). **S'il est vide, aucun script n'est chargé.** Depuis la v1.1 : compte **`manica`** (https://manica.goatcounter.com), commun aux outils Manica (Check-up IA…). Pour distinguer Recensia dans ce tableau de bord partagé, **tout chemin envoyé est préfixé `recensia`** (vues `/recensia/home`…, événements `recensia/event/…`) et tout titre commence par « Recensia · » (« Recensia · Accueil », « Recensia · Export CSV »…). Filtrer sur « recensia » dans GoatCounter isole Recensia.
+- Chargement dynamique de `https://gc.zgo.at/count.v5.js` (version figée, empreinte SRI `sha384`, `crossorigin="anonymous"`, même fichier que Check-up IA) avec `data-goatcounter="https://<code>.goatcounter.com/count"` et `data-goatcounter-settings='{"no_onload": true}'` ; échec silencieux (bloqueur de publicité, hors ligne) sans jamais casser l'application.
 - **Aucun envoi automatique de l'URL.** Les vues sont comptées à la main via `goatcounter.count({path, title})` avec des chemins **nettoyés et fixes** : `/home`, `/new`, `/form`, `/admin/registre`, `/admin/actions`, `/admin/rapport`, `/demo`, `/privacy`. Ne jamais inclure le contenu du lien de campagne, un code de réponse, une clé, un nom, un département ou du texte libre dans `path`, `title` ou `referrer`.
 - Événements (chemins fictifs, sans donnée) : `event/campaign_created`, `event/code_generated`, `event/share_link`, `event/share_code`, `event/import_link`, `event/export_xlsx`, `event/export_csv`, `event/export_print`. Jamais de donnée dans le nom d'événement.
 - Désactivé en local (`localhost`, `127.0.0.1`) et sur la console admin pour les actions sensibles.
-- La page `#/privacy` mentionne GoatCounter (mesure d'audience sans cookie), les données collectées par la campagne, la durée de conservation et l'hébergeur. **À faire valider** (exemption de consentement, mentions RGPD).
+- **Refus de la mesure** : bouton sur `#/privacy` ; clé brute `skipgc = t` dans `localStorage`, lue aussi par le script GoatCounter. Volontairement commune aux outils Manica de la même origine : un refus vaut pour tous. Refus ⇒ plus aucun envoi immédiatement, et plus aucun script chargé ensuite.
+- La page `#/privacy` mentionne GoatCounter (mesure d'audience sans cookie, compte partagé, chemins réellement envoyés), les données collectées par la campagne, la durée de conservation et l'hébergeur. **À faire valider** (exemption de consentement, mentions RGPD).
 - Test de non-régression : un test vérifie qu'aucun appel `count()` ne reçoit un chemin hors de la liste blanche ci-dessus.
 
 ## 12. Déploiement (GitHub Pages) et validation
@@ -478,6 +479,7 @@ Décisions prises pendant l'implémentation, là où le CDC était ambigu. Toute
 - **Page 404** : chemins absolus `/Recensia/…` uniquement, vérifiés par `tools/check.mjs` [4] ; base `/` dès qu'un fichier `CNAME` existe.
 - **Noms des fichiers sensibles** : la version à risque porte un marqueur en majuscules (`…-NON-PROTEGEE.recensia-key`, `…-EN-CLAIR.json`) ; la version protégée garde le nom canonique. Le message de fin de téléchargement nomme le fichier ; pour une version à risque, c'est un avertissement qui reste affiché.
 - **Consigne de canal entre parenthèses** : son point final est retiré (« (consigne : … fil interne) » et non « ….). »).
+- **Compte GoatCounter partagé** (`manica`) : Recensia se distingue par le préfixe `recensia` de ses chemins et « Recensia · » de ses titres, les noms internes de la liste blanche (§11) restant `/home`, `event/…` ; la page de confidentialité affiche les chemins réellement envoyés.
 - **Logo Manica** (éditeur de l'outil) : pied de page de tous les écrans et bas de l'accueil (« Un outil proposé par »), version claire par inversion en thème sombre. Source HD : `logo_manica_hd.svg` (1,8 Mo, non précaché) ; actif servi : `src/assets/logo-manica.png` (8 Ko). Absent des documents imprimés (fiche, rapport), qui portent l'identité de l'entreprise qui mène la campagne.
 
 ## 5bis. État d'avancement (à tenir à jour)
@@ -492,8 +494,8 @@ Décisions prises pendant l'implémentation, là où le CDC était ambigu. Toute
 - ✅ **v0.8 — administration et import** : liste des campagnes, import des codes (collage, fichiers, liens `#/i/`), fichier de récupération, sauvegarde et restauration, paramètres.
 - ✅ **v0.9 — registre et pilotage** : tableau de bord, registre filtrable (surcharges, validation, fusion et scission), plan d'actions, rapport imprimable, démo.
 - ✅ **v1.0 — recette** : critères d'acceptation des phases 1 et 2 (§14) vérifiés de bout en bout dans Chrome sans interface (création, réponse dans un contexte isolé, import par lien et par collage, registre, plan d'actions, rapport, exports relus, sauvegarde et restauration, fichier de récupération, démo, hors ligne), axe-core sans violation (16 écrans × clair/sombre × 1280/375 px), audits injection et confidentialité (durcissements : invisibles, intégrité du cache, page 404, noms des fichiers sensibles), logo Manica ; 935 tests.
+- ✅ **v1.1 — mesure d'audience** : GoatCounter branché sur le compte `manica` (commun avec Check-up IA), chemins préfixés `recensia` et titres « Recensia · … », script `count.v5.js` figé avec SRI, CSP restreinte à `manica.goatcounter.com`, refus de la mesure sur la page de confidentialité (clé `skipgc` partagée).
 - ⚠️ **Points d'attention**
-  - Le code GoatCounter est vide : aucune mesure en production tant qu'il n'est pas fourni.
   - Page de confidentialité à faire valider : éditeur, contact, exemption de consentement.
   - Règles et actions à faire relire par un juriste (`reviewed: false`).
   - Calendrier vérifié automatiquement sur le JO : à confirmer par un juriste.

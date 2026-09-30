@@ -19,14 +19,24 @@
   "audience": {
     "title": "Mesure d'audience (GoatCounter)",
     "intro": "Recensia peut utiliser GoatCounter, un outil de mesure d'audience sans cookie, pour compter les pages consultées et quelques actions. Aucun identifiant n'est enregistré dans votre navigateur.",
+    "account": "Le compte GoatCounter « manica » est commun aux outils publiés par Manica (dont Check-up IA) : tout ce que Recensia transmet commence par « recensia » et son titre par « Recensia · », pour être compté à part.",
     "paths": "Seuls les chemins fixes suivants peuvent être transmis :",
     "events": "ainsi que les événements suivants, sans aucune donnée associée :",
     "never": "Ne sont jamais transmis : le contenu du lien de campagne, les codes de réponse, les clés, les noms, les services ni aucun texte saisi. Ni l'adresse réelle de la page ni la page de provenance (référent) ne sont envoyées.",
     "technical": "Comme tout serveur web, GoatCounter reçoit techniquement, à chaque comptage, l'adresse IP, le type de navigateur et la taille de l'écran ; selon sa documentation, il n'enregistre pas l'adresse IP (il peut en déduire le pays) et ne suit pas les visiteurs d'un site à l'autre.",
-    "local": "La mesure est désactivée quand l'application fonctionne en local (localhost) et quand aucun code GoatCounter n'est configuré.",
+    "local": "La mesure est désactivée quand l'application fonctionne en local (localhost), hors HTTPS, quand aucun code GoatCounter n'est configuré et quand vous l'avez refusée ci-dessous.",
     "blocker": "Vous pouvez aussi la bloquer avec un bloqueur de contenu : l'application continue de fonctionner normalement.",
     "status_active": "Sur cette page : mesure d'audience active.",
-    "status_inactive": "Sur cette page : mesure d'audience inactive, aucun script GoatCounter n'est chargé."
+    "status_inactive": "Sur cette page : mesure d'audience inactive, aucun script GoatCounter n'est chargé.",
+    "opt_out_text": "Vous pouvez refuser la mesure d'audience dans ce navigateur. Le choix est mémorisé localement (clé « skipgc », sans identifiant) et vaut aussi pour les autres outils Manica publiés à la même adresse.",
+    "opt_out_do": "Ne plus compter mes visites",
+    "opt_out_undo": "Accepter de nouveau la mesure",
+    "opt_out_on": "Mesure refusée dans ce navigateur : aucune visite n'est comptée.",
+    "opt_out_off": "Mesure acceptée dans ce navigateur.",
+    "opt_out_saved": "C'est noté : vos visites ne sont plus comptées, dès maintenant.",
+    "opt_out_removed": "Mesure de nouveau acceptée ; elle reprendra au prochain chargement de l'application.",
+    "opt_out_failed": "Votre choix n'a pas pu être enregistré (stockage du navigateur indisponible).",
+    "opt_out_unavailable": "Le stockage de ce navigateur est indisponible : la mesure d'audience ne compte de toute façon pas vos visites."
   },
   "campaign": {
     "title": "Données des campagnes",

@@ -18,8 +18,8 @@ import { openStore } from '../src/storage/store.js';
 import { register, t } from '../src/i18n.js';
 import { render as renderPrivacy, originScope } from '../src/views/privacy.js';
 
-const CSP = "default-src 'self'; script-src 'self' https://gc.zgo.at; connect-src 'self' https://*.goatcounter.com; "
-  + "img-src 'self' data: blob: https://*.goatcounter.com; style-src 'self'; font-src 'self'; object-src 'none'; "
+const CSP = "default-src 'self'; script-src 'self' https://gc.zgo.at; connect-src 'self' https://manica.goatcounter.com; "
+  + "img-src 'self' data: blob: https://manica.goatcounter.com; style-src 'self'; font-src 'self'; object-src 'none'; "
   + "base-uri 'self'; form-action 'none'; manifest-src 'self'; worker-src 'self'";
 
 const SRC_JS = listFiles('src', ['.js', '.mjs']);

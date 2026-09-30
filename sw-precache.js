@@ -2,7 +2,7 @@
 // Régénérer avec « node tools/precache.mjs » ou « node tools/check.mjs --fix ».
 // integrity : empreinte SHA-256 de chaque fichier, vérifiée par sw.js avant de servir une copie du cache.
 self.__RECENSIA_PRECACHE = {
-  version: '1.0.0-5dca63f7',
+  version: '1.1.0-dcc3832b',
   files: [
     './apple-touch-icon.png',
     './config.js',
@@ -135,7 +135,7 @@ self.__RECENSIA_PRECACHE = {
   ],
   integrity: {
     './apple-touch-icon.png': 'sha256-bpQ+zvSvaW4CnFWKh20QHjoRMGTW3onKfff1P0X1vM0=',
-    './config.js': 'sha256-6EDx3YR4oRnW0O3xY+dGCsH74jrJNnvRgs98D98BOjk=',
+    './config.js': 'sha256-Z+DKry9GQam7TxdcLBFtnVU0bOduMK4+fdiqiBxGwVQ=',
     './data/actions.json': 'sha256-dADusAKNTt8YVkFWcFRKtGCUoFAsUZEhkpQGXe+zYhM=',
     './data/channels.json': 'sha256-e+iAYzcq68gU7InB74IboPWWN67GUtyu5UoSWDHxwxQ=',
     './data/demo-company.json': 'sha256-FXh+bwLbgeY2DBtCgepetzTzKFVtym3vcp398yovb5Y=',
@@ -148,9 +148,9 @@ self.__RECENSIA_PRECACHE = {
     './icon-512.png': 'sha256-Vr74RnGw6/J4ZNZrIjj+FAKlP7id7d6kPuUazAnVP+k=',
     './icon-maskable-512.png': 'sha256-QKi59Smhm5hClHlk1x/Nu+gZMWPi+jlJNcv1wCrXi5Y=',
     './icon.svg': 'sha256-dUAC6LFxwZwwm5DOzxs4J7e9XQlzCiHEnHO49DmteVQ=',
-    './index.html': 'sha256-79wFBilk255xNvtq+rcZTT99kiqs8T65k3uTHe54iVY=',
+    './index.html': 'sha256-eypeyjGBT0UZUdHMBSIe9qSVGbULgidpkqjEDGeua5M=',
     './manifest.webmanifest': 'sha256-VkyDlSU9jd/3R1/E4TDE9sOh3oCrwuTQnOg4n1P8L9s=',
-    './src/analytics.js': 'sha256-lsWa3vKBFEitVsEHGgNCKabR4bgsNBpO2qYruRYN0qU=',
+    './src/analytics.js': 'sha256-LXPOv/KAt/tetuW1+MfezRvL9JmdIeF9Ls9A2dCebDE=',
     './src/app.js': 'sha256-K9JxHIlSRMu7q0LHOiqhx9oAvAHJRFRv+msM7Yfjlvw=',
     './src/assets/logo-manica.png': 'sha256-b8KHIlEiLbi7bRXEgcNG5KnwkPOzmBzHcHC46qXCGJU=',
     './src/crypto/b64url.js': 'sha256-faadB2+xjzOWRhkdvpBqsOHyRVKoc4Jrce88E5N44C0=',
@@ -188,7 +188,7 @@ self.__RECENSIA_PRECACHE = {
     './src/i18n/fr/import_link.json': 'sha256-fdjExlOutVZy3Jn7elQrLnER0gsRkK80BjWNnhTrMjA=',
     './src/i18n/fr/new.json': 'sha256-EcJ1q69wO7OcjAV5AP/tH5Nkbm/U8AdQChfv2SkV73E=',
     './src/i18n/fr/not_found.json': 'sha256-OvAEO+6V/H5BsoX/KZWBm8kXJ1FSHojml3ph6tybBGA=',
-    './src/i18n/fr/privacy.json': 'sha256-VspXZo5bETCVps0x/4us4RRtkPt0tVR0rdleOeqB204=',
+    './src/i18n/fr/privacy.json': 'sha256-LimJyvOjBsypxx2g/ft3z4F9POxY6NaKEhchwntVUzk=',
     './src/i18n/fr/questionnaire.json': 'sha256-+MuQVB9Vc5yXhNZEa70Q94mK7s1UmBD/EoxH4d6awVw=',
     './src/i18n/fr/registry.json': 'sha256-TMJGUBT7KrqJsQd2WzNvkiSNoNwCvvTS66Y62GorNk8=',
     './src/i18n/fr/report.json': 'sha256-ZvBepntTCV4Zlj8PGMYC34gHwQo15gGma6TDg45z1ns=',
@@ -228,7 +228,7 @@ self.__RECENSIA_PRECACHE = {
     './src/ui/dom.js': 'sha256-NctZZy9Tmt3cuPVn4JWo3/Py9CMYHhL6QXDXD6XCdwg=',
     './src/ui/download.js': 'sha256-cvioOampa2+RLf5oVe4pZcCSEHw0az7ExPaKAJ2KGbc=',
     './src/ui/questionnaire.js': 'sha256-Jz8Fr+wt8Hsmlqxct6MWsVfRlXtxn4pGaeeu3Ad7jGE=',
-    './src/ui/safe-storage.js': 'sha256-gUu9WMRnulZVqJ4DaHJ0cceaIckZwMF37p4tEQJ7pGw=',
+    './src/ui/safe-storage.js': 'sha256-6SFAe5586+zZSUsqI8eBDFdrmrGOft/ftTCtRQMLwJ8=',
     './src/views/admin.js': 'sha256-KddW/VGvdO8Uh2h9JYEdKaNW01Lv9KsfM0/vq1EeAkU=',
     './src/views/console.js': 'sha256-avWXhpKlOQZSjtk2ofelvhRQyrMDXmkzUbSbNBkuv3E=',
     './src/views/console/actions.js': 'sha256-I3xuLMc+5Mb4CRS8OpB7ZPOAFQCG5M4rc8rgRtYI2Lw=',
@@ -258,7 +258,7 @@ self.__RECENSIA_PRECACHE = {
     './src/views/new/build-campaign.js': 'sha256-8D0Z1BuQ4OaT2lDnqo3EDZjeqF3snupbmSqTtpKS6R0=',
     './src/views/new/share-helpers.js': 'sha256-5wHV7Hrh55vXxEF9PRPQWn2rdJZapvEoPlmJgeu7hBs=',
     './src/views/not-found.js': 'sha256-wtOhhqsAjdCH6GHg7rI25mcRlj2ATFjPdMnEyQOGDjk=',
-    './src/views/privacy.js': 'sha256-iuJelzM/tJNoHZtU+syn2XnAL7ZhtfxFQNSe7H8w6Dk=',
+    './src/views/privacy.js': 'sha256-xdaIJ2VIzI8G/+Hlv9ea8SwAFABTuG9I/3pEsWd0tPE=',
     './vendor/fflate.mjs': 'sha256-jMH2h+AVnpd63ba4XidNvRHmIs8VH0/Le4XUliLqQ+c=',
     './vendor/qrcode.mjs': 'sha256-6pHXEYpTlSiRcNqEi3xnWLmWFjv7zPMSWRq2WkkRt8A=',
     './vendor/xlsx.mjs': 'sha256-Gg+wYu6XgbE/Zoc3GyAqrvxTts5VtTDAJ+AfnAh7d9s=',

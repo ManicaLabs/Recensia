@@ -322,6 +322,9 @@ export async function importJson(fileText, password, store)
 
 ### 5.1 Routes
 
+Chemins envoyés préfixés par `recensia` (compte partagé `manica`) : `/home` part en `/recensia/home`, `event/x` en
+`recensia/event/x` (`publicPath`, `publicTitle` dans `src/analytics.js`).
+
 | Hash | Vue | Chemin GoatCounter |
 |---|---|---|
 | `#/` | `views/home.js` | `/home` |
@@ -548,3 +551,13 @@ Ces points précisent ou étendent le contrat ; ils font foi pour les vues à ve
   `CNAME` existe ; `projectPathOf(value, basePath)` → `{ ok, path } | { ok: false, reason: 'relative' | 'outside' }`.
 - **Confidentialité** : `originScope(baseUrl)` → `{ origin, url, shared }` (privacy.js) ; avertissement « origine
   partagée » affiché quand l'application n'est pas à la racine de son origine.
+
+## 11. Mesure d'audience v1.1
+
+- `src/analytics.js` : `SITE_PREFIX = 'recensia'`, `publicPath(name)`, `publicTitle(name)` (« Recensia · … ») ;
+  script `https://gc.zgo.at/count.v5.js` avec `integrity` (sha384) et `crossOrigin = 'anonymous'` ;
+  `isOptedOut()` → `true | false | null`, `setOptOut(refused)` → `boolean` (arrête aussitôt les envois).
+- `src/ui/safe-storage.js` : `analyticsOptOut()`, `setAnalyticsOptOut(refused)` : clé brute `skipgc` (hors préfixe
+  `recensia:`), lue aussi par count.v5.js et partagée avec les autres outils Manica de l'origine.
+- `config.js` : `goatcounterCode: 'manica'` ; la CSP d'`index.html` et de `404.html` autorise
+  `https://manica.goatcounter.com` (test : `tests/analytics.test.js`).

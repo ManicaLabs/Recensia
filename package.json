@@ -1,6 +1,6 @@
 {
   "name": "recensia",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Registre des usages IA en entreprise — PWA sans serveur",
   "type": "module",

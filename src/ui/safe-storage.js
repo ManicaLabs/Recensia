@@ -105,3 +105,28 @@ function createArea(getStorage) {
 
 export const local = createArea(() => globalThis.localStorage);
 export const session = createArea(() => globalThis.sessionStorage);
+
+// Refus de la mesure d'audience : clé brute « skipgc » = « t », lue par le script GoatCounter lui-même.
+// Volontairement hors préfixe : l'origine étant partagée, un refus exprimé sur un autre outil Manica
+// (Check-up IA) vaut aussi pour Recensia, et inversement.
+const OPT_OUT_KEY = 'skipgc';
+
+/** true / false, ou null si le stockage local est indisponible (le script de mesure ne compte alors pas). */
+export function analyticsOptOut() {
+  try {
+    return globalThis.localStorage.getItem(OPT_OUT_KEY) === 't';
+  } catch {
+    return null;
+  }
+}
+
+/** Mémorise le refus (true) ou le retire (false). Renvoie false si le stockage est indisponible. */
+export function setAnalyticsOptOut(refused) {
+  try {
+    if (refused) globalThis.localStorage.setItem(OPT_OUT_KEY, 't');
+    else globalThis.localStorage.removeItem(OPT_OUT_KEY);
+    return true;
+  } catch {
+    return false;
+  }
+}
