@@ -1,0 +1,161 @@
+{
+  "title": "Importer des codes",
+  "lead": "Collez les codes reçus ou déposez les fichiers : tout est déchiffré dans ce navigateur, rien n'est envoyé.",
+  "no_key": {
+    "title": "Clé privée absente",
+    "text": "La clé privée de cette campagne n'est pas dans ce navigateur : les codes reçus ne peuvent pas être déchiffrés. Importez le fichier de récupération depuis « Mes campagnes », puis revenez ici.",
+    "action": "Importer le fichier de récupération"
+  },
+  "demo": "La campagne de démonstration n'a pas de clé : l'import de codes n'y est pas disponible. Créez une campagne pour recevoir de vrais codes.",
+  "pending": {
+    "text": {
+      "one": "{count} code gardé en attente pendant cette session (reçu par un lien d'import ou collé dans une autre campagne) est prêt à être importé dans cette campagne.",
+      "other": "{count} codes gardés en attente pendant cette session (reçus par des liens d'import ou collés dans une autre campagne) sont prêts à être importés dans cette campagne."
+    },
+    "action": {
+      "one": "Importer ce code",
+      "other": "Importer ces {count} codes"
+    }
+  },
+  "form": {
+    "title": "Codes reçus",
+    "paste_label": "Codes, liens d'import ou e-mails reçus",
+    "paste_help": "Un code commence par RCN1. Vous pouvez coller un e-mail entier ou plusieurs codes à la suite : seuls les codes sont retenus.",
+    "files_label": "Fichiers reçus",
+    "drop": "Glissez ici des fichiers .rcn, .txt ou .eml",
+    "or": "ou",
+    "choose": "Choisir des fichiers",
+    "files_help": "Plusieurs fichiers à la fois. Ils sont lus dans ce navigateur, jamais envoyés.",
+    "file_codes": {
+      "zero": "aucun code",
+      "one": "{count} code",
+      "other": "{count} codes"
+    },
+    "remove_file": "Retirer {name}",
+    "file_too_large": "{name} : fichier trop volumineux ({max} Mo au plus), ignoré.",
+    "file_unreadable": "{name} : fichier illisible, ignoré.",
+    "too_many_files": "Au plus {max} fichiers à la fois : les suivants sont ignorés.",
+    "detected": {
+      "zero": "Aucun code détecté pour l'instant.",
+      "one": "{count} code détecté.",
+      "other": "{count} codes détectés."
+    },
+    "none": "Aucun code détecté : un code commence par RCN1. Vérifiez que le texte collé est complet, ou ajoutez des fichiers.",
+    "submit": "Importer",
+    "clear": "Tout effacer",
+    "working": "Déchiffrement et import en cours…"
+  },
+  "report": {
+    "title": "Résultat de l'import",
+    "from_session": "Codes gardés en attente pendant cette session.",
+    "done": "Import terminé : {parts}.",
+    "nothing": "Aucun code trouvé dans le texte ou les fichiers fournis.",
+    "parts": {
+      "accepted": {
+        "one": "{count} nouvelle déclaration",
+        "other": "{count} nouvelles déclarations"
+      },
+      "revised": {
+        "one": "{count} déclaration mise à jour",
+        "other": "{count} déclarations mises à jour"
+      },
+      "duplicates": {
+        "one": "{count} doublon ignoré",
+        "other": "{count} doublons ignorés"
+      },
+      "invalid": {
+        "one": "{count} code refusé",
+        "other": "{count} codes refusés"
+      },
+      "other_campaign": {
+        "one": "{count} code d'une autre campagne",
+        "other": "{count} codes d'une autre campagne"
+      },
+      "unsupported_version": {
+        "one": "{count} code d'une version plus récente",
+        "other": "{count} codes d'une version plus récente"
+      }
+    },
+    "kpi": {
+      "accepted": "Nouvelles déclarations",
+      "revised": "Mises à jour",
+      "duplicates": "Doublons ignorés",
+      "invalid": "Codes refusés",
+      "other_campaign": "Autre campagne",
+      "after_close": "Après la clôture",
+      "unsupported_version": "Version plus récente"
+    },
+    "details": {
+      "accepted": "Nouvelles déclarations ({count})",
+      "revised": "Déclarations mises à jour ({count})",
+      "duplicates": "Doublons ignorés ({count})",
+      "invalid": "Codes refusés ({count})",
+      "other_campaign": "Codes d'une autre campagne ({count})",
+      "after_close": "Datées d'après la clôture ({count})",
+      "unsupported_version": "Codes d'une version plus récente ({count})"
+    },
+    "rev": "version {rev}",
+    "rev_change": "version {from} → {to}",
+    "after_close_badge": "après la clôture",
+    "submitted": "déclaré le {date}",
+    "after_close_text": "Ces déclarations sont datées d'après la clôture indicative ({date}). Elles sont importées : à vous de décider, dans le registre, de les garder ou de les écarter.",
+    "invalid_text": "Rien n'a été enregistré pour ces codes. Un code tronqué par la messagerie peut être demandé de nouveau à son expéditeur, sans chercher à savoir qui il est.",
+    "other_item": {
+      "one": "{count} code pour « {title} »",
+      "other": "{count} codes pour « {title} »"
+    },
+    "other_open": "Ouvrir l'import de « {title} »",
+    "other_kept": "Ces codes sont gardés le temps de la session : ils vous seront proposés dans l'onglet « Importer des codes » de leur campagne.",
+    "unsupported_text": "Ces codes ont été produits par une version plus récente de Recensia : rechargez la page pour mettre l'application à jour, puis importez-les de nouveau.",
+    "over_limit": "{count} codes au-delà des {max} premiers n'ont pas été traités : importez-les en plusieurs fois.",
+    "to_registry": "Voir le registre",
+    "to_dashboard": "Tableau de bord",
+    "unnamed": "Usage sans nom",
+    "fields": "Champs concernés : {fields}.",
+    "from_link": "Codes reçus par un lien d'import."
+  },
+  "reasons": {
+    "already_imported": "Code déjà importé.",
+    "same_rev": "Déjà importé (même version de la déclaration).",
+    "older_rev": "Version plus ancienne que celle du registre.",
+    "obsolete": "Remplacé par une version plus récente reçue en même temps.",
+    "repeated": "Même version de la déclaration reçue plusieurs fois dans cet import : une seule est gardée.",
+    "format": "Code incomplet ou mal copié (tronqué ?).",
+    "size": "Code trop volumineux.",
+    "decrypt": "Illisible : code altéré, ou destiné à une campagne dont la clé n'est pas dans ce navigateur.",
+    "campaign": "Code destiné à une autre campagne.",
+    "schema": "Contenu du code invalide.",
+    "usage_invalid": "Réponses incomplètes ou non conformes au questionnaire de cette campagne.",
+    "identity_in_anonymous": "Le code contient une identité ou un horodatage alors que la campagne est anonyme : refusé pour protéger l'anonymat.",
+    "respondent_invalid": "Prénom et nom manquants ou invalides (campagne nominative)."
+  },
+  "respondent_fields": {
+    "first_name": "prénom",
+    "last_name": "nom",
+    "email": "e-mail",
+    "respondent": "identité"
+  },
+  "help": {
+    "title": "Comment arrivent les codes",
+    "intro": "Chaque usage déclaré produit un code chiffré, qui commence par RCN1. Selon les canaux de retour de cette campagne :",
+    "channels": {
+      "mailto": "vous recevez un e-mail par code (ou pour quelques codes) : cliquez sur le lien d'import qu'il contient, ou collez l'e-mail entier ci-dessus.",
+      "copy": "les codes sont collés à l'endroit indiqué dans la consigne : copiez-les (plusieurs à la fois si besoin) et collez-les ci-dessus.",
+      "file": "vous recevez des fichiers .rcn : glissez-les dans la zone ci-dessus, plusieurs à la fois si besoin.",
+      "share": "le répondant choisit l'application (e-mail, messagerie, fichier) : cliquez sur le lien reçu, collez le message ou déposez le fichier ci-dessus.",
+      "teams": "le message reçu contient un lien d'import : cliquez dessus, ou copiez le message et collez-le ci-dessus.",
+      "whatsapp": "le message reçu contient un lien d'import : cliquez dessus, ou copiez le message et collez-le ci-dessus."
+    },
+    "no_channels": "aucun canal n'est défini : les codes vous parviennent par le moyen convenu avec les répondants. Collez-les ou déposez les fichiers ci-dessus.",
+    "link": "Un clic sur un lien d'import ouvre Recensia et importe le code tout seul, dans le navigateur qui détient la clé de la campagne.",
+    "revision": "Un répondant qui corrige sa réponse envoie un nouveau code : il remplace l'ancien (même déclaration, version supérieure).",
+    "anonymous": "Campagne anonyme : les codes ne contiennent aucune identité. Le canal de retour peut révéler l'expéditeur (adresse e-mail, compte de messagerie) : n'en gardez pas trace.",
+    "open": "Campagne nominative : chaque code contient le prénom et le nom du répondant, lisibles seulement avec la clé de la campagne.",
+    "retention": "Les codes reçus (dans vos e-mails, par exemple) sont des données de l'entreprise, personnelles en mode nominatif : leur conservation relève de votre politique de rétention. Recensia n'en garde qu'une empreinte, pour repérer les doublons."
+  },
+  "errors": {
+    "generic": "L'import n'a pas abouti. Réessayez ; si le problème persiste, rechargez la page.",
+    "no_key": "La clé privée de cette campagne n'est pas dans ce navigateur.",
+    "too_large": "Texte trop volumineux : importez les codes en plusieurs fois."
+  }
+}

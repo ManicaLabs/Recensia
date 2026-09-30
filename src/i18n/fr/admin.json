@@ -1,0 +1,125 @@
+{
+  "meta": {
+    "title": "Mes campagnes"
+  },
+  "title": "Mes campagnes",
+  "lead": "Les campagnes gérées depuis ce navigateur. Leurs données et leurs clés ne sont enregistrées qu'ici.",
+  "actions": {
+    "new": "Nouvelle campagne",
+    "open": "Ouvrir",
+    "open_label": "Ouvrir la campagne « {title} »",
+    "import_recovery": "Importer un fichier de récupération",
+    "restore_backup": "Restaurer une sauvegarde",
+    "load_demo": "Charger la démo"
+  },
+  "files": {
+    "title": "Retrouver une campagne",
+    "text": "Sur un autre poste, ou après un nettoyage du navigateur : le fichier de récupération (.recensia-key) redonne accès à la clé, donc aux codes reçus ; une sauvegarde (.json) restaure aussi les déclarations, les évaluations et le plan d'actions.",
+    "recovery_help": "Fichier .recensia-key enregistré à la création de la campagne.",
+    "backup_help": "Fichier .json exporté depuis les paramètres d'une campagne."
+  },
+  "list": {
+    "title": "Campagnes de ce navigateur",
+    "count": {
+      "one": "{count} campagne",
+      "other": "{count} campagnes"
+    }
+  },
+  "card": {
+    "demo": "Démo",
+    "no_key": "Clé absente",
+    "no_key_text": "La clé privée n'est pas dans ce navigateur : les codes reçus ne peuvent pas être lus. Importez le fichier de récupération de cette campagne.",
+    "fingerprint": "Empreinte",
+    "entries": "Déclarations",
+    "created": "Créée le",
+    "backup": "Dernière sauvegarde",
+    "backup_never": "jamais",
+    "backup_days": {
+      "zero": "aujourd'hui",
+      "one": "il y a {count} jour",
+      "other": "il y a {count} jours"
+    },
+    "none": "—"
+  },
+  "empty": {
+    "title": "Aucune campagne dans ce navigateur",
+    "text": "Créez une campagne, chargez la démo, ou retrouvez une campagne existante grâce à son fichier de récupération ou à une sauvegarde."
+  },
+  "reminder": "Vos campagnes n'existent que dans ce navigateur : aucun serveur n'en garde de copie. Enregistrez le fichier de récupération de chaque campagne et faites des sauvegardes régulières (onglet « Paramètres » de la campagne).",
+  "pending": {
+    "text": {
+      "one": "{count} code reçu pendant cette session attend d'être importé (lien d'import ouvert sans la clé, par exemple). Il est conservé, toujours chiffré, jusqu'à la fermeture de l'onglet.",
+      "other": "{count} codes reçus pendant cette session attendent d'être importés (lien d'import ouvert sans la clé, par exemple). Ils sont conservés, toujours chiffrés, jusqu'à la fermeture de l'onglet."
+    },
+    "import": "Importer maintenant",
+    "forget": "Oublier ces codes",
+    "forgotten": "Codes en attente oubliés.",
+    "working": "Recherche de la campagne concernée…",
+    "no_match": "Aucune campagne de ce navigateur ne peut lire ces codes. Importez le fichier de récupération de la campagne concernée : ils seront importés aussitôt."
+  },
+  "storage": {
+    "title": "Stockage de ce navigateur",
+    "idb": "Les campagnes sont enregistrées dans le stockage local du navigateur (IndexedDB), jamais sur un serveur.",
+    "persisted": "Stockage persistant : le navigateur ne l'effacera pas sans votre accord.",
+    "not_persisted": "Stockage non persistant : le navigateur peut l'effacer s'il manque de place.",
+    "memory": "Stockage temporaire en mémoire : tout sera perdu à la fermeture de l'onglet ou au rechargement de la page. Faites une sauvegarde avant de quitter.",
+    "unsupported": "Ce navigateur ne permet pas de demander un stockage persistant : faites des sauvegardes régulières.",
+    "request": "Demander un stockage persistant",
+    "granted": "Stockage persistant accordé.",
+    "denied": "Le navigateur n'a pas accordé le stockage persistant. Installer l'application ou ajouter la page aux favoris aide souvent ; en attendant, faites des sauvegardes régulières."
+  },
+  "password": {
+    "label": "Mot de passe",
+    "required": "Saisissez le mot de passe.",
+    "wrong": "Mot de passe incorrect. Vérifiez la saisie (majuscules, accents) et réessayez.",
+    "checking": "Vérification du mot de passe…",
+    "unlock": "Déverrouiller"
+  },
+  "recovery": {
+    "dialog_title": "Fichier de récupération protégé",
+    "dialog_intro": "Fichier de la campagne « {title} » (empreinte {fp}). Saisissez le mot de passe choisi lors de son enregistrement.",
+    "dialog_intro_unknown": "Saisissez le mot de passe choisi lors de l'enregistrement de ce fichier.",
+    "created": "Campagne « {title} » ajoutée à ce navigateur, avec sa clé.",
+    "key_added": "Clé de la campagne « {title} » importée : les codes reçus peuvent maintenant être lus.",
+    "already_present": "La campagne « {title} » et sa clé sont déjà dans ce navigateur : rien n'a été modifié.",
+    "is_backup": "Ce fichier est une sauvegarde, pas un fichier de récupération : il est traité comme une sauvegarde.",
+    "open": "Ouvrir la campagne"
+  },
+  "backup": {
+    "dialog_title": "Sauvegarde chiffrée",
+    "dialog_intro": "Cette sauvegarde est protégée par un mot de passe. Saisissez celui choisi lors de son export.",
+    "confirm_title": "Remplacer la campagne existante ?",
+    "confirm_text": "La campagne « {title} » existe déjà dans ce navigateur. Ses déclarations, évaluations et actions seront remplacées par celles de la sauvegarde. Sa clé privée est conservée si la sauvegarde n'en contient pas.",
+    "confirm": "Remplacer",
+    "restored": {
+      "zero": "Sauvegarde de « {title} » restaurée (aucune déclaration).",
+      "one": "Sauvegarde de « {title} » restaurée : {count} déclaration.",
+      "other": "Sauvegarde de « {title} » restaurée : {count} déclarations."
+    },
+    "restored_no_key": "Cette sauvegarde ne contenait pas la clé privée : importez aussi le fichier de récupération pour lire de nouveaux codes.",
+    "is_recovery": "Ce fichier est un fichier de récupération de clé : il est importé comme tel."
+  },
+  "errors": {
+    "generic": "L'opération n'a pas abouti. Réessayez ; si le problème persiste, rechargez la page.",
+    "read": "Le fichier n'a pas pu être lu.",
+    "too_large": "Ce fichier est trop volumineux pour un fichier Recensia.",
+    "format": "Ce fichier n'est pas un fichier de récupération Recensia lisible (.recensia-key). Vérifiez que vous avez choisi le bon fichier.",
+    "backup_file": "Ce fichier est une sauvegarde de campagne : utilisez « Restaurer une sauvegarde ».",
+    "version": "Ce fichier a été produit par une version plus récente de Recensia : rechargez la page pour mettre l'application à jour.",
+    "mismatch": "Ce fichier est incohérent : sa clé ne correspond pas à sa campagne. Il a peut-être été modifié ; utilisez une autre copie.",
+    "conflict": "Une autre campagne portant le même identifiant, mais avec une clé différente, existe déjà dans ce navigateur : rien n'a été modifié.",
+    "wrong_password": "Mot de passe incorrect.",
+    "password_required": "Ce fichier est protégé : mot de passe requis.",
+    "invalid_json": "Ce fichier n'est pas une sauvegarde Recensia lisible (.json).",
+    "invalid_backup": "Cette sauvegarde est incomplète ou altérée : elle n'a pas été importée.",
+    "key_mismatch": "La sauvegarde porte l'identifiant d'une campagne de ce navigateur, mais avec une autre clé : import refusé, rien n'a été modifié.",
+    "recovery_file": "Ce fichier est un fichier de récupération de clé : utilisez « Importer un fichier de récupération ».",
+    "no_store": "Le stockage local est indisponible dans ce navigateur (navigation privée ou stockage bloqué) : ouvrez Recensia dans une fenêtre normale.",
+    "no_key": "La clé privée de cette campagne n'est pas dans ce navigateur.",
+    "not_found": "Campagne introuvable dans ce navigateur."
+  },
+  "no_store": {
+    "title": "Stockage indisponible",
+    "text": "Ce navigateur ne permet pas d'enregistrer de campagne (navigation privée ou stockage bloqué). Ouvrez Recensia dans une fenêtre normale."
+  }
+}

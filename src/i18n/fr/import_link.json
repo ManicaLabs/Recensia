@@ -1,0 +1,55 @@
+{
+  "meta": {
+    "title": "Import de codes"
+  },
+  "working": {
+    "title": "Import des codes reçus",
+    "text": "Déchiffrement dans ce navigateur…"
+  },
+  "no_codes": {
+    "title": "Lien d'import illisible",
+    "text": "Ce lien ne contient aucun code lisible : il a sans doute été tronqué ou modifié par la messagerie.",
+    "hint": "Demandez à l'expéditeur le code brut (il commence par RCN1.), puis collez-le dans l'onglet « Importer des codes » de la campagne."
+  },
+  "version": {
+    "title": "Code d'une version plus récente",
+    "text": "Ce code a été produit par une version plus récente de Recensia. Rechargez la page pour mettre l'application à jour, puis rouvrez le lien : le code est conservé le temps de cette session."
+  },
+  "no_key": {
+    "title": "Clé de campagne absente de ce navigateur",
+    "lead": {
+      "one": "Ce code est destiné à une campagne dont la clé n'est pas dans ce navigateur.",
+      "other": "Ces {count} codes sont destinés à une campagne dont la clé n'est pas dans ce navigateur."
+    },
+    "kept": {
+      "one": "Rien n'est perdu : le code reste chiffré et il est conservé le temps de cette session (jusqu'à la fermeture de l'onglet). Importez le fichier de récupération de la campagne : il sera importé aussitôt.",
+      "other": "Rien n'est perdu : les codes restent chiffrés et ils sont conservés le temps de cette session (jusqu'à la fermeture de l'onglet). Importez le fichier de récupération de la campagne : ils seront importés aussitôt."
+    },
+    "respondent": "Vous avez répondu au questionnaire ? Ce lien ne sert qu'au responsable de la campagne : il n'y a rien à importer ici. Transmettez-le-lui par le canal indiqué dans le formulaire (e-mail, messagerie, fichier).",
+    "maybe_truncated": "Si la campagne est bien dans ce navigateur, le lien a peut-être été tronqué ou modifié par la messagerie : demandez le code brut à l'expéditeur et collez-le dans l'onglet « Importer des codes ».",
+    "steps_title": {
+      "one": "Pour lire ce code",
+      "other": "Pour lire ces codes"
+    },
+    "step_recovery": "Importez le fichier de récupération de la clé (.recensia-key), enregistré à la création de la campagne.",
+    "step_backup": "Ou restaurez une sauvegarde chiffrée de la campagne (.json) : elle contient la clé.",
+    "step_other": "Sinon, ouvrez ce lien dans le navigateur où la campagne a été créée.",
+    "forget": "Oublier ce code",
+    "forget_many": "Oublier ces codes",
+    "forgotten": {
+      "one": "Le code a été retiré de cette session.",
+      "other": "Les codes ont été retirés de cette session."
+    },
+    "key_ready": "Clé de la campagne « {title} » disponible dans ce navigateur. Les codes oubliés ne peuvent plus être importés d'ici : rouvrez le lien reçu pour les importer.",
+    "wrong_campaign": "Clé importée pour « {title} », mais ce code appartient à une autre campagne : il reste en attente le temps de la session."
+  },
+  "no_store": {
+    "title": "Stockage indisponible",
+    "text": "Ce navigateur ne permet pas d'enregistrer de campagne (navigation privée ou stockage bloqué) : le code ne peut pas y être importé. Ouvrez le lien dans une fenêtre normale."
+  },
+  "error": {
+    "title": "Import impossible",
+    "text": "Le code n'a pas pu être importé. Il est conservé le temps de cette session : réessayez depuis « Mes campagnes »."
+  },
+  "back": "Mes campagnes"
+}

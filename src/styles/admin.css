@@ -1,0 +1,226 @@
+/* Recensia — Mes campagnes (#/admin), liens d'import (#/i/…), onglets Import et Paramètres.
+ * Réutilise les jetons et composants de app.css ; mobile d'abord. Aucune couleur en dur :
+ * le thème sombre suit les jetons (@media screen and (prefers-color-scheme: dark) dans app.css). */
+
+/* --- Mes campagnes ------------------------------------------------------------------------- */
+
+.admin-top:empty,
+.admin-feedback:empty,
+.admin-pending:empty { display: none; }
+.admin-top { margin-bottom: var(--space-5); }
+/* Ni message ni codes en attente : pas d'espace vide sous l'en-tête. */
+.admin-top:has(> .admin-feedback:empty):has(> .admin-pending:empty) { display: none; }
+
+.admin-list { margin-top: var(--space-5); }
+.admin-list-header { align-items: baseline; margin-bottom: var(--space-4); }
+.admin-list-header h2 { margin: 0; }
+.admin-count { font-size: var(--fs-sm); }
+
+.campaign-grid { margin: 0; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); }
+.campaign-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-4);
+}
+@media (min-width: 48rem) {
+  .campaign-card { padding: var(--space-5); }
+}
+.campaign-card > * { margin: 0; }
+.campaign-card.is-missing-key { border-left: 4px solid var(--danger); }
+.campaign-card-head { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.campaign-card-head > * { margin: 0; }
+.campaign-card-title {
+  font-size: var(--fs-lg);
+  line-height: var(--lh-snug);
+  overflow-wrap: anywhere;
+}
+.campaign-badges { gap: var(--space-2); margin-top: var(--space-1); }
+.campaign-badges .badge .icon { width: 0.95em; height: 0.95em; }
+.badge-neutral .icon { flex: none; }
+.badge-missing-key { color: var(--danger); border-color: var(--danger-border); background: var(--danger-soft); }
+.badge-demo { color: var(--info); border-color: var(--info-border); background: var(--info-soft); }
+
+.campaign-meta { margin: 0; font-size: var(--fs-sm); row-gap: var(--space-1); }
+.campaign-meta dd { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+.campaign-alert {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+  color: var(--text);
+}
+.campaign-alert .icon { color: var(--danger); flex: none; margin-top: 0.1em; width: 1.1em; height: 1.1em; }
+
+.campaign-card-actions { margin-top: auto; padding-top: var(--space-2); display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+.admin-empty { padding: var(--space-6) var(--space-4); }
+.admin-empty h3 { margin: 0; }
+
+.admin-cards { margin-top: var(--space-6); align-items: start; }
+.admin-file-actions { display: flex; flex-direction: column; gap: var(--space-4); margin: 0; }
+.admin-file-actions > li { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-1); }
+.admin-file-actions .field-help { margin: 0; }
+.admin-file-actions .btn { max-width: 100%; white-space: normal; text-align: left; }
+
+.admin-reminder { margin-top: var(--space-5); }
+
+/* État du stockage */
+.storage-state {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+.storage-state .icon { flex: none; margin-top: 0.15em; }
+.storage-state.is-ok { background: var(--success-soft); color: var(--success); }
+.storage-state.is-ok span { color: var(--text); }
+.storage-state.is-warn { background: var(--warn-soft); color: var(--warn); }
+.storage-state.is-warn span { color: var(--text); }
+
+/* Boîte de mot de passe */
+.password-status:empty { display: none; }
+.password-status { margin: 0; }
+
+/* --- Lien d'import ------------------------------------------------------------------------- */
+
+.import-link-working { display: flex; align-items: center; gap: var(--space-3); }
+.import-link-steps { margin: 0; }
+.import-link-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+
+/* --- Onglet Import ------------------------------------------------------------------------- */
+
+.import-tab > * { margin-block: 0; }
+.import-tab .lead { font-size: var(--fs-md); }
+.import-form .field { margin-bottom: var(--space-4); }
+.import-form textarea { min-height: 9rem; font-family: var(--font-mono); font-size: var(--fs-sm); }
+
+.import-dropzone { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); padding: var(--space-5) var(--space-4); }
+.import-dropzone > * { margin: 0; }
+.import-dropzone .icon { width: 1.75rem; height: 1.75rem; color: var(--primary); }
+.import-dropzone.is-over .icon { color: var(--primary); }
+
+.file-list { display: flex; flex-direction: column; gap: var(--space-2); margin: var(--space-3) 0 0; }
+.file-list:empty { display: none; }
+.file-list > li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: var(--fs-sm);
+}
+.file-list .file-name { min-width: 0; overflow-wrap: anywhere; display: flex; gap: var(--space-2); align-items: center; }
+.file-list .file-name .icon { flex: none; color: var(--text-muted); }
+.file-list .file-warn { color: var(--warn); }
+
+.import-detected { margin: 0; font-size: var(--fs-sm); color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.import-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+.import-working { display: inline-flex; gap: var(--space-2); align-items: center; font-size: var(--fs-sm); color: var(--text-muted); }
+.import-working:empty { display: none; }
+
+/* Rapport d'import */
+.import-report { display: flex; flex-direction: column; gap: var(--space-4); }
+.import-report > * { margin: 0; }
+.import-report h3 { margin: 0; }
+.import-report .kpi-grid { margin: 0; grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.5rem), 1fr)); }
+.import-report .kpi { padding: var(--space-3); }
+.import-report .kpi-value { font-size: var(--fs-xl); }
+.report-summary { font-weight: 600; color: var(--heading); }
+
+.report-details {
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.report-details + .report-details { margin-top: calc(-1 * var(--space-2)); }
+.report-details > summary {
+  cursor: pointer;
+  padding: var(--space-3) var(--space-4);
+  font-weight: 600;
+  color: var(--heading);
+  border-radius: var(--radius);
+  list-style-position: inside;
+}
+.report-details > summary:hover { background: var(--surface-2); }
+.report-details > summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.report-details[open] > summary { border-bottom: var(--border-width) solid var(--border); border-radius: var(--radius) var(--radius) 0 0; }
+.report-details-body { padding: var(--space-3) var(--space-4) var(--space-4); }
+.report-details-body > :last-child { margin-bottom: 0; }
+
+.report-list { display: flex; flex-direction: column; gap: 0; margin: 0; }
+.report-list > li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) 0;
+  border-bottom: var(--border-width) solid var(--border);
+  min-width: 0;
+}
+.report-list > li:last-child { border-bottom: 0; }
+.report-item-title { font-weight: 600; color: var(--heading); overflow-wrap: anywhere; }
+.report-item-meta { font-size: var(--fs-sm); color: var(--text-muted); display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); align-items: center; }
+.code-preview {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  overflow-wrap: anywhere;
+  background: var(--surface-3);
+  padding: 0.1em 0.4em;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+}
+.report-links { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+.import-help ul { margin-bottom: var(--space-3); }
+.import-help li strong { color: var(--heading); }
+
+/* --- Onglet Paramètres --------------------------------------------------------------------- */
+
+.settings-tab { display: flex; flex-direction: column; gap: var(--space-5); }
+.settings-tab > * { margin: 0; }
+.settings-section > h3 { margin-bottom: var(--space-2); }
+.settings-section > .muted { margin-bottom: var(--space-4); }
+.settings-info { grid-template-columns: max-content minmax(0, 1fr); }
+@media (max-width: 30rem) {
+  .settings-info { grid-template-columns: 1fr; }
+  .settings-info dt { margin-top: var(--space-2); }
+}
+.settings-info dd { overflow-wrap: anywhere; }
+.settings-info ul { margin: 0; padding-left: 1.1rem; }
+.settings-key { display: inline-flex; gap: var(--space-2); align-items: flex-start; }
+.settings-key .icon { flex: none; margin-top: 0.15em; }
+.settings-form .field { margin-bottom: var(--space-4); }
+.settings-form input[type="number"] { max-width: 8rem; }
+.settings-form input[type="date"] { max-width: 14rem; }
+.settings-form .form-actions { margin-top: var(--space-3); }
+.settings-choices { display: grid; gap: var(--space-2); margin-bottom: var(--space-4); }
+.settings-passwords { display: grid; gap: 0 var(--space-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
+.settings-status { margin: 0 0 var(--space-3); }
+
+.danger-zone { border-color: var(--danger-border); border-left: 4px solid var(--danger); }
+.danger-zone > h3 { color: var(--danger); }
+.danger-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) 0;
+  border-top: var(--border-width) solid var(--border);
+}
+.danger-item > div { flex: 1 1 18rem; min-width: 0; }
+.danger-item p { margin: 0; }
+.danger-item h4 { margin: 0 0 var(--space-1); }
+.settings-fp-help { margin: var(--space-1) 0 0; }
+/* Titre focalisé par programme après un import (même convention que h1/h2 dans app.css). */
+.import-report h3[tabindex="-1"]:focus { outline: none; }
+.settings-kind { grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }

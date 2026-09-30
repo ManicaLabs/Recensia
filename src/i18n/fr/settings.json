@@ -1,0 +1,128 @@
+{
+  "title": "Paramètres",
+  "info": {
+    "title": "Informations",
+    "campaign_title": "Titre",
+    "org": "Organisation",
+    "id": "Identifiant",
+    "mode": "Mode",
+    "fingerprint": "Empreinte",
+    "fingerprint_help": "À communiquer par un autre canal que le lien, pour que les répondants puissent vérifier qu'il n'a pas été falsifié.",
+    "created": "Créée le",
+    "departments": "Services",
+    "departments_none": "Aucun service défini",
+    "channels": "Canaux de retour",
+    "channels_none": "Aucun canal défini",
+    "key": "Clé privée",
+    "key_present": "Présente dans ce navigateur (elle n'est jamais affichée)",
+    "key_absent": "Absente de ce navigateur",
+    "none": "—",
+    "frozen": "Titre, organisation, services, canaux de retour et mode sont inscrits dans le lien déjà diffusé : ils ne peuvent plus changer. Pour les modifier, créez une nouvelle campagne."
+  },
+  "local": {
+    "title": "Réglages de la console",
+    "lead": "Ces réglages ne concernent que ce navigateur : le lien déjà diffusé n'est pas modifié.",
+    "min_group_size": "Seuil de masquage des petits groupes",
+    "min_group_size_help_anonymous": "Dans le tableau de bord et les exports, les effectifs inférieurs à ce seuil sont affichés « < k ». Un seuil de 5 est recommandé.",
+    "min_group_size_help_open": "En mode nominatif, les effectifs ne sont pas masqués : ce seuil ne sert qu'aux campagnes anonymes.",
+    "min_group_size_error": "Saisissez un nombre entier entre {min} et {max}.",
+    "comments_exportable": "Inclure les commentaires libres dans les exports",
+    "comments_exportable_help": "Les commentaires peuvent contenir des données personnelles : relisez-les avant de diffuser un export.",
+    "group_by_department": "Distinguer les usages par service dans le registre",
+    "group_by_department_help": "Le même usage déclaré dans deux services donne alors deux lignes.",
+    "closes_on": "Date de clôture indicative",
+    "closes_on_help": "Informative : les codes datés d'après cette date sont signalés à l'import. Le lien déjà diffusé garde la date d'origine ; pour afficher la nouvelle aux répondants, diffusez le nouveau lien depuis l'onglet « Diffuser ». Laissez vide pour ne pas fixer de date.",
+    "closes_on_error": "Date invalide : utilisez le format jj/mm/aaaa.",
+    "save": "Enregistrer les réglages",
+    "saved": "Réglages enregistrés.",
+    "saved_after_close": {
+      "one": "Réglages enregistrés : {count} déclaration a été reclassée par rapport à la nouvelle date de clôture.",
+      "other": "Réglages enregistrés : {count} déclarations ont été reclassées par rapport à la nouvelle date de clôture."
+    },
+    "unchanged": "Aucun changement à enregistrer."
+  },
+  "recovery": {
+    "title": "Fichier de récupération de la clé",
+    "lead": "Sans la clé privée, les codes reçus sont illisibles, sans recours. Le fichier de récupération permet de la retrouver sur un autre poste ou après un nettoyage du navigateur.",
+    "saved": "Dernier enregistrement : {date}.",
+    "never": "Le fichier de récupération n'a pas encore été enregistré depuis ce navigateur.",
+    "password": "Mot de passe du fichier",
+    "password_help": "{min} caractères au moins. Conservez-le à part du fichier : sans lui, le fichier est inutilisable.",
+    "confirm": "Confirmez le mot de passe",
+    "download": "Télécharger le fichier protégé",
+    "download_unprotected": "Télécharger sans mot de passe…",
+    "unprotected_title": "Télécharger un fichier non protégé ?",
+    "unprotected_text": "Sans mot de passe, quiconque obtient ce fichier peut lire toutes les réponses de la campagne. Ne le faites que pour le ranger aussitôt dans un coffre-fort de mots de passe ou sur un support chiffré.",
+    "unprotected_confirm": "Télécharger quand même",
+    "working": "Chiffrement du fichier…",
+    "done": "Fichier de récupération téléchargé. Rangez-le en lieu sûr, à part du mot de passe.",
+    "no_key": "La clé privée n'est pas dans ce navigateur : importez d'abord le fichier de récupération depuis « Mes campagnes ».",
+    "no_key_action": "Mes campagnes",
+    "demo": "La campagne de démonstration n'a pas de clé à enregistrer."
+  },
+  "password": {
+    "too_short": "Le mot de passe doit contenir au moins {min} caractères.",
+    "mismatch": "Les deux mots de passe ne correspondent pas."
+  },
+  "backup": {
+    "title": "Sauvegarde de la campagne",
+    "lead": "Une sauvegarde contient toute la campagne : déclarations, évaluations et plan d'actions. Elle permet de la restaurer ici ou sur un autre poste.",
+    "last": {
+      "zero": "Dernière sauvegarde aujourd'hui ({date}).",
+      "one": "Dernière sauvegarde il y a {count} jour ({date}).",
+      "other": "Dernière sauvegarde il y a {count} jours ({date})."
+    },
+    "never": "Aucune sauvegarde de cette campagne pour l'instant.",
+    "kind": "Type de sauvegarde",
+    "encrypted": "Chiffrée par mot de passe (recommandé)",
+    "encrypted_help": "Contient aussi la clé privée : ce seul fichier suffit à tout restaurer.",
+    "plain": "Non chiffrée",
+    "plain_help": "Lisible par quiconque obtient le fichier.",
+    "plain_warning_anonymous": "Cette sauvegarde ne contient pas la clé privée ; elle contient les réponses en clair. Conservez-la avec les mêmes précautions que le registre.",
+    "plain_warning_open": "Cette sauvegarde ne contient pas la clé privée ; elle contient les réponses en clair, identités des répondants comprises (campagne nominative). Conservez-la avec les mêmes précautions que des données personnelles.",
+    "password": "Mot de passe de la sauvegarde",
+    "password_help": "{min} caractères au moins. Il sera demandé à la restauration.",
+    "confirm": "Confirmez le mot de passe",
+    "download": "Télécharger la sauvegarde",
+    "working": "Préparation de la sauvegarde…",
+    "done": "Sauvegarde téléchargée : {filename}",
+    "restore_title": "Restaurer une sauvegarde",
+    "restore_text": "Remplace les données de cette campagne (après confirmation), ou ajoute la campagne de la sauvegarde à ce navigateur.",
+    "restore": "Restaurer une sauvegarde",
+    "restored_other": "La sauvegarde concernait une autre campagne : « {title} » a été ajoutée à ce navigateur.",
+    "open_other": "Ouvrir « {title} »"
+  },
+  "danger": {
+    "title": "Zone de danger",
+    "lead": "Ces suppressions sont définitives dans ce navigateur. Faites d'abord une sauvegarde.",
+    "entries": "Supprimer toutes les déclarations",
+    "entries_text": {
+      "zero": "Aucune déclaration à supprimer.",
+      "one": "Supprime la déclaration de la campagne ; le plan d'actions et vos arbitrages sont conservés.",
+      "other": "Supprime les {count} déclarations de la campagne ; le plan d'actions et vos arbitrages sont conservés."
+    },
+    "entries_confirm_title": "Supprimer toutes les déclarations ?",
+    "entries_confirm_text": {
+      "one": "La déclaration de « {title} » sera supprimée de ce navigateur. Sans sauvegarde, c'est définitif ; vous pourrez réimporter le code si vous l'avez encore.",
+      "other": "Les {count} déclarations de « {title} » seront supprimées de ce navigateur. Sans sauvegarde, c'est définitif ; vous pourrez réimporter les codes si vous les avez encore."
+    },
+    "entries_confirm": "Supprimer les déclarations",
+    "entries_done": {
+      "one": "{count} déclaration supprimée.",
+      "other": "{count} déclarations supprimées."
+    },
+    "campaign": "Supprimer la campagne",
+    "campaign_text": "Supprime la campagne, sa clé, ses déclarations, évaluations et actions de ce navigateur. Sans sauvegarde ni fichier de récupération, les codes reçus deviendront illisibles.",
+    "campaign_confirm_title": "Supprimer la campagne ?",
+    "campaign_confirm_text": "Pour confirmer, saisissez le titre exact de la campagne : « {title} ».",
+    "campaign_confirm_label": "Titre de la campagne",
+    "campaign_confirm_error": "Le titre saisi ne correspond pas.",
+    "campaign_confirm": "Supprimer définitivement",
+    "campaign_done": "Campagne « {title} » supprimée de ce navigateur."
+  },
+  "errors": {
+    "generic": "L'opération n'a pas abouti. Réessayez ; si le problème persiste, rechargez la page.",
+    "save": "Les réglages n'ont pas pu être enregistrés. Réessayez.",
+    "not_found": "Cette campagne n'est plus dans ce navigateur."
+  }
+}

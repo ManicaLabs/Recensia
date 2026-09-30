@@ -66,6 +66,8 @@ export async function render(root, { ctx }) {
       h('p', null, t('privacy.campaign.link')),
       h('p', null, t('privacy.campaign.encryption')),
       h('p', null, t('privacy.campaign.storage')),
+      h('p', null, t('privacy.campaign.respondent_draft')),
+      h('p', null, t('privacy.campaign.admin_session')),
       h('p', null, t('privacy.campaign.private_key')),
       h('p', null, t('privacy.campaign.share'))),
 

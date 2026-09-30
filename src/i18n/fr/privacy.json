@@ -33,7 +33,9 @@
     "encryption": "Chaque usage déclaré est chiffré dans le navigateur du répondant. Le code obtenu est transmis au responsable par le canal que celui-ci a choisi : e-mail, messagerie, copier-coller vers un canal partagé ou fichier, par exemple.",
     "storage": "Une fois reçus, les codes sont déchiffrés et stockés uniquement dans le navigateur du responsable (IndexedDB). L'application ne conserve rien : aucune réponse n'est stockée sur un serveur de Recensia, et il n'en existe pas.",
     "private_key": "La clé privée de la campagne ne quitte le navigateur du responsable que s'il exporte lui-même un fichier de récupération (protégé par un mot de passe s'il en choisit un) ou une sauvegarde chiffrée.",
-    "share": "Les boutons de partage vers un service tiers (WhatsApp, Teams, messagerie web) ouvrent ce service à votre demande : le message, lien ou code compris, lui est alors transmis comme tout message que vous y écririez."
+    "share": "Les boutons de partage vers un service tiers (WhatsApp, Teams, messagerie web) ouvrent ce service à votre demande : le message, lien ou code compris, lui est alors transmis comme tout message que vous y écririez.",
+    "respondent_draft": "Côté répondant, le formulaire garde dans le navigateur (stockage local) un brouillon des usages décrits et les codes produits, en clair, pour permettre de les corriger ou de les renvoyer. Rien n'est envoyé : ce brouillon reste sur l'appareil jusqu'à ce que le répondant clique sur « Effacer mes réponses de cet appareil » ou vide les données du site. Sur un poste partagé, pensez à l'effacer.",
+    "admin_session": "Côté responsable, le dernier rapport d'import (noms des usages importés, sans identité) est gardé quelques minutes dans l'onglet (stockage de session) pour être affiché une seule fois ; les codes reçus par un lien d'import y restent aussi, chiffrés, le temps d'importer la clé. Tout disparaît à la fermeture de l'onglet."
   },
   "anonymity": {
     "title": "Limites de l'anonymat",
