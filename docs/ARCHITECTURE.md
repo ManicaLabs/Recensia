@@ -386,8 +386,10 @@ export function disclaimer(t)                // « indicatif, à confirmer »
 // safe-storage.js : local.get/set/remove, session.get/set/remove (JSON, try/catch)
 // charts.js : barChart(items, opts) ; stackedBar(items, opts) ; donut(items, opts) → SVG
 // questionnaire.js :
-export function renderQuestionnaire(root, { questionnaire, campaign, initial, t, onChange })
-  // → { getValue(), validate() → { ok, errors }, focusFirstError(), reset(value) }
+export function renderQuestionnaire(root, { questionnaire, campaign, initial, t, onChange, idPrefix, headingLevel })
+  // → { getValue(), validate() → { ok, errors, value }, focusFirstError(), reset(value), destroy() }
+  // fonctions pures exportées : fieldOrder, isFieldVisible, isFieldRequired, toggleChoice, nextFieldKey,
+  // visibleValue, errorText, frenchSpacing (espaces insécables à l'affichage des textes de data/)
 ```
 
 ### 5.5 i18n
@@ -454,3 +456,30 @@ Ces points précisent ou étendent le contrat ; ils font foi pour les vues à ve
 - **Partage** : codes réels de 650 à 900 caractères (au-delà de l'estimation du CDC) : l'e-mail du
   répondant passe en corps compact (lien d'import seul, qui contient le code) ; au-delà, repli fichier.
   QR en niveau L pour un lien de ~1 500 caractères (lisibilité sur papier à tester en vrai).
+
+## 8. Vues et services (v0.6 → v0.9)
+
+- **Services** (`src/services/`, logique pure testée sous Node avec `openStore({ forceMemory: true })`) :
+  - `model.js` : `buildCampaignModel(ctx, campaign, { today })`, `localDay()`, `daysSince()`.
+  - `import.js` : `importCodes({ text | codes, campaign, campaigns, store, questionnaire, now })` →
+    rapport `{ total, accepted, revised, duplicates, invalid, other_campaign, after_close, unsupported_version }` ;
+    `planImport` (révisions : le `rev` le plus élevé gagne, tri déterministe), `textFromFile` (.rcn/.txt/.eml,
+    sans regex à retour arrière), `stashReport`/`takeReport` (rapport lu une seule fois, 30 min, session).
+    En mode anonyme, un code portant `respondent` ou `submitted_at` est refusé (`identity_in_anonymous`).
+  - `recovery.js` : `importRecovery({ store, file, passphrase })` (création de la campagne ou ajout de la clé
+    à une campagne de même clé publique, jamais d'écrasement), `buildRecoveryFile`, `recoveryFilename`,
+    codes en attente de session (`add/list/remove/clearPendingCodes`, clé `pending_codes`).
+  - `demo.js` : `DEMO_ID`, `buildDemoRecords(demoData, keys, now)`, `loadDemo(store, data, { reset, now, keys })`.
+    Les dates du jeu de démo sont décalées d'un nombre entier de jours pour que le dernier événement tombe
+    dans les 24 h précédant `now` (les dates réglementaires ne sont jamais décalées) ; un `reset` prépare
+    données et clés avant de supprimer l'ancienne démo.
+- **Console** : `refresh({ keepScroll })` ; si l'onglet a placé le focus dans son contenu, la position de
+  défilement n'est pas restaurée. Styles communs : `src/styles/console.css`.
+- **Graphiques** (`src/ui/charts.js`) : `barChart`, `stackedBar`, `donut` → `<figure class="chart">` (SVG
+  `role="img"` + table de repli). Effectif masqué : `maskedItem(label, { count, display, masked }, k)`
+  exporté par `views/console/dashboard.js`, référence commune au tableau de bord et au rapport.
+- **Liens** : `decodeCampaignLink` et le routeur retirent la ponctuation qu'une messagerie colle en fin de
+  lien (`.`, `)`, `»`, `%29`…) par un parcours linéaire, après le contrôle de longueur.
+- **Boîtes de dialogue** : sans action `autofocus`, `modal()` place le focus sur le premier champ du contenu.
+- **Messages** : `reminder_j3` et `reminder_j1` ont un `body_compact` (repli `mailto`) ; l'invitation e-mail
+  se replie sur le corps de `invitation_short` (`planMessageMailto`, `src/views/new/share-helpers.js`).

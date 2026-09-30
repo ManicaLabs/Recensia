@@ -1,0 +1,116 @@
+{
+  "meta": {
+    "title": "Démo"
+  },
+  "eyebrow": "Démonstration",
+  "title": "Découvrir Recensia avec une PME fictive",
+  "lead": "Explorez un recensement déjà rempli : registre consolidé, niveaux de risque, plan d'actions et rapport imprimable. Sans compte, sans connexion, et sans aucune donnée réelle.",
+  "no_store": {
+    "title": "Stockage indisponible",
+    "text": "Ce navigateur ne permet pas d'enregistrer la démo (navigation privée ou stockage bloqué). Ouvrez Recensia dans une fenêtre normale."
+  },
+  "status": {
+    "loading": "Préparation de la démo dans ce navigateur…",
+    "loaded": "La démo vient d'être chargée dans ce navigateur. Bonne découverte !",
+    "reset_done": "La démo a été réinitialisée : vous retrouvez le jeu de données d'origine.",
+    "error_title": "La démo n'a pas pu être chargée",
+    "error_text": "Les données de démonstration n'ont pas pu être lues ou enregistrées. Rechargez la page ; si le problème persiste, vérifiez votre connexion lors du premier chargement."
+  },
+  "company": {
+    "subtitle": "{sector} · {count} personnes",
+    "text": "Cette PME imaginaire a recensé les usages de l'IA de ses équipes, en mode anonyme : {entries} déclarations, regroupées en {usages} usages dans le registre.",
+    "headcount_caption": "Effectifs par service",
+    "col_department": "Service",
+    "col_headcount": "Effectif",
+    "fictitious": "Données entièrement fictives : aucune personne ni entreprise réelle. La démo est enregistrée uniquement dans ce navigateur, sans compte ni envoi de données : modifiez-la librement, vous pourrez la réinitialiser à tout moment."
+  },
+  "content": {
+    "title": "Ce que contient la démo",
+    "kpi": {
+      "usages": {
+        "one": "usage dans le registre",
+        "other": "usages dans le registre"
+      },
+      "responses": {
+        "one": "déclaration anonyme",
+        "other": "déclarations anonymes"
+      },
+      "prohibited": {
+        "one": "interdit suspecté",
+        "other": "interdits suspectés"
+      },
+      "high": {
+        "one": "usage à haut risque",
+        "other": "usages à haut risque"
+      },
+      "actions": {
+        "one": "action déjà engagée",
+        "other": "actions déjà engagées"
+      },
+      "suggestions": {
+        "one": "suggestion à examiner",
+        "other": "suggestions à examiner"
+      }
+    },
+    "open_dashboard": "Ouvrir le tableau de bord",
+    "links_label": "Aller directement à :",
+    "links_nav": "Accès directs aux onglets de la démo",
+    "link_registry": "Registre",
+    "link_actions": "Plan d'actions",
+    "link_report": "Rapport"
+  },
+  "tour": {
+    "title": "Suggestion de parcours",
+    "lead": "Six étapes pour faire le tour de Recensia, du tableau de bord à l'import d'une réponse.",
+    "dashboard": {
+      "title": "Tableau de bord",
+      "text": "Vue d'ensemble : niveaux AI Act, exposition des données, part de shadow AI, échéances à venir."
+    },
+    "registry": {
+      "title": "Registre",
+      "text": "Les 10 usages consolidés, avec les règles déclenchées et leurs références. Validez ou ajustez une classification."
+    },
+    "actions": {
+      "title": "Plan d'actions",
+      "text": "Acceptez ou rejetez les suggestions, puis attribuez un responsable et une échéance."
+    },
+    "report": {
+      "title": "Rapport",
+      "text": "Le rapport de synthèse imprimable, et les exports XLSX et CSV du registre."
+    },
+    "form": {
+      "title": "Formulaire répondant",
+      "text": "Répondez comme un collaborateur : le formulaire produit un code chiffré (nouvel onglet)."
+    },
+    "import": {
+      "title": "Import d'un code",
+      "text": "Collez le code obtenu : l'usage est déchiffré, classé et ajouté au registre de la démo."
+    }
+  },
+  "form": {
+    "title": "Essayer le formulaire répondant",
+    "text": "Découvrez le questionnaire tel que vos collaborateurs le verront, produisez un code chiffré, puis importez-le dans la démo.",
+    "steps": {
+      "open": "Ouvrez le formulaire de la démo (il s'ouvre dans un nouvel onglet).",
+      "describe": "Décrivez un usage de l'IA, réel ou inventé : moins de trois minutes suffisent.",
+      "copy": "Copiez le code obtenu à la fin du formulaire.",
+      "import": "Revenez ici et ouvrez « Importer un code dans la démo » : collez le code, l'usage apparaît dans le registre."
+    },
+    "mail_note": "L'adresse de retour proposée par la démo ({email}) est fictive : récupérez plutôt votre code avec le bouton « Copier le code ».",
+    "fingerprint": "Empreinte de la campagne de démonstration :",
+    "open": "Ouvrir le formulaire répondant",
+    "new_tab": "(s'ouvre dans un nouvel onglet)",
+    "copy_link": "Copier le lien du formulaire",
+    "import": "Importer un code dans la démo",
+    "no_key": "Cette démo ne dispose pas de clé de campagne (elle provient sans doute d'une sauvegarde) : réinitialisez-la pour essayer le formulaire."
+  },
+  "reset": {
+    "title": "Réinitialiser la démo",
+    "text": "Effacez vos essais (actions, validations, usages saisis ou importés) et retrouvez le jeu de données d'origine. Vos autres campagnes ne sont pas concernées.",
+    "button": "Réinitialiser la démo",
+    "confirm_title": "Réinitialiser la démo ?",
+    "confirm_message": "Toutes les modifications faites dans la démo seront effacées : actions acceptées ou modifiées, validations, usages saisis ou importés. Le jeu de données fictif d'origine sera rechargé avec une nouvelle clé de campagne : le lien du formulaire de démo change, et les codes produits avant la réinitialisation ne pourront plus être importés.",
+    "confirm": "Réinitialiser",
+    "error": "La réinitialisation a échoué. Réessayez ; si le problème persiste, rechargez la page."
+  }
+}

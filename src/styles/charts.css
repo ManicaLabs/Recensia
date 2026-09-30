@@ -1,0 +1,174 @@
+/* Recensia — graphiques SVG (src/ui/charts.js).
+ * Couleurs par classes, cohérentes avec les badges d'app.css : bar-aia-<niveau>, bar-data-<0..3>,
+ * bar-status-<statut>, bar-muted, bar-primary. Chaque teinte atteint au moins 3:1 sur la surface
+ * et sur la piste (WCAG 1.4.11). Les étiquettes et valeurs sont du texte : la couleur n'est qu'un renfort.
+ * Thème sombre à l'écran seulement ; l'impression garde la palette claire. */
+
+:root {
+  --chart-aia-prohibited_suspected: #6e1111;
+  --chart-aia-high: #c62f24;
+  --chart-aia-to_qualify: #b0700a;
+  --chart-aia-limited: #2e6db4;
+  --chart-aia-minimal: #23845a;
+  --chart-data-0: #6f7b88;
+  --chart-data-1: #9a7a00;
+  --chart-data-2: #c95a12;
+  --chart-data-3: #951f18;
+  --chart-muted: #7d8894;
+  --chart-default: var(--primary);
+  --chart-track: var(--surface-3);
+  --chart-gap: var(--surface);
+}
+
+@media screen and (prefers-color-scheme: dark) {
+  :root {
+    --chart-aia-prohibited_suspected: #ff9b92;
+    --chart-aia-high: #ef5b50;
+    --chart-aia-to_qualify: #e2a93b;
+    --chart-aia-limited: #6aa6ea;
+    --chart-aia-minimal: #4fbf8b;
+    --chart-data-0: #8f9baa;
+    --chart-data-1: #d9b93a;
+    --chart-data-2: #f08a45;
+    --chart-data-3: #ff7a70;
+    --chart-muted: #768294;
+  }
+}
+
+/* Classes de couleur (portées par la figure, une ligne, un segment ou une pastille). */
+.bar-primary { --chart-color: var(--chart-default); }
+.bar-muted { --chart-color: var(--chart-muted); }
+.bar-aia-prohibited_suspected { --chart-color: var(--chart-aia-prohibited_suspected); }
+.bar-aia-high { --chart-color: var(--chart-aia-high); }
+.bar-aia-to_qualify { --chart-color: var(--chart-aia-to_qualify); }
+.bar-aia-limited { --chart-color: var(--chart-aia-limited); }
+.bar-aia-minimal { --chart-color: var(--chart-aia-minimal); }
+.bar-data-0 { --chart-color: var(--chart-data-0); }
+.bar-data-1 { --chart-color: var(--chart-data-1); }
+.bar-data-2 { --chart-color: var(--chart-data-2); }
+.bar-data-3 { --chart-color: var(--chart-data-3); }
+.bar-status-todo { --chart-color: var(--chart-data-0); }
+.bar-status-in_progress { --chart-color: var(--chart-aia-limited); }
+.bar-status-done { --chart-color: var(--chart-aia-minimal); }
+.bar-status-rejected { --chart-color: var(--chart-muted); }
+
+/* ------------------------------------------------------------------------------------------ */
+
+.chart {
+  margin: 0;
+  min-width: 0;
+}
+.chart-title {
+  margin: 0 0 var(--space-3);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--heading);
+  line-height: var(--lh-snug);
+}
+.chart-empty {
+  margin: 0;
+  padding: var(--space-3) 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.chart-svg {
+  display: block;
+  overflow: visible;
+  max-width: 100%;
+}
+.chart-svg text {
+  fill: var(--text);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+}
+.chart-label { fill: var(--text); }
+.chart-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  fill: var(--heading);
+}
+.chart-row.is-masked .chart-value { font-style: italic; }
+
+.chart-track { fill: var(--chart-track); }
+.chart-bar,
+.chart-seg,
+.chart-swatch { fill: var(--chart-color, var(--chart-default)); }
+.chart-seg { stroke: var(--chart-gap); stroke-width: 2; }
+
+/* Effectif masqué (« < k ») : barre en pointillés jusqu'à la borne, jamais la valeur réelle. */
+.chart-bar-masked {
+  fill: var(--chart-color, var(--chart-default));
+  fill-opacity: 0.22;
+  stroke: var(--chart-color, var(--chart-default));
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+
+/* Barre empilée et légende */
+.chart-stack-svg { margin-bottom: var(--space-3); }
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-sm);
+}
+.chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  min-width: 0;
+}
+.chart-legend-item.is-zero { color: var(--text-muted); }
+.chart-legend-label { min-width: 0; }
+.chart-legend-value { font-weight: 700; color: var(--heading); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chart-legend-share { font-weight: 500; color: var(--text-muted); }
+.chart-swatch-svg { flex: none; }
+
+/* Anneau */
+.chart-donut-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-5);
+}
+.chart-donut-svg {
+  width: 8.5rem;
+  height: 8.5rem;
+  flex: none;
+}
+.chart-donut .chart-legend { flex-direction: column; flex: 1 1 10rem; }
+.chart-donut-track { stroke: var(--chart-track); }
+.chart-arc { stroke: var(--chart-color, var(--chart-default)); }
+.chart-svg .chart-center {
+  font-size: 1.375rem;
+  font-weight: 750;
+  fill: var(--heading);
+  font-variant-numeric: tabular-nums;
+}
+.chart-svg .chart-center-sub {
+  font-size: 0.6875rem;
+  fill: var(--text-muted);
+}
+
+@media print {
+  .chart, .chart-svg { break-inside: avoid; page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .chart-svg text, .chart-svg .chart-center { fill: #000000; }
+  .chart-svg .chart-center-sub { fill: #3b434c; }
+  .chart-track, .chart-donut-track { fill: #eef0f2; }
+  .chart-donut-track { fill: none; stroke: #eef0f2; }
+  .chart-seg { stroke: #ffffff; }
+}
+
+@media (forced-colors: active) {
+  .chart-track { fill: Canvas; stroke: CanvasText; stroke-width: 1; }
+  .chart-bar, .chart-seg, .chart-swatch { fill: CanvasText; }
+  .chart-bar-masked { fill: Canvas; stroke: CanvasText; }
+  .chart-arc { stroke: CanvasText; }
+  .chart-donut-track { stroke: Canvas; }
+  .chart-svg text { fill: CanvasText; }
+}

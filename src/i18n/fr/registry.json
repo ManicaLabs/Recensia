@@ -1,0 +1,277 @@
+{
+  "title": "Registre des usages",
+  "lead": "Une ligne par usage consolidé : les déclarations similaires (même outil, mêmes tâches, même domaine) sont regroupées. Ouvrez un usage pour vérifier sa classification, la valider ou la corriger.",
+  "errors": {
+    "save": "La modification n'a pas pu être enregistrée. Réessayez ; si le problème persiste, rechargez la page."
+  },
+  "export": {
+    "label": "Exporter le registre",
+    "csv": "Exporter en CSV",
+    "xlsx": "Exporter en Excel",
+    "preparing": "Préparation…",
+    "done_csv": "Registre exporté au format CSV.",
+    "done_xlsx": "Registre exporté au format Excel (feuilles Registre, Plan d'actions, Synthèse et Référentiel).",
+    "failed": "L'export n'a pas pu être produit. Réessayez ; si le problème persiste, rechargez la page.",
+    "note_anonymous": "Registre complet, sans commentaire libre ni identité ; effectifs inférieurs à {k} masqués.",
+    "note_open": "Registre complet, sans commentaire libre ni identité des répondants."
+  },
+  "empty": {
+    "title": "Aucun usage dans le registre",
+    "text": "Le registre se remplit à mesure que vous importez les codes reçus ou saisissez des usages.",
+    "excluded_text": "Toutes les déclarations reçues ont été écartées. Vous pouvez les réintégrer ci-dessous.",
+    "share": "Diffuser le lien",
+    "import": "Importer des codes",
+    "add": "Saisir un usage"
+  },
+  "filters": {
+    "label": "Filtrer le registre",
+    "search": "Rechercher un usage",
+    "search_help": "Nom de l'usage, outil, service ou identifiant (U-…).",
+    "search_placeholder": "Ex. devis, ChatGPT, RH…",
+    "sort": "Trier par",
+    "sort_severity": "Gravité (par défaut)",
+    "sort_name": "Nom de l'usage",
+    "sort_count": "Nombre de déclarations",
+    "more": "Filtres",
+    "more_active": {
+      "one": "Filtres ({count} actif)",
+      "other": "Filtres ({count} actifs)"
+    },
+    "ai_act": "Niveau AI Act",
+    "data": "Exposition des données",
+    "department": "Service",
+    "tool": "Outil",
+    "validation": "Statut de validation",
+    "all": "Tous",
+    "all_levels": "Tous les niveaux",
+    "no_department": "Service non renseigné",
+    "to_qualify": "Seulement les usages à qualifier",
+    "priority": "Seulement les usages prioritaires (interdits suspectés, haut risque, à qualifier)",
+    "reset": "Réinitialiser les filtres",
+    "count_all": {
+      "one": "{count} usage dans le registre.",
+      "other": "{count} usages dans le registre."
+    },
+    "count": {
+      "zero": "Aucun usage ne correspond aux filtres (sur {total}).",
+      "one": "{count} usage affiché sur {total}.",
+      "other": "{count} usages affichés sur {total}."
+    },
+    "no_result": "Aucun usage ne correspond à ces critères.",
+    "no_result_hint": "Modifiez la recherche ou réinitialisez les filtres."
+  },
+  "table": {
+    "caption": "Registre des usages IA",
+    "caption_count": {
+      "one": "Registre des usages IA : {count} usage affiché",
+      "other": "Registre des usages IA : {count} usages affichés"
+    },
+    "id": "ID",
+    "usage": "Cas d'usage",
+    "departments": "Service(s)",
+    "tool": "Outil",
+    "ai_act": "Niveau AI Act",
+    "data": "Exposition",
+    "count": "Déclarations",
+    "validation": "Validation",
+    "variants": {
+      "one": "+ {count} autre intitulé",
+      "other": "+ {count} autres intitulés"
+    },
+    "no_department": "Non renseigné",
+    "overridden": "surchargé",
+    "to_qualify": "à qualifier",
+    "masked_title": "Effectif inférieur à {k}, masqué en mode anonyme",
+    "masked_note": "« < {k} » : effectif inférieur à {k}, masqué en mode anonyme."
+  },
+  "excluded": {
+    "title": {
+      "one": "{count} déclaration écartée",
+      "other": "{count} déclarations écartées"
+    },
+    "help": "Les déclarations écartées ne comptent ni dans le registre, ni dans le tableau de bord, ni dans les exports. Réintégrez-les à tout moment, ou supprimez-les définitivement."
+  },
+  "fields": {
+    "names": "Intitulés déclarés",
+    "departments": "Services",
+    "role": "Rôle de l'entreprise",
+    "comments": "Commentaires libres",
+    "usage_name": "Nom de l'usage",
+    "department": "Service",
+    "tool": "Outil",
+    "tool_other": "Précision sur l'outil",
+    "model": "Modèle",
+    "account_type": "Type de compte",
+    "status": "Statut",
+    "task_types": "Tâches",
+    "business_domain": "Domaine",
+    "frequency": "Fréquence",
+    "users_count": "Collègues qui font pareil",
+    "data_types": "Données envoyées",
+    "output_audience": "Destinataire du résultat",
+    "output_review": "Relecture humaine",
+    "affects_people": "Décide, évalue ou trie des personnes",
+    "direct_interaction": "Échange directement avec des personnes",
+    "biometric_emotion": "Visages, voix ou émotions",
+    "built_or_customized": "Configuration par l'entreprise"
+  },
+  "detail": {
+    "eyebrow": "Usage {id}",
+    "close": "Fermer le détail",
+    "ai_act": "AI Act",
+    "data": "Données",
+    "overridden_from": "surchargé (calculé : {level})",
+    "count": {
+      "one": "{count} déclaration",
+      "other": "{count} déclarations"
+    },
+    "count_masked": "Déclarations : {display}",
+    "role_deployer": "Déployeur (l'entreprise utilise l'outil)",
+    "role_provider": "Fournisseur potentiel — à qualifier",
+    "owner_line": "Responsable : {owner}",
+    "last_review": "Dernière revue le {date}",
+    "jump_label": "Aller à une section du détail",
+    "jump_assessment": "Évaluer",
+    "jump_members": "Déclarations",
+    "jump_grouping": "Regrouper",
+    "description": "Description",
+    "no_department": "Non renseigné",
+    "not_specified": "Non précisé",
+    "comments_count": {
+      "one": "{count} déclaration comporte un commentaire",
+      "other": "{count} déclarations comportent un commentaire"
+    },
+    "triggers": "Pourquoi ce niveau ?",
+    "no_trigger": "Aucune règle déclenchée.",
+    "axis_ai_act": "AI Act",
+    "axis_data": "Exposition des données (RGPD)",
+    "trigger_delta": "{delta} niveau",
+    "trigger_transverse": "Action transverse",
+    "trigger_signal": "Signal",
+    "trigger_question": "Question à confirmer",
+    "questions": "Questions à confirmer",
+    "no_question": "Aucune question à confirmer.",
+    "question_resolved": "tranchée par la surcharge",
+    "signals": "Signaux",
+    "no_signal": "Aucun signal particulier.",
+    "deadlines": "Échéances applicables",
+    "no_deadline": "Aucune échéance particulière (au-delà de la littératie IA, s'il y a lieu).",
+    "deadline_in_force": "en vigueur",
+    "deadline_upcoming": "à venir",
+    "source": "Source",
+    "calendar_verified": "Calendrier réglementaire vérifié le {date}.",
+    "actions": "Actions liées",
+    "no_action": "Aucune action rattachée à cet usage pour l'instant.",
+    "priority": "priorité {priority}",
+    "action_owner": "responsable : {owner}",
+    "action_due": "échéance : {date}",
+    "suggestions": {
+      "one": "{count} suggestion en attente",
+      "other": "{count} suggestions en attente"
+    },
+    "suggested": "Suggérée",
+    "suggested_role": "rôle suggéré : {role}",
+    "open_actions": "Gérer dans le plan d'actions"
+  },
+  "assessment": {
+    "title": "Évaluation",
+    "lead": "Validez la classification proposée ou corrigez-la. Toute surcharge est justifiée et tracée dans l'historique ; le niveau calculé reste visible.",
+    "ai_act": "Niveau AI Act retenu",
+    "data": "Exposition des données retenue",
+    "computed_option": "Niveau calculé : {level}",
+    "justification": "Justification de la surcharge",
+    "justification_help": "Obligatoire pour modifier un niveau ({min} caractères minimum). Elle est conservée dans l'historique.",
+    "validation": "Statut de validation",
+    "status_help": {
+      "to_review": "La classification n'a pas encore été vérifiée.",
+      "validated": "La classification a été vérifiée et acceptée.",
+      "to_revise": "La classification doit être réexaminée."
+    },
+    "owner": "Responsable de l'usage",
+    "owner_help": "Personne ou fonction qui porte cet usage (facultatif, jamais rempli automatiquement).",
+    "save": "Enregistrer l'évaluation",
+    "revert": "Revenir aux niveaux calculés",
+    "revert_title": "Revenir aux niveaux calculés ?",
+    "revert_text": "Les surcharges de cet usage seront annulées : les niveaux calculés par les règles s'appliqueront de nouveau. L'historique garde la trace de cette annulation.",
+    "revert_reason": "Retour aux niveaux calculés par les règles.",
+    "saved": "Évaluation enregistrée.",
+    "reverted": "Surcharges annulées : les niveaux calculés s'appliquent de nouveau.",
+    "no_change": "Aucune modification à enregistrer.",
+    "errors": {
+      "invalid": "Valeur non reconnue : choisissez une option de la liste.",
+      "justification_required": "Indiquez pourquoi vous modifiez le niveau ({min} caractères minimum).",
+      "justification_short": "La justification doit compter au moins {min} caractères."
+    }
+  },
+  "history": {
+    "title": "Historique des modifications",
+    "empty": "Aucune modification enregistrée.",
+    "computed": "niveau calculé",
+    "no_owner": "aucun",
+    "fields": {
+      "override_ai_act_level": "Niveau AI Act",
+      "override_data_level": "Exposition des données",
+      "validation_status": "Statut de validation",
+      "owner": "Responsable",
+      "other": "Autre champ"
+    }
+  },
+  "members": {
+    "title": "Déclarations",
+    "open_note": "Mode nominatif : l'identité des répondants n'est visible que dans cette console. Elle ne figure jamais dans les exports du registre.",
+    "anonymous_note": "Mode anonyme : les codes ne contiennent aucune identité et la date est arrondie au jour. Le canal de retour (e-mail, messagerie) peut toutefois révéler l'expéditeur.",
+    "show_masked": "Afficher le détail des déclarations (effectif inférieur à {k})",
+    "masked_warning": "Effectif inférieur à {k} : ce détail pourrait permettre de reconnaître des personnes. Ne le diffusez pas.",
+    "answers": "Toutes les réponses",
+    "day": "Date de réponse",
+    "respondent": "Répondant",
+    "source": {
+      "code": "Code chiffré",
+      "manual": "Saisie directe",
+      "demo": "Démonstration"
+    },
+    "rev": "version {rev}",
+    "after_close": "reçue après la clôture",
+    "manual_group": "regroupement manuel",
+    "comment_warning": "Commentaire libre : il peut contenir des données personnelles. Ne le recopiez pas hors de la console.",
+    "split": "Déplacer vers un nouvel usage",
+    "ungroup": "Revenir au regroupement automatique",
+    "exclude": "Écarter",
+    "restore": "Réintégrer",
+    "delete": "Supprimer",
+    "split_done": "Déclaration déplacée vers un nouvel usage ({id}).",
+    "ungroup_done": "Déclaration remise dans son regroupement automatique.",
+    "exclude_done": "Déclaration écartée : elle n'est plus comptée. Vous pouvez la réintégrer depuis la liste des déclarations écartées.",
+    "restore_done": "Déclaration réintégrée.",
+    "delete_done": "Déclaration supprimée.",
+    "excluded_title": {
+      "one": "{count} déclaration écartée de cet usage",
+      "other": "{count} déclarations écartées de cet usage"
+    },
+    "excluded_help": "Elles ne comptent plus. Réintégrez-les si elles ont été écartées par erreur.",
+    "delete_title": "Supprimer définitivement cette déclaration ?",
+    "delete_text": "La déclaration « {name} » sera effacée de ce navigateur. Cette action est irréversible.",
+    "delete_hint": "Pour la retirer du décompte sans la perdre, choisissez plutôt « Écarter ». Si le même code est importé de nouveau, la déclaration réapparaîtra.",
+    "delete_hint_manual": "Pour la retirer du décompte sans la perdre, choisissez plutôt « Écarter ».",
+    "delete_confirm": "Supprimer la déclaration"
+  },
+  "grouping": {
+    "title": "Regrouper",
+    "lead": "Le regroupement automatique réunit les déclarations de même outil, mêmes tâches et même domaine. Corrigez-le si deux lignes décrivent en réalité le même usage, ou si une déclaration ne devrait pas figurer ici.",
+    "merge_label": "Fusionner cet usage avec",
+    "merge_help": "Toutes les déclarations de cet usage rejoindront l'usage choisi.",
+    "choose": "Choisissez un usage",
+    "choose_error": "Choisissez l'usage avec lequel fusionner.",
+    "no_target": "Aucun autre usage dans le registre.",
+    "merge": "Fusionner",
+    "split_help": "Pour séparer une seule déclaration, utilisez « Déplacer vers un nouvel usage » dans la liste des déclarations.",
+    "confirm_title": "Fusionner ces usages ?",
+    "confirm_text": {
+      "one": "La déclaration de « {source} » rejoindra « {target} ».",
+      "other": "Les {count} déclarations de « {source} » rejoindront « {target} »."
+    },
+    "confirm_text_masked": "Toutes les déclarations de « {source} » ({display}) rejoindront « {target} ».",
+    "confirm_hint": "L'évaluation de « {target} » (surcharge, statut, responsable) s'applique à l'usage fusionné ; les actions rattachées à « {source} » le suivent.",
+    "merged": "Usages fusionnés dans « {target} »."
+  }
+}

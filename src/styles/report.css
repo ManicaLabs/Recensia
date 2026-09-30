@@ -1,0 +1,232 @@
+/* Onglet « Rapport » : aperçu à l'écran et impression A4 (PDF via l'impression du navigateur).
+ * Couleurs via les jetons d'app.css : le thème sombre (écran seulement) suit automatiquement ;
+ * à l'impression, src/export/print.css rétablit la palette claire et ce fichier la complète. */
+
+/* ============================================================================================
+   Écran
+   ============================================================================================ */
+
+.report-view { min-width: 0; }
+.report-view > .report-toolbar { max-width: 64rem; }
+
+.report-toolbar { padding: var(--space-4); }
+.report-toolbar-text { margin: 0 0 var(--space-3); }
+.report-toolbar-actions { margin-bottom: var(--space-3); }
+.report-toolbar-note { margin: 0; font-size: var(--fs-sm); }
+.report-export-status { margin: var(--space-2) 0 0; font-size: var(--fs-sm); }
+.report-export-status:empty { display: none; }
+
+.report {
+  counter-reset: report-section;
+  min-width: 0;
+  max-width: 64rem;
+  padding: var(--space-5) var(--gutter);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+@media (min-width: 48rem) {
+  .report { padding: var(--space-6) var(--space-7); }
+}
+
+.report-header { padding-bottom: var(--space-4); margin-bottom: var(--space-5); border-bottom: 2px solid var(--heading); }
+.report-title { margin-bottom: var(--space-1); font-size: var(--fs-2xl); }
+.report-subtitle { margin: 0 0 var(--space-4); font-size: var(--fs-lg); color: var(--text-muted); }
+.report-meta { grid-template-columns: minmax(0, max-content) minmax(0, 1fr); font-size: var(--fs-sm); }
+.report-meta dd { font-weight: 600; color: var(--heading); overflow-wrap: anywhere; }
+@media (max-width: 30rem) {
+  .report-meta { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .report-meta dd { margin-bottom: var(--space-2); }
+}
+.report-demo-note, .report-note, .report-ok {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+}
+.report-demo-note .icon, .report-note .icon { color: var(--info); margin-top: 0.15em; }
+.report-ok .icon { color: var(--success); margin-top: 0.15em; }
+.report-note > span, .report-ok > span, .report-demo-note > span { flex: 1 1 16rem; min-width: 0; }
+.report-note a { margin-left: var(--space-1); }
+
+.report-section { margin-top: var(--space-6); min-width: 0; }
+.report-section > h3 {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  padding-bottom: var(--space-2);
+  border-bottom: var(--border-width) solid var(--border);
+  font-size: var(--fs-xl);
+}
+.report-section > h3::before {
+  counter-increment: report-section;
+  content: counter(report-section) ".";
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
+}
+.report-section h4 { margin-top: var(--space-5); }
+
+.report-kpis { margin-bottom: var(--space-4); padding: 0; grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.5rem), 1fr)); }
+.report-kpis .kpi { padding: var(--space-3); }
+.report-kpis .kpi-value { font-size: var(--fs-xl); }
+
+.report-risks { display: grid; gap: var(--space-2); margin: 0; padding: 0; }
+.report-risk {
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-width) solid var(--border);
+  border-left: 4px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.report-risk-count { flex: none; min-width: 1.75rem; font-size: var(--fs-lg); font-weight: 750; color: var(--heading); font-variant-numeric: tabular-nums; }
+.report-risk-text { min-width: 0; }
+.report-risk-prohibited_suspected, .report-risk-high, .report-risk-credentials { border-left-color: var(--danger); }
+.report-risk-data_critical, .report-risk-to_qualify, .report-risk-sensitive_data, .report-risk-shadow_ai, .report-risk-no_review_external { border-left-color: var(--warn); }
+.report-risk-limited { border-left-color: var(--info); }
+
+.report-charts {
+  display: grid;
+  gap: var(--space-4) var(--space-5);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  margin-bottom: var(--space-3);
+}
+.report-charts > * { min-width: 0; margin: 0; }
+.report .chart { margin: 0 0 var(--space-3); min-width: 0; }
+
+/* Tableaux */
+.report-table-wrap { margin-bottom: var(--space-3); }
+.report-table th[scope="row"] { min-width: 10rem; }
+.report-plan-table { min-width: 38rem; }
+.report-deadlines-table { min-width: 34rem; }
+.report-deadline-label { display: block; font-size: var(--fs-xs); font-weight: 400; }
+
+/* Usages prioritaires : une fiche par usage (lisible sur mobile et à l'impression) */
+.report-usages { display: grid; gap: var(--space-3); margin: 0 0 var(--space-4); padding: 0; }
+.report-usage {
+  margin: 0;
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--border);
+  border-left: 4px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  min-width: 0;
+}
+.report-usage-prohibited_suspected { border-left-color: var(--aia-prohibited-border); }
+.report-usage-high { border-left-color: var(--danger); }
+.report-usage-to_qualify { border-left-color: var(--warn); border-left-style: dashed; }
+.report-usage-head { margin-bottom: var(--space-3); }
+.report-usage-name { margin: 0 0 var(--space-1); font-size: var(--fs-md); }
+.report-usage-meta { margin: 0 0 var(--space-2); font-size: var(--fs-sm); }
+.report-usage-levels { gap: var(--space-2); margin: 0; }
+.report-usage-details { margin: 0; font-size: var(--fs-sm); }
+.report-usage-details dd { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 30rem) {
+  .report-usage-details { grid-template-columns: minmax(0, 1fr); }
+  .report-usage-details dt { margin-top: var(--space-2); }
+}
+.report-triggers { margin: 0; padding: 0; }
+.report-triggers li + li { margin-top: var(--space-1); }
+.report-trigger-label { font-weight: 600; color: var(--heading); }
+.report-trigger-ref { font-size: var(--fs-xs); }
+.report-overdue { margin-left: var(--space-1); background: var(--warn-soft); color: var(--warn); }
+.report-source-wrap { font-weight: 400; font-size: var(--fs-xs); }
+
+.report-questions { display: grid; gap: var(--space-3); margin: 0; padding: 0; }
+.report-question-usage { margin: 0 0 var(--space-1); font-weight: 650; color: var(--heading); }
+.report-questions ul { margin: 0; }
+.report-in-force ul { font-size: var(--fs-sm); }
+
+.report-method { max-width: var(--prose-max); }
+.report-method li + li { margin-top: var(--space-2); }
+
+.report-footer {
+  margin-top: var(--space-6);
+  padding-top: var(--space-3);
+  border-top: var(--border-width) solid var(--border);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+.report-footer p { margin-bottom: var(--space-2); }
+.report-footer .disclaimer { margin: 0; }
+
+/* ============================================================================================
+   Impression (A4) — le thème sombre ne s'applique jamais ici (règles sombres : écran seulement)
+   ============================================================================================ */
+
+/* Format et marges (A4, 16 × 14 × 18 mm) : @page de src/export/print.css, commun à toutes les
+ * impressions ; il n'est pas redéfini ici pour ne pas modifier la fiche imprimable de diffusion. */
+
+@media print {
+  /* Seul le rapport est imprimé : en-tête de console, bandeaux, onglets et barre d'outils masqués. */
+  body:has(.report) .console-header,
+  body:has(.report) .console-banners,
+  body:has(.report) .console-tabs,
+  .report-toolbar,
+  .no-print {
+    display: none !important;
+  }
+
+  .report-view { display: block; }
+  .report {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    color: #000000;
+  }
+  .report-header { border-bottom: 1.5pt solid #000000; margin-bottom: 10pt; padding-bottom: 8pt; }
+  .report-title { font-size: 20pt; }
+  .report-subtitle { font-size: 12pt; color: #222222; }
+  .report-meta { font-size: 9pt; }
+
+  .report-section { margin-top: 14pt; }
+  .report-section > h3 { font-size: 13.5pt; border-bottom: 0.75pt solid #6b7580; break-after: avoid; page-break-after: avoid; }
+  .report-section > h3::before { color: #000000; }
+  .report-section h4 { break-after: avoid; page-break-after: avoid; margin-top: 10pt; }
+  .report-break { break-before: page; page-break-before: always; }
+  /* Section courte à graphiques : jamais coupée (titre séparé de ses graphiques). */
+  .report-keep { break-inside: avoid; page-break-inside: avoid; }
+
+  .report-kpis { grid-template-columns: repeat(4, 1fr); gap: 5pt; }
+  .report-kpis .kpi { padding: 5pt 6pt; border: 0.5pt solid #9aa3ad; }
+  .report-kpis .kpi-value { font-size: 14pt; }
+  .kpi-danger { border-left: 3pt solid #b42318 !important; }
+  .kpi-warn { border-left: 3pt solid #8a5a00 !important; }
+
+  .report-risk { background: #ffffff !important; border: 0.5pt solid #9aa3ad; border-left-width: 3pt; break-inside: avoid; page-break-inside: avoid; }
+  .report-risk-prohibited_suspected, .report-risk-high, .report-risk-credentials { border-left-color: #b42318; }
+  .report-risk-data_critical, .report-risk-to_qualify, .report-risk-sensitive_data, .report-risk-shadow_ai, .report-risk-no_review_external { border-left-color: #8a5a00; }
+  .report-risk-limited { border-left-color: #1f5a96; }
+
+  .report-charts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8pt 14pt; }
+  .report .chart { break-inside: avoid; page-break-inside: avoid; }
+  .report .chart svg, .report .badge {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Tableaux : pleine largeur, en-têtes répétés sur chaque page, lignes non coupées. */
+  .report-plan-table, .report-deadlines-table { min-width: 0; }
+  .report-usage { padding: 6pt 8pt; border: 0.5pt solid #9aa3ad; border-left: 3pt solid #6b7580; background: #ffffff !important; break-inside: avoid; page-break-inside: avoid; }
+  .report-usage-prohibited_suspected { border-left-color: #6e1111; }
+  .report-usage-high { border-left-color: #b42318; }
+  .report-usage-to_qualify { border-left-color: #8a5a00; }
+  .report-usage-name { font-size: 11pt; }
+  .report-usage-details { font-size: 8.5pt; }
+  .report-table thead { display: table-header-group; }
+  .report-table tr { break-inside: avoid; page-break-inside: avoid; }
+  .report-table th[scope="row"] { min-width: 0; }
+
+  .report a { color: #000000; text-decoration: none; }
+  .report a.report-source::after { content: " : " attr(href); font-size: 7.5pt; overflow-wrap: anywhere; word-break: break-all; }
+
+  .report-footer { color: #3b434c; border-top: 0.5pt solid #9aa3ad; }
+  .report .disclaimer { color: #3b434c; }
+}

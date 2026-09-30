@@ -1,0 +1,158 @@
+{
+  "title": "Tableau de bord",
+  "lead": "Vue d'ensemble au {date}, recalculée à chaque ouverture avec la version courante des règles.",
+  "mask": "Mode anonyme : tout effectif inférieur à {k} est masqué (« < {k} »).",
+  "sections": {
+    "distribution": "Répartition des usages",
+    "tools": "Outils et services",
+    "steering": "Pilotage"
+  },
+  "kpi": {
+    "title": "Indicateurs clés",
+    "usages": "Usages recensés",
+    "usages_detail": "lignes du registre, après regroupement des déclarations similaires",
+    "responses": "Déclarations prises en compte",
+    "responses_anonymous": "réponses anonymes",
+    "responses_open": "réponses nominatives",
+    "responses_excluded": {
+      "one": "{count} déclaration écartée",
+      "other": "{count} déclarations écartées"
+    },
+    "respondents": "Répondants",
+    "respondents_detail": "personnes distinctes (mode nominatif)",
+    "shadow": "Comptes personnels ou non maîtrisés",
+    "shadow_detail": {
+      "one": "{count} usage sur {total}",
+      "other": "{count} usages sur {total}"
+    },
+    "to_qualify": "Usages à qualifier",
+    "to_qualify_none": "aucun point incertain",
+    "to_qualify_link": "Voir ces usages",
+    "questions": "Questions à confirmer",
+    "questions_detail": "à trancher avec les équipes concernées",
+    "questions_none": "aucune question ouverte",
+    "actions": "Plan d'actions",
+    "actions_detail": {
+      "one": "{count} action faite sur {total}",
+      "other": "{count} actions faites sur {total}"
+    },
+    "actions_none": {
+      "zero": "aucune action pour l'instant",
+      "one": "{count} suggestion en attente",
+      "other": "{count} suggestions en attente"
+    },
+    "actions_all_rejected": "toutes les actions du plan ont été rejetées"
+  },
+  "priority": {
+    "title": "Usages prioritaires",
+    "lead": "Interdits suspectés, usages à haut risque et points à qualifier, du plus grave au moins grave. Ouvrez un usage pour vérifier sa classification.",
+    "none": "Aucun usage interdit suspecté, à haut risque ou à qualifier pour le moment.",
+    "count": "déclarations : {display}",
+    "questions": {
+      "one": "{count} question à confirmer",
+      "other": "{count} questions à confirmer"
+    },
+    "overridden": "niveau surchargé",
+    "more": {
+      "one": "Voir les {total} usages prioritaires dans le registre (1 de plus)",
+      "other": "Voir les {total} usages prioritaires dans le registre ({count} de plus)"
+    },
+    "reason": {
+      "prohibited": "Pratique possiblement interdite (art. 5) : à suspendre et à faire qualifier juridiquement.",
+      "high": "Haut risque possible (annexe III) : supervision humaine, information des personnes et documentation à prévoir.",
+      "to_qualify": "Classification incertaine : au moins un point reste à éclaircir avant de retenir un niveau (voir les questions à confirmer).",
+      "data_to_qualify": "Exposition des données à qualifier : le type de compte utilisé n'est pas connu.",
+      "other": "À examiner."
+    }
+  },
+  "charts": {
+    "col_label": "Catégorie",
+    "col_usages": "Nombre d'usages",
+    "col_declarations": "Nombre de déclarations",
+    "col_actions": "Nombre d'actions",
+    "col_share": "Part",
+    "ai_act": "Usages par niveau AI Act",
+    "ai_act_note": "Nombre d'usages (lignes du registre) ; le niveau affiché tient compte de vos surcharges.",
+    "data": "Usages par exposition des données",
+    "data_note": "De 0 (faible) à 3 (critique), selon les données envoyées et le type de compte.",
+    "tools": "Outils les plus déclarés",
+    "departments": "Déclarations par service",
+    "mask_note": "Nombre de déclarations ; les effectifs inférieurs à {k} sont masqués (« < {k} », barre en pointillés).",
+    "other_tools": {
+      "one": "{count} autre outil",
+      "other": "{count} autres outils"
+    },
+    "no_department": "Service non renseigné",
+    "no_departments": "Aucun service n'a été renseigné dans les déclarations.",
+    "empty": "Aucune donnée à afficher."
+  },
+  "actions": {
+    "title": "Avancement du plan d'actions",
+    "progress": {
+      "one": "{count} action faite sur {total} retenue",
+      "other": "{count} actions faites sur {total} retenues"
+    },
+    "none": "Aucune action n'a encore été ajoutée au plan.",
+    "all_rejected": "Toutes les actions du plan ont été rejetées.",
+    "chart": "Actions par statut",
+    "pending": {
+      "one": "{count} action suggérée par les règles attend votre décision.",
+      "other": "{count} actions suggérées par les règles attendent votre décision."
+    },
+    "open": "Ouvrir le plan d'actions"
+  },
+  "shadow": {
+    "title": "Comptes personnels et IA fantôme",
+    "note": "Usages passant par un compte personnel ou dont le type de compte est inconnu : les données sortent du cadre de l'entreprise.",
+    "shadow": "Compte personnel ou inconnu",
+    "others": "Autres usages",
+    "center": "des usages"
+  },
+  "deadlines": {
+    "title": "Échéances réglementaires (AI Act)",
+    "verified": "Calendrier vérifié le {date}.",
+    "verified_source": "Calendrier vérifié le {date} ({source}).",
+    "unverified": "Date de vérification du calendrier inconnue : vérifiez les échéances avant de vous y fier.",
+    "source": {
+      "primary": "sur le texte officiel publié au Journal officiel de l'UE",
+      "secondary": "sur des sources secondaires, à confirmer"
+    },
+    "reference": "Texte de référence : {text}",
+    "upcoming": "À venir",
+    "past": "Déjà applicables",
+    "none_upcoming": "Aucune échéance à venir dans le calendrier.",
+    "none_past": "Aucune échéance passée.",
+    "today": "aujourd'hui",
+    "in_days": {
+      "one": "dans {count} jour",
+      "other": "dans {count} jours"
+    },
+    "in_force": "en vigueur",
+    "status": {
+      "to_confirm": "à confirmer",
+      "to_verify": "à vérifier",
+      "postponed": "reportée",
+      "proposed": "proposée"
+    },
+    "usages": {
+      "one": "concerne {count} usage recensé",
+      "other": "concerne {count} usages recensés"
+    },
+    "no_usage": "aucun usage recensé concerné",
+    "source_link": "Source",
+    "source_for": "officielle de l'échéance « {label} » (nouvel onglet)",
+    "note": "Précisions",
+    "legal": "Dates tirées du calendrier réglementaire de l'application, vérifié automatiquement : à faire confirmer par un juriste avant toute décision."
+  },
+  "empty": {
+    "title": "Aucune déclaration pour l'instant",
+    "text": "Le tableau de bord se remplit dès que les premiers usages arrivent. Trois façons de commencer :",
+    "excluded": "Toutes les déclarations reçues ont été écartées : le registre est vide. Vous pouvez les réintégrer depuis le registre, ou recueillir de nouveaux usages :",
+    "share": "Diffuser le lien",
+    "share_help": "Envoyez le lien de collecte à vos équipes.",
+    "import": "Importer des codes",
+    "import_help": "Collez les codes reçus par e-mail ou messagerie.",
+    "add": "Saisir un usage",
+    "add_help": "Décrivez vous-même un usage connu."
+  }
+}

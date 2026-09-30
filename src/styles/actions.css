@@ -1,0 +1,191 @@
+/* Onglet « Plan d'actions » de la console. Mobile d'abord ; couleurs via les jetons d'app.css
+ * (le thème sombre suit automatiquement). Le statut est toujours écrit en toutes lettres :
+ * la couleur n'est qu'un renfort. */
+
+.actions-tab { min-width: 0; }
+
+.actions-header h2 { margin-bottom: var(--space-2); }
+.actions-header .lead { margin-bottom: var(--space-3); }
+.actions-owner-note {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  margin: 0;
+  font-size: var(--fs-sm);
+}
+.actions-owner-note .icon { color: var(--info); margin-top: 0.15em; }
+
+.actions-section { min-width: 0; }
+.actions-section-head { margin-bottom: var(--space-3); }
+.actions-section-head > h3 { margin: 0; flex: 1 1 14rem; }
+.actions-section h3[tabindex="-1"]:focus { outline: none; }
+.actions-section h3[tabindex="-1"]:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+
+/* Avancement */
+.actions-progress h3 { margin-bottom: var(--space-2); }
+.actions-progress-summary { margin-bottom: var(--space-2); font-weight: 600; color: var(--heading); }
+.actions-progress .progress { margin-bottom: var(--space-4); height: 0.625rem; }
+.actions-progress .progress-bar { background: var(--success); }
+/* Grille d'indicateurs compacte (deux colonnes dès 320 px) ; réutilisée par la vue Démo. */
+.kpi-grid-compact { grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.5rem), 1fr)); }
+.kpi-grid-compact .kpi { padding: var(--space-3); }
+.kpi-grid-compact .kpi-value { font-size: var(--fs-xl); }
+.actions-kpis { margin: 0; padding: 0; }
+
+/* Suggestions */
+.sugg-groups { gap: var(--space-3); }
+.sugg-group {
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  min-width: 0;
+}
+.sugg-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--radius);
+  font-weight: 650;
+  color: var(--heading);
+}
+.sugg-summary::-webkit-details-marker { display: none; }
+.sugg-summary::before {
+  content: "";
+  flex: none;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--transition);
+}
+.sugg-group[open] > .sugg-summary::before { transform: rotate(45deg); }
+.sugg-summary:hover { background: var(--surface-2); }
+.sugg-group[open] > .sugg-summary { border-bottom: var(--border-width) solid var(--border); border-radius: var(--radius) var(--radius) 0 0; }
+.sugg-summary-title { flex: 1 1 12rem; min-width: 0; }
+.sugg-summary-badges { gap: var(--space-1) var(--space-2); }
+.sugg-scope { margin: var(--space-3) var(--space-4) 0; font-size: var(--fs-sm); }
+
+.sugg-group .sugg-list { margin: 0; padding: 0 var(--space-4); }
+.sugg-item { padding: var(--space-4) 0; }
+.sugg-item + .sugg-item { border-top: var(--border-width) solid var(--border); }
+.sugg-head { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-2); }
+.sugg-title { margin: 0; font-weight: 650; color: var(--heading); line-height: var(--lh-snug); }
+.sugg-tags { gap: var(--space-1) var(--space-2); }
+.sugg-desc { margin: 0 0 var(--space-3); font-size: var(--fs-sm); color: var(--text-muted); max-width: var(--prose-max); }
+.sugg-meta { margin-bottom: var(--space-3); font-size: var(--fs-sm); }
+.sugg-meta dd .muted { font-size: var(--fs-xs); }
+.sugg-buttons { gap: var(--space-2); }
+
+.empty-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+}
+.empty-note .icon { flex: none; color: var(--info); }
+.empty-note.is-success .icon { color: var(--success); }
+
+/* Filtres */
+.actions-filters {
+  display: grid;
+  gap: 0 var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  margin-bottom: var(--space-1);
+}
+.actions-filters .field { margin-bottom: var(--space-3); }
+.actions-count { margin: 0 0 var(--space-3); font-size: var(--fs-sm); }
+
+/* Liste des actions */
+.action-list { display: grid; gap: var(--space-3); margin: 0; padding: 0; }
+.action-item {
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-4);
+  border: var(--border-width) solid var(--border);
+  border-left: 4px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.action-item.is-in_progress { border-left-color: var(--info); }
+.action-item.is-done { border-left-color: var(--success); }
+.action-item.is-rejected { border-left-style: dashed; background: var(--surface-2); }
+.action-item.is-overdue { border-left-color: var(--warn); }
+.action-item-head { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-2); }
+.action-title { margin: 0; font-size: var(--fs-base); line-height: var(--lh-snug); }
+.action-item.is-rejected .action-title { color: var(--text-muted); }
+.action-badges { gap: var(--space-1) var(--space-2); }
+.action-desc {
+  margin: 0 0 var(--space-3);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  max-width: var(--prose-max);
+  white-space: pre-line;
+}
+.action-meta { margin-bottom: var(--space-3); font-size: var(--fs-sm); }
+.action-meta dd { overflow-wrap: anywhere; }
+
+.action-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: var(--border-width) solid var(--border);
+}
+.action-status-field { display: flex; flex-direction: column; gap: var(--space-1); min-width: 11rem; flex: 1 1 11rem; max-width: 16rem; }
+.action-status-field .field-label { margin: 0; font-size: var(--fs-sm); }
+.action-status-select { min-height: var(--control-height-sm); padding-top: 0.3rem; padding-bottom: 0.3rem; }
+.action-buttons { gap: var(--space-2); }
+
+/* Statuts : texte + motif du repère */
+.action-status { border-color: var(--border-strong); background: var(--surface-3); color: var(--text); }
+.action-status-todo::before { background: transparent; border: 2px solid currentColor; }
+.action-status-in_progress { background: var(--info-soft); border-color: var(--info-border); color: var(--info); }
+.action-status-in_progress::before { background: linear-gradient(90deg, currentColor 50%, transparent 50%); border: 1px solid currentColor; }
+.action-status-done { background: var(--success-soft); border-color: var(--success-border); color: var(--success); }
+.action-status-rejected { background: var(--surface-2); border-style: dashed; color: var(--text-muted); }
+.action-status-rejected::before { border-radius: 0; height: 2px; }
+
+.action-priority-high { background: var(--danger-soft); color: var(--danger); }
+.action-priority-medium { background: var(--warn-soft); color: var(--warn); }
+
+.badge-overdue { background: var(--warn-soft); border-color: var(--warn-border); color: var(--warn); }
+.badge-overdue::before { display: none; }
+.badge-overdue .icon { width: 1em; height: 1em; }
+
+.btn-ghost-danger { color: var(--danger); }
+.btn-ghost-danger:hover:not(:disabled) { background: var(--danger-soft); color: var(--danger); }
+
+.actions-empty { padding-block: var(--space-5); }
+
+/* Dialogue d'édition */
+.action-form .field { margin-bottom: var(--space-4); }
+.action-form-grid { display: grid; gap: 0 var(--space-4); grid-template-columns: minmax(0, 1fr); }
+
+@media (min-width: 40rem) {
+  .action-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sugg-head, .action-item-head { flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: space-between; }
+  .sugg-title, .action-title { flex: 1 1 18rem; }
+}
+
+@media (min-width: 60rem) {
+  .action-item { padding: var(--space-4) var(--space-5); }
+  .sugg-group .sugg-list { padding: 0 var(--space-5); }
+  .sugg-summary { padding-inline: var(--space-5); }
+}
+
+@media print {
+  .action-controls, .actions-filters, .sugg-buttons, .actions-owner-note .icon { display: none !important; }
+  .action-item, .sugg-group { break-inside: avoid; page-break-inside: avoid; }
+}

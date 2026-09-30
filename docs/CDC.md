@@ -456,6 +456,12 @@ Décisions prises pendant l'implémentation, là où le CDC était ambigu. Toute
 - **Masquage anonyme** : les effectifs inférieurs à `min_group_size` sont affichés « < k » ; le service d'un usage reste visible dans le registre (information d'organisation). Pas de suppression secondaire : si un seul service est masqué, son effectif peut se déduire des totaux.
 - **CSV** : séparateur `;` (Excel en français), BOM UTF-8, CRLF.
 - **Audience** : la query string est retirée de l'adresse au démarrage (le script GoatCounter l'enverrait sinon) ; comptage désactivé hors HTTPS et en local.
+- **Création de campagne** : en mode ouvert, au moins un service est exigé (sinon aucune réponse n'est valide) ; en mode anonyme, au moins un canal de retour. `min_group_size` est borné à 3–20 et ne s'applique qu'en mode anonyme. La date de clôture ne peut pas être dans le passé. Le mot de passe du fichier de récupération fait au moins 10 caractères ; l'enregistrement sans mot de passe exige une confirmation explicite.
+- **`mailto` trop long** : l'invitation e-mail complète dépasse presque toujours 1 800 caractères encodés. « Ouvrir dans ma messagerie » envoie alors une version courte (objet de l'invitation + corps de l'invitation courte, bloc anonymat et empreinte inclus) ; les relances ont une version compacte ; le texte complet reste disponible par « Copier ».
+- **Liens abîmés** : la ponctuation qu'une messagerie colle en fin de lien (`.`, `)`, `»`…) est retirée avant la validation stricte.
+- **Import** : en mode anonyme, un code qui porte une identité ou un horodatage complet est refusé (code forgé). Un code d'une autre campagne locale est identifié comme tel. Les codes postérieurs à la clôture sont importés et signalés.
+- **Démo** : les dates du jeu fictif sont décalées d'un nombre entier de jours à chaque chargement, pour que la démo reste « actuelle » ; les dates réglementaires ne bougent jamais.
+- **Saisie directe** (onglet « Saisir ») : entrée `source = manual`, sans code ; en mode anonyme, aucune identité.
 
 ## 5bis. État d'avancement (à tenir à jour)
 
@@ -464,7 +470,11 @@ Décisions prises pendant l'implémentation, là où le CDC était ambigu. Toute
 - ✅ **v0.3 — chiffrement** : codes RCN1, lien de collecte, fichier de récupération, sauvegarde chiffrée ; vecteurs figés.
 - ✅ **v0.4 — stockage et exports** : IndexedDB avec repli mémoire, registre (§8.2), CSV, XLSX, JSON.
 - ✅ **v0.5 — partage** : canaux, messages générés, liens `mailto` et services tiers, QR, fiche imprimable.
-- 🚧 **Phases 1 et 2, vues** : création de campagne, page Diffuser, formulaire répondant, console (tableau de bord, registre, actions, import, saisie, rapport, paramètres), liens d'import, démo.
+- ✅ **v0.6 — console, création de campagne, diffusion** : paire de clés, fichier de récupération, page Diffuser (lien, QR, fiche A4, messages générés, bloc anonymat verrouillé).
+- ✅ **v0.7 — formulaire répondant et saisie directe** : notice, questionnaire, brouillon local, un code par usage, envoi selon les canaux, révisions.
+- ✅ **v0.8 — administration et import** : liste des campagnes, import des codes (collage, fichiers, liens `#/i/`), fichier de récupération, sauvegarde et restauration, paramètres.
+- ✅ **v0.9 — registre et pilotage** : tableau de bord, registre filtrable (surcharges, validation, fusion et scission), plan d'actions, rapport imprimable, démo.
+- 🚧 **Recette v1.0** : critères d'acceptation des phases 1 et 2 (§14) en bout en bout, audits sécurité et accessibilité.
 - ⚠️ **Points d'attention**
   - Le code GoatCounter est vide : aucune mesure en production tant qu'il n'est pas fourni.
   - Page de confidentialité à faire valider : éditeur, contact, exemption de consentement.

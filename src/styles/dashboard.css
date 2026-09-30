@@ -1,0 +1,132 @@
+/* Recensia — onglet Tableau de bord de la console.
+ * Mobile d'abord ; réutilise app.css (card, kpi, grid, badge, callout) et charts.css.
+ * Règles sombres à l'écran seulement. */
+
+.dashboard { min-width: 0; overflow-wrap: break-word; }
+.dashboard > * { margin: 0; }
+.dashboard-header h2 { margin-bottom: var(--space-1); font-size: var(--fs-xl); }
+.dashboard-header p { margin: 0; }
+.dashboard-header p + p { margin-top: var(--space-1); }
+.dashboard > .disclaimer { margin: 0; }
+
+.dashboard-section { min-width: 0; }
+.dashboard-section-title { font-size: var(--fs-lg); margin-bottom: var(--space-3); }
+.dashboard-grid { gap: var(--space-4); }
+.dashboard-card-title { font-size: var(--fs-base); margin-bottom: var(--space-2); }
+.dashboard-chart-card { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.dashboard-chart-card > * { margin: 0; }
+.dashboard-chart-note { margin: 0 0 var(--space-2); }
+.dashboard-chart-card .chart { margin-top: var(--space-1); }
+.dashboard-big { font-size: var(--fs-lg); font-weight: 700; color: var(--heading); }
+
+/* Indicateurs */
+.dashboard-kpis {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* Deux colonnes dès 320 px de contenu. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.25rem), 1fr));
+}
+.dashboard-kpis > li { margin: 0; }
+.dashboard .kpi-label { order: 0; font-weight: 600; color: var(--heading); }
+.dashboard .kpi-value { order: 1; }
+.dashboard .kpi-detail { order: 2; }
+.kpi-link {
+  order: 3;
+  margin-top: auto;
+  padding-top: var(--space-1);
+  font-size: var(--fs-sm);
+  font-weight: 650;
+}
+
+/* Usages prioritaires */
+.dashboard-card-head { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-1); }
+.dashboard-card-head h3 { margin: 0; font-size: var(--fs-lg); }
+.dashboard-priorities { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.dashboard-priorities > li { margin: 0; }
+.dashboard-priority {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+@media (min-width: 48rem) {
+  .dashboard-priority { grid-template-columns: minmax(0, 1.4fr) auto; align-items: center; }
+  .dashboard-priority-reason { grid-column: 1 / -1; }
+}
+.dashboard-priority-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dashboard-priority-name { font-weight: 650; overflow-wrap: anywhere; }
+.dashboard-priority-meta { font-size: var(--fs-xs); }
+.dashboard-id { font-family: var(--font-mono); font-weight: 600; }
+.dashboard-priority-levels { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.dashboard-flag { font-size: var(--fs-xs); font-style: italic; color: var(--text-muted); }
+.dashboard-priority-reason { margin: 0; font-size: var(--fs-sm); color: var(--text-muted); }
+
+/* Échéances */
+.dashboard-verified {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-weight: 600;
+  color: var(--heading);
+}
+.dashboard-verified .icon { color: var(--success); margin-top: 0.15em; }
+.dashboard-deadline-columns {
+  display: grid;
+  gap: var(--space-4) var(--space-6);
+  grid-template-columns: minmax(0, 1fr);
+  margin-bottom: var(--space-4);
+}
+@media (min-width: 60rem) {
+  .dashboard-deadline-columns { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+}
+.dashboard-deadline-columns h4 { margin-bottom: var(--space-2); }
+.dashboard-deadline-list { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.dashboard-deadline-list > li { margin: 0; }
+.dashboard-deadline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+  border: var(--border-width) solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.dashboard-deadline.is-past { border-left-color: var(--border-strong); background: var(--surface-2); }
+@media (min-width: 30rem) {
+  .dashboard-deadline { grid-template-columns: 9rem minmax(0, 1fr); column-gap: var(--space-3); }
+}
+.dashboard-deadline-date { font-weight: 700; color: var(--heading); font-variant-numeric: tabular-nums; }
+.dashboard-deadline-body { min-width: 0; }
+.dashboard-deadline-label { margin: 0; font-weight: 600; color: var(--heading); line-height: var(--lh-snug); }
+.dashboard-deadline-meta { margin: var(--space-1) 0 0; gap: var(--space-1) var(--space-3); font-size: var(--fs-xs); }
+.dashboard-tag-info { background: var(--info-soft); color: var(--info); }
+.dashboard-tag-warn { background: var(--warn-soft); color: var(--warn); }
+.dashboard-source { display: inline-flex; align-items: center; gap: 0.25em; font-weight: 600; }
+.dashboard-source .icon { width: 1em; height: 1em; }
+.dashboard-deadline-note { margin-top: var(--space-1); font-size: var(--fs-xs); }
+.dashboard-deadline-note > summary { cursor: pointer; color: var(--link); width: fit-content; }
+.dashboard-deadline-note p { margin: var(--space-1) 0 0; color: var(--text-muted); }
+
+/* État vide */
+.dashboard-empty .empty-state { padding-block: var(--space-6); }
+.dashboard-empty-steps {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+  width: min(100%, 44rem);
+}
+@media (min-width: 48rem) { .dashboard-empty-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.dashboard-empty-steps > li { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); margin: 0; }
+.dashboard-empty-steps .btn { width: 100%; }
+
+@media print {
+  .kpi-link, .dashboard-source .icon { display: none; }
+  .dashboard-deadline-note:not([open]) { display: none; }
+}

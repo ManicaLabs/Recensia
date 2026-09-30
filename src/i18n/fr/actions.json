@@ -1,0 +1,194 @@
+{
+  "title": "Plan d'actions",
+  "lead": "Recensia propose des actions standard rattachées aux risques détectés. Acceptez celles qui vous concernent, rejetez les autres, puis pilotez-les : responsable, échéance, priorité et statut.",
+  "owner_note": "Recensia n'affecte jamais de responsable : seul un rôle est suggéré. C'est à vous d'indiquer qui s'en charge.",
+  "add": "Ajouter une action",
+  "priority_tag": "Priorité : {priority}",
+  "usage_unknown": "Usage retiré du registre",
+  "usage_campaign": "Toute la campagne (action transverse)",
+  "usage_gone": "Usage qui ne figure plus dans le registre",
+  "effort": {
+    "S": "faible",
+    "M": "moyen",
+    "L": "important"
+  },
+  "suggestion": {
+    "accept": "Accepter",
+    "accept_label": "Accepter la suggestion « {title} »",
+    "reject": "Rejeter",
+    "reject_label": "Rejeter la suggestion « {title} »",
+    "effort": "Effort : {effort}",
+    "horizon": "Horizon : {horizon}",
+    "role": "Rôle suggéré",
+    "no_role": "Aucun",
+    "role_note": "(indication : le responsable reste à désigner)",
+    "rules": "Déclenchée par"
+  },
+  "suggestions": {
+    "title": {
+      "zero": "Suggestions",
+      "one": "Suggestions ({count})",
+      "other": "Suggestions ({count})"
+    },
+    "help": "Une suggestion acceptée rejoint le plan d'actions au statut « À faire ». Une suggestion rejetée n'est plus proposée ; vous la retrouvez dans les actions rejetées et pouvez la réactiver à tout moment.",
+    "campaign": "Actions transverses (toute la campagne)",
+    "campaign_help": "Ces actions concernent l'ensemble des usages recensés.",
+    "count": {
+      "one": "{count} suggestion",
+      "other": "{count} suggestions"
+    },
+    "empty": "Aucune suggestion en attente : toutes ont été acceptées ou rejetées.",
+    "empty_no_usage": "Aucune suggestion pour le moment : elles apparaîtront dès que des usages seront recensés (import de codes ou saisie directe)."
+  },
+  "accept_all": {
+    "button": {
+      "one": "Tout accepter ({count})",
+      "other": "Tout accepter ({count})"
+    },
+    "title": "Accepter toutes les suggestions ?",
+    "message": {
+      "one": "{count} action sera ajoutée au plan, au statut « À faire » et sans responsable. Vous pourrez ensuite la modifier ou la rejeter.",
+      "other": "{count} actions seront ajoutées au plan, au statut « À faire » et sans responsable. Vous pourrez ensuite les modifier ou les rejeter une à une."
+    },
+    "confirm": {
+      "one": "Ajouter {count} action",
+      "other": "Ajouter {count} actions"
+    }
+  },
+  "form": {
+    "new_title": "Nouvelle action",
+    "edit_title": "Modifier l'action",
+    "create": "Ajouter l'action",
+    "title": "Intitulé",
+    "description": "Description",
+    "usage": "Usage concerné",
+    "usage_none": "Aucun en particulier (action transverse)",
+    "usage_help": "Facultatif : rattachez l'action à une ligne du registre.",
+    "usage_locked": "Cette action vient d'une suggestion liée à cet usage : son rattachement ne peut pas être modifié.",
+    "owner": "Responsable",
+    "owner_placeholder": "Nom ou fonction de la personne en charge",
+    "owner_placeholder_role": "Rôle suggéré : {role}",
+    "owner_help": "Texte libre. Laissez vide si personne n'est encore désigné.",
+    "owner_help_role": "Rôle suggéré : {role}. Ce n'est qu'une indication : indiquez la personne réellement chargée de l'action.",
+    "due_date": "Échéance",
+    "due_help": "Facultative. Format jour/mois/année.",
+    "priority": "Priorité",
+    "status": "Statut"
+  },
+  "errors": {
+    "required": "Indiquez un intitulé.",
+    "too_long": "Texte trop long : {max} caractères au maximum.",
+    "invalid_date": "Date invalide : choisissez un jour dans le calendrier.",
+    "enum": "Valeur non reconnue : choisissez une option de la liste.",
+    "unknown_usage": "Cet usage ne figure plus dans le registre : choisissez-en un autre."
+  },
+  "toast": {
+    "accepted": "Ajoutée au plan : « {title} ».",
+    "rejected": "Suggestion rejetée : « {title} ». Elle ne sera plus proposée.",
+    "accepted_all": {
+      "one": "{count} action ajoutée au plan.",
+      "other": "{count} actions ajoutées au plan."
+    },
+    "created": "Action ajoutée : « {title} ».",
+    "updated": "Action enregistrée : « {title} ».",
+    "deleted": "Action supprimée : « {title} ».",
+    "status": "« {title} » : statut « {status} ».",
+    "save_error": "L'enregistrement a échoué. Réessayez ; si le problème persiste, rechargez la page."
+  },
+  "delete": {
+    "title": "Supprimer cette action ?",
+    "message": "L'action « {title} » sera définitivement retirée du plan.",
+    "suggested_note": "Elle vient d'une suggestion : une fois supprimée, elle pourra vous être proposée de nouveau. Pour ne plus la voir, choisissez plutôt le statut « Rejeté »."
+  },
+  "item": {
+    "overdue": "En retard",
+    "suggested": "Suggérée",
+    "manual": "Ajoutée manuellement",
+    "usage": "Usage",
+    "owner": "Responsable",
+    "no_owner": "Non désigné",
+    "no_owner_role": "Non désigné (rôle suggéré : {role})",
+    "due_date": "Échéance",
+    "no_due": "Aucune",
+    "updated": "Mise à jour",
+    "status_label": "Statut",
+    "edit_label": "Modifier l'action « {title} »",
+    "delete_label": "Supprimer l'action « {title} »"
+  },
+  "list": {
+    "title": {
+      "zero": "Actions du plan",
+      "one": "Actions du plan ({count})",
+      "other": "Actions du plan ({count})"
+    },
+    "shown": {
+      "zero": "Aucune action affichée sur {total}.",
+      "one": "{count} action affichée sur {total}.",
+      "other": "{count} actions affichées sur {total}."
+    },
+    "empty": "Aucune action pour le moment. Acceptez des suggestions ou ajoutez une action vous-même.",
+    "none_filtered": "Aucune action ne correspond à ces filtres."
+  },
+  "filters": {
+    "label": "Filtrer et trier les actions",
+    "status": "Statut",
+    "priority": "Priorité",
+    "usage": "Usage",
+    "sort": "Trier par",
+    "all_priorities": "Toutes les priorités",
+    "all_usages": "Tous les usages",
+    "campaign_usages": "Actions transverses",
+    "reset": "Tout afficher",
+    "status_options": {
+      "active": "Toutes, sauf rejetées",
+      "open": "À faire et en cours",
+      "todo": "À faire",
+      "in_progress": "En cours",
+      "done": "Faites",
+      "rejected": "Rejetées",
+      "all": "Toutes"
+    },
+    "sort_options": {
+      "priority": "Priorité",
+      "due_date": "Échéance la plus proche",
+      "status": "Statut",
+      "updated": "Dernière modification",
+      "title": "Intitulé (A → Z)"
+    }
+  },
+  "progress": {
+    "title": "Avancement",
+    "summary": {
+      "zero": "Aucune action faite sur {total} pour le moment (0 %).",
+      "one": "{count} action faite sur {total} ({percent} %).",
+      "other": "{count} actions faites sur {total} ({percent} %)."
+    },
+    "none": "Aucune action engagée pour le moment.",
+    "kpi": {
+      "todo": {
+        "one": "à faire",
+        "other": "à faire"
+      },
+      "in_progress": {
+        "one": "en cours",
+        "other": "en cours"
+      },
+      "done": {
+        "one": "faite",
+        "other": "faites"
+      },
+      "overdue": {
+        "one": "en retard",
+        "other": "en retard"
+      },
+      "pending": {
+        "one": "suggestion en attente",
+        "other": "suggestions en attente"
+      },
+      "rejected": {
+        "one": "rejetée",
+        "other": "rejetées"
+      }
+    }
+  }
+}
